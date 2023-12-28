@@ -102,9 +102,11 @@ class SubmissionController extends Controller
 
         if ($request->isPost) {
             $first_name = $request->post('first_name');
-            $last_name = $request->post('first_name');
+            $last_name = $request->post('last_name');
             $class = $request->post('class');
             $password = $request->post('password');
+        } else {
+            return $this->redirect(['/submission/create']);
         }
 
         $sql = "select id, name from quiz where password='$password' and active = 1";

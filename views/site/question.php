@@ -14,6 +14,7 @@ for($i=1; $i<7; $i++) {
 }
 shuffle($answers);
 $noAnswers = count($answers);
+
 ?>
 
 <!DOCTYPE html>
@@ -95,13 +96,13 @@ $noAnswers = count($answers);
 <div class="container-fluid banner-container text-white text-center py-3">
     <div class="banner-content">
         <h1><?=$title?></h1>
-        <p>vraag 1 van 1</p>
+        <p>vraag <?=$submission['no_answered']+1?> van <?=$submission['no_questions']?></p>
     </div>
 </div>
 
 <div class="container text-center">
     <div class="row justify-content-center">
-        <div class="col-12 question-title">Vraag 1</div>
+        <div class="col-12 question-title">Vraag <?=$submission['no_answered']+1 ?></div>
         <div class="col-12">
             <div class="my-4 question-block"><pre><?=$question['question']?></pre></div>
         </div>
@@ -109,34 +110,34 @@ $noAnswers = count($answers);
         <div class="col-md-6">
             <!-- Answers Column 1 -->
             <?php if ( $noAnswers >= 1 ) { ?>
-                <div class="answer" onclick="selectAnswer(this, 'answer1')"><?= $question[$answers[0]] ?></div>
+                <div class="answer" onclick="selectAnswer(this, '<?=$answers[0]?>')"><?= $question[$answers[0]] ?></div>
             <?php } ?>
             <?php if ( $noAnswers >= 3 ) { ?>
-                <div class="answer" onclick="selectAnswer(this, 'answer2')"><?= $question[$answers[2]] ?></div>
+                <div class="answer" onclick="selectAnswer(this, '<?=$answers[2]?>')"><?= $question[$answers[2]] ?></div>
             <?php } ?>
             <?php if ( $noAnswers >= 5 ) { ?>
-                <div class="answer" onclick="selectAnswer(this, 'answer3')"><?= $question[$answers[4]] ?></div>
+                <div class="answer" onclick="selectAnswer(this, '<?=$answers[4]?>')"><?= $question[$answers[4]] ?></div>
             <?php } ?>
         </div>
 
         <div class="col-md-6">
             <!-- Answers Column 2 -->
             <?php if ( $noAnswers >= 2 ) { ?>
-                <div class="answer" onclick="selectAnswer(this, 'answer1')"><?= $question[$answers[1]] ?></div>
+                <div class="answer" onclick="selectAnswer(this, '<?=$answers[1]?>')"><?= $question[$answers[1]] ?></div>
             <?php } ?>
             <?php if ( $noAnswers >= 4 ) { ?>
-                <div class="answer" onclick="selectAnswer(this, 'answer2')"><?= $question[$answers[3]] ?></div>
+                <div class="answer" onclick="selectAnswer(this, '<?=$answers[3]?>')"><?= $question[$answers[3]] ?></div>
             <?php } ?>
             <?php if ( $noAnswers >= 6 ) { ?>
-                <div class="answer" onclick="selectAnswer(this, 'answer3')"><?= $question[$answers[5]] ?></div>
+                <div class="answer" onclick="selectAnswer(this, '<?=$answers[5]?>')"><?= $question[$answers[5]] ?></div>
             <?php } ?>
         </div>
         <div class="col-md-6">
         <div class="col-12">
-            <form id="answer" class="mt-4" action="<?= Url::to(['site/answer']) ?>" method="post">
+            <form id="answer" class="mt-4" action="<?= Url::to(['site/answer']) ?>" method="POST">
                 <input type="hidden" id="selectedAnswer" name="selectedAnswer">
                 <input type="hidden" name="<?= $csrfTokenName ?>" value="<?= $csrfToken ?>">
-                <button type="submit" class="btn btn-danger">Volgende vraag >></button>
+                <button type="submit" id="submitButton" class="btn btn-light" title="Click eerst op een antwoord" disabled>Volgende vraag >></button>
             </form>
         </div>
     </div>
@@ -153,7 +154,12 @@ $noAnswers = count($answers);
         element.classList.add('selected');
 
         // Set the value of the hidden input
-        document.getElementById('selectedAnswer').value = answer;
+        document.getElementById('selectedAnswer').value = answer.substring(1);
+
+        // Enable submit button
+        document.getElementById('submitButton').className = "btn btn-danger";
+        document.getElementById('submitButton').title = "Click voor volgende vraag";
+        document.getElementById('submitButton').disabled = false;
     }
 </script>
 
