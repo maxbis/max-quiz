@@ -44,7 +44,7 @@ class Quiz extends \yii\db\ActiveRecord
         return [
             'id' => 'ID',
             'name' => 'Name',
-            'password' => 'Password',
+            'password' => 'Code',
             'active' => 'Active',
             'no_questions' => 'No Questions',
         ];

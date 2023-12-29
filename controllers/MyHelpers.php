@@ -18,7 +18,7 @@ class MyHelpers
     
         try { // read file and if not readble raise error and stop
             $lines = file($file);
-         } catch (Exception $e) {
+         } catch (\Exception $e) {
             $string = "Cannot acces IP Allowed file ($file) in config";
             writeLog($string);
             echo $string;

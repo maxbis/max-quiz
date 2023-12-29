@@ -136,7 +136,7 @@ class SubmissionController extends Controller
         $cookie = new Cookie([
             'name' => 'token',
             'value' => $token,
-            'expire' => time() + 3600 * 6, // 2 hours
+            'expire' => time() + 3600 * 6, // 6 hours
         ]);
         Yii::$app->response->cookies->add($cookie);
 

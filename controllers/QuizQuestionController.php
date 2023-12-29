@@ -17,14 +17,30 @@ class QuizQuestionController extends \yii\web\Controller
         $sql="select id from quizquestion where quiz_id=$quizId and question_id=$questionId";
         $result = Yii::$app->db->createCommand($sql)->queryOne();
         if ( $result ) {
-            $sql="update quizquestion set actief=$active where quiz_id=$quizId and question_id=$questionId";
+            $sql="update quizquestion set active=$active where quiz_id=$quizId and question_id=$questionId";
         } else {
-            $sql="insert into quizquestion (quiz_id, question_id, actief) values ($quizId, $questionId, 0)";
+            $sql="insert into quizquestion (quiz_id, question_id, active) values ($quizId, $questionId, 0)";
         }
 
-        $result2 = Yii::$app->db->createCommand($sql)->execute();
+        Yii::$app->db->createCommand($sql)->execute();
 
-        return ['success' => true, 'message' => 'Operation successful', 'result' => $result];
+        $sql = "select count(*) count from quizquestion where quiz_id=$quizId and active=1";
+        $count = Yii::$app->db->createCommand($sql)->queryOne();
+
+        return ['success' => true, 'message' => 'Operation successful', 'result' => $count];
     }
 
+    public function actionActive()
+    {
+        Yii::$app->response->format = \yii\web\Response::FORMAT_JSON;
+
+        $id = Yii::$app->request->post('id');
+        $active = Yii::$app->request->post('active');
+
+
+        $sql = "update quiz set active = $active where id = $id;";
+        $result = Yii::$app->db->createCommand($sql)->execute();
+
+        return ['success' => true, 'message' => 'Operation successful', 'result' => $result, 'sql' => $sql];
+    }
 }

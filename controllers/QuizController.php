@@ -14,6 +14,8 @@ use yii\helpers\ArrayHelper;
 
 use yii\filters\AccessControl;
 
+use Yii;
+
 /**
  * QuizController implements the CRUD actions for Quiz model.
  */
@@ -66,6 +68,17 @@ class QuizController extends Controller
         ]);
     }
 
+    public function actionList()
+    {
+        $searchModel = new QuizSearch();
+        $dataProvider = $searchModel->search($this->request->queryParams);
+
+        return $this->render('list', [
+            'searchModel' => $searchModel,
+            'dataProvider' => $dataProvider,
+        ]);
+    }
+
     /**
      * Creates a new Quiz model.
      * If creation is successful, the browser will be redirected to the 'view' page.
@@ -104,9 +117,9 @@ class QuizController extends Controller
         $model = $this->findModel($id);
 
         if ( $this->request->isPost && $model->load($this->request->post()) ) {
-            if ( $model->active == 1 ) {
-                Quiz::updateAll(['active' => 0], ['!=', 'id', $model->id]);
-            }
+            // if ( $model->active == 1 ) {
+            //     Quiz::updateAll(['active' => 0], ['!=', 'id', $model->id]);
+            // }
             if ($model->save()) {
                 return $this->redirect(['index', 'id' => $model->id]);
             }
@@ -117,15 +130,12 @@ class QuizController extends Controller
         ]);
     }
 
-    /**
-     * Deletes an existing Quiz model.
-     * If deletion is successful, the browser will be redirected to the 'index' page.
-     * @param int $id ID
-     * @return \yii\web\Response
-     * @throws NotFoundHttpException if the model cannot be found
-     */
+
     public function actionDelete($id)
     {
+        $sql = "delete from quizquestion where quiz_id=$id";
+        Yii::$app->db->createCommand($sql)->execute();
+
         $this->findModel($id)->delete();
 
         return $this->redirect(['index']);
@@ -156,14 +166,33 @@ class QuizController extends Controller
         $questions = $query->all();
 
         $quizQuestions = QuizQuestion::find()
+            ->select('question_id')
             ->where(['quiz_id' => $id])
+            ->andWhere(['active' => 1 ])
             ->all();
         $questionIds = ArrayHelper::getColumn($quizQuestions, 'question_id');
 
         return $this->render('questions', [
             'quiz' => $this->findModel($id),
             'questions' => $questions,
-            'questionids' => $questionIds,
+            'questionIds' => $questionIds,
         ]);
+    }
+
+    public function actionCopy($id) {
+        $sql = "insert into quiz ( name ) select concat('copy of ',name) from quiz where id = $id";
+        Yii::$app->db->createCommand($sql)->execute();
+        $sql = "select max(id) id from quiz;";
+        $newId = Yii::$app->db->createCommand($sql)->queryOne()['id'];
+        
+        $sql = "select question_id from quizquestion where quiz_id = $id and active=1";
+        $questionIds = Yii::$app->db->createCommand($sql)->queryAll();
+
+        foreach($questionIds as $thisQuestionId) {
+            $sql = "insert into quizquestion (quiz_id, question_id, active) values ($newId, ${thisQuestionId['question_id']}, 1)";
+            Yii::$app->db->createCommand($sql)->execute();
+        }
+
+        return $this->redirect(['quiz/view', 'id' => $newId]);
     }
 }

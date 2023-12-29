@@ -23,7 +23,7 @@ function _d($var,$caller=null)
 function _dd($var)
 {
     $caller = debug_backtrace(1)[0];
-    d($var,$caller);
+    _d($var,$caller);
     die();
 }
 

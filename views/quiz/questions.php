@@ -15,12 +15,6 @@ $this->params['breadcrumbs'][] = $this->title;
 ?>
 
 <style>
-    .question-td {
-        margin-right:20px;
-        position: relative;
-        display: inline-block;
-    }
-
     .multiline-tooltip {
         cursor: pointer;
         position: relative;
@@ -37,16 +31,24 @@ $this->params['breadcrumbs'][] = $this->title;
         padding: 5px;
         font-family: monospace;
         white-space: pre-wrap;
-        max-width: 600px; /* Adjust as needed */
+        max-width: 600px;
+        /* Adjust as needed */
     }
 
     .multiline-tooltip:hover::after {
         display: block;
     }
+
+    .myTable {
+        background-color: #f8f8f8;
+
+        box-shadow: 2px 2px 4px rgba(0, 0, 0, 0.1);
+    }
 </style>
 
 <?php
 $csrfToken = Yii::$app->request->getCsrfToken();
+$id = Yii::$app->request->get('id');
 
 $script = <<< JS
 $('.status-checkbox').change(function() {
@@ -69,6 +71,7 @@ $('.status-checkbox').change(function() {
         },
         success: function(response) {
             // Handle success
+            $('#countDisplay').text(response.result.count);
             console.log('Update successful', response);
         },
         error: function(xhr, status, error) {
@@ -93,53 +96,74 @@ JS;
 $this->registerJs($script);
 ?>
 
+<table class="myTable" style="margin: 40px 0;">
+    <tr>
+        <td style="width: 60%;margin: 40px 0;">
+
+            <div class="quiz-view">
+                <table class="table">
+                    <tr>
+                        <td style="font-weight:bold;">Naam</td>
+                        <td style="font-weight:bold;"><?= $quiz->name ?> </td>
+                    </tr>
+                    <tr>
+                        <td style="font-weight:bold;">Wachtwoord</td>
+                        <td><?= $quiz->password ?> </td>
+                    </tr>
+                    <tr>
+                        <td style="font-weight:bold;">Actief</td>
+                        <td><?= $quiz->active ?> </td>
+                    </tr>
+                    <tr>
+                        <td style="font-weight:bold;">Aantal vragen</td>
+                        <td style="vertical-align: left;" id="countDisplay"><?= $quiz->no_questions ?> </td>
+                    </tr>
+                </table>
+            </div>
+        </td>
+        <td style="text-align: left;vertical-align: bottom;">
+            &nbsp;
+            <?php
+                echo Html::a('Edit this quiz',
+                    ['quiz/update', 'id' => $id], 
+                    [ 'class' => 'btn btn-primary button-sm m-2'],
+                );
+            ?>&nbsp;
+            <?php
+                echo Html::a('Copy this quiz',
+                    ['quiz/copy', 'id' => $id], 
+                    [ 'class' => 'btn btn-warning button-sm m-2'],
+                );
+            ?>
+        </td>
+    </tr>
+</table>
 
 
-<div class="quiz-view">
 
-    <h1><?= Html::encode($this->title) ?></h1>
-
-    <?= DetailView::widget([
-        'model' => $quiz,
-        'attributes' => [
-            'id',
-            'name',
-            'password',
-            'active',
-            'no_questions',
-        ],
-    ]) ?>
-
-</div>
-
-<?php
-    echo Html::button('Check All', [
-        'class' => 'btn btn-light button-sm m-2',
-        'onclick' => 'checkAllCheckboxes(true);',
-    ]);
-    echo Html::button('Uncheck All', [
-        'class' => 'btn btn-light button-sm m-2',
-        'onclick' => 'checkAllCheckboxes(false);',
-    ]);
-?>
-<?php
-    $id = Yii::$app->request->get('id');
-?>
-<form action="<?= Url::to(['/quiz/questions', 'id' => $id]) ?>" method="get">
+<form style="margin: 20px 0;" action="<?= Url::to(['/quiz/view', 'id' => $id]) ?>" method="get">
+    <label for="inputField">Label </label>
     <input type="text" name="search" id="search" placeholder="Search...">
-    <input type="hidden" name="id" value=<?=$id?> >
+    <input type="hidden" name="id" value=<?= $id ?>>
     <button type="submit" class="btn btn-primary btn-sm">Search</button>
 </form>
 
-<table>
+<table class="table myTable" style="width:60%;">
+    <thead>
+        <tr>
+            <th>#</th>
+            <th>Label</th>
+            <th>Question</th>
+        </tr>
+    </thead>
 
     <tbody>
-        <?php foreach ($questions as $question): ?>
+        <?php foreach ($questions as $question) : ?>
             <tr>
-                
-                <td class="question-td">
+                <td>
                     <?php
-                    echo Html::checkbox('status', false, [
+                    $isChecked = in_array($question->id, $questionIds);
+                    echo Html::checkbox('status', $isChecked, [
                         'class' => 'status-checkbox',
                         'question-id' => $question->id,
                         'quiz-id' => $quiz->id,
@@ -147,13 +171,24 @@ $this->registerJs($script);
                     ?>
                 </td>
 
-                <td class="question-td"><?=$question->label?></td>
+                <td><?= $question->label ?></td>
 
                 <td class="multiline-tooltip" data-tooltip="<?= Html::encode($question->question) ?>">
                     <?= Html::encode(mb_substr($question->question, 0, 60)) ?>
                 </td>
-
             </tr>
         <?php endforeach; ?>
     </tbody>
 </table>
+
+<?php
+echo Html::button('Check All', [
+    'class' => 'btn btn-light button-sm m-2',
+    'onclick' => 'checkAllCheckboxes(true);',
+]);
+echo Html::button('Uncheck All', [
+    'class' => 'btn btn-light button-sm m-2',
+    'onclick' => 'checkAllCheckboxes(false);',
+]);
+
+?>

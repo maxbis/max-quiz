@@ -147,12 +147,8 @@ class SiteController extends Controller
 
     private function getQuiz($id) {
         // check if quiz is still ative, otherwise redirect to final page
-        $sql = "select name from quiz where id = $id and active = 1";
+        $sql = "select name from quiz where id = $id";
         $quiz = Yii::$app->db->createCommand($sql)->queryOne();
-
-        if ( ! $quiz) {
-            dd('Quiz is not active anymore');
-        }
 
         return $quiz;
     }
@@ -163,7 +159,8 @@ class SiteController extends Controller
         if ( ! $submission ) {
             return $this->redirect(['submission/create']);
         }
-        // are we ready?
+        // are we read
+        // ToDo add some method to force to stop.
         if (  $submission['no_answered'] ==  $submission['no_questions'] ) {
             return $this->redirect(['site/finished']);
         }
