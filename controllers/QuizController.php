@@ -12,6 +12,8 @@ use app\models\question;
 use app\models\quizquestion;
 use yii\helpers\ArrayHelper;
 
+use yii\filters\AccessControl;
+
 /**
  * QuizController implements the CRUD actions for Quiz model.
  */
@@ -25,10 +27,23 @@ class QuizController extends Controller
         return array_merge(
             parent::behaviors(),
             [
+
+                // VerbFilter
                 'verbs' => [
                     'class' => VerbFilter::className(),
                     'actions' => [
                         'delete' => ['POST'],
+                    ],
+                ],
+                // Access Control Filter (ACF)
+                'access' => [
+                    'class' => AccessControl::className(),
+                    'rules' => [
+                        [
+                            'allow' => true,
+                            'roles' => ['@'], // '@' represents authenticated users
+                        ],
+                        // You can add more rules here
                     ],
                 ],
             ]

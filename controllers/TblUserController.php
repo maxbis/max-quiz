@@ -2,19 +2,18 @@
 
 namespace app\controllers;
 
-use app\models\Question;
-use app\models\QuestionSearch;
+use app\models\TblUser;
+use app\models\TblUserSearch;
 use yii\web\Controller;
 use yii\web\NotFoundHttpException;
 use yii\filters\VerbFilter;
 
-use yii\filters\AccessControl;
 use Yii;
 
 /**
- * QuestionController implements the CRUD actions for Question model.
+ * TblUserController implements the CRUD actions for TblUser model.
  */
-class QuestionController extends Controller
+class TblUserController extends Controller
 {
     /**
      * @inheritDoc
@@ -24,23 +23,10 @@ class QuestionController extends Controller
         return array_merge(
             parent::behaviors(),
             [
-
-                // VerbFilter
                 'verbs' => [
                     'class' => VerbFilter::className(),
                     'actions' => [
                         'delete' => ['POST'],
-                    ],
-                ],
-                // Access Control Filter (ACF)
-                'access' => [
-                    'class' => AccessControl::className(),
-                    'rules' => [
-                        [
-                            'allow' => true,
-                            'roles' => ['@'], // '@' represents authenticated users
-                        ],
-                        // You can add more rules here
                     ],
                 ],
             ]
@@ -48,13 +34,13 @@ class QuestionController extends Controller
     }
 
     /**
-     * Lists all Question models.
+     * Lists all TblUser models.
      *
      * @return string
      */
     public function actionIndex()
     {
-        $searchModel = new QuestionSearch();
+        $searchModel = new TblUserSearch();
         $dataProvider = $searchModel->search($this->request->queryParams);
 
         return $this->render('index', [
@@ -64,7 +50,7 @@ class QuestionController extends Controller
     }
 
     /**
-     * Displays a single Question model.
+     * Displays a single TblUser model.
      * @param int $id ID
      * @return string
      * @throws NotFoundHttpException if the model cannot be found
@@ -76,48 +62,30 @@ class QuestionController extends Controller
         ]);
     }
 
-
-
     /**
-     * Creates a new Question model.
+     * Creates a new TblUser model.
      * If creation is successful, the browser will be redirected to the 'view' page.
      * @return string|\yii\web\Response
      */
     public function actionCreate()
     {
-        $model = new Question();
-
-        if ($this->request->isPost) {
-            if ($model->load($this->request->post()) && $model->save()) {
+        $model = new tblUser();
+    
+        if ($model->load(Yii::$app->request->post()) ) {
+            $model->password=sha1($model->password);
+            $model->authKey=md5(openssl_random_pseudo_bytes(40));
+            if ($model->save() ) {
                 return $this->redirect(['view', 'id' => $model->id]);
             }
-        } else {
-            $model->loadDefaultValues();
         }
-
+    
         return $this->render('create', [
             'model' => $model,
         ]);
     }
 
-    public function actionCopy($id)
-    {
-        $model = $this->findModel($id);
-
-        $newModel = new Question();
-        $newModel->attributes = $model->attributes;
-
-        if ($newModel->save()) {
-            Yii::$app->session->setFlash('success', 'Question copied successfully.');
-            return $this->redirect(['view', 'id' => $newModel->primaryKey]);
-        } else {
-            Yii::$app->session->setFlash('error', 'There was an error copying the question.');
-            return $this->redirect(['view', 'id' => $id]);
-        }
-    }
-
     /**
-     * Updates an existing Question model.
+     * Updates an existing TblUser model.
      * If update is successful, the browser will be redirected to the 'view' page.
      * @param int $id ID
      * @return string|\yii\web\Response
@@ -137,7 +105,7 @@ class QuestionController extends Controller
     }
 
     /**
-     * Deletes an existing Question model.
+     * Deletes an existing TblUser model.
      * If deletion is successful, the browser will be redirected to the 'index' page.
      * @param int $id ID
      * @return \yii\web\Response
@@ -151,15 +119,15 @@ class QuestionController extends Controller
     }
 
     /**
-     * Finds the Question model based on its primary key value.
+     * Finds the TblUser model based on its primary key value.
      * If the model is not found, a 404 HTTP exception will be thrown.
      * @param int $id ID
-     * @return Question the loaded model
+     * @return TblUser the loaded model
      * @throws NotFoundHttpException if the model cannot be found
      */
     protected function findModel($id)
     {
-        if (($model = Question::findOne(['id' => $id])) !== null) {
+        if (($model = TblUser::findOne(['id' => $id])) !== null) {
             return $model;
         }
 

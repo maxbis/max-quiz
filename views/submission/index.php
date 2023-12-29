@@ -6,20 +6,11 @@ use yii\helpers\Url;
 use yii\grid\ActionColumn;
 use yii\grid\GridView;
 
-/** @var yii\web\View $this */
-/** @var app\models\SubmissionSearch $searchModel */
-/** @var yii\data\ActiveDataProvider $dataProvider */
-
-$this->title = 'Submissions';
-$this->params['breadcrumbs'][] = $this->title;
 ?>
 <div class="submission-index">
 
     <h1><?= Html::encode($this->title) ?></h1>
 
-    <p>
-        <?= Html::a('Create Submission', ['create'], ['class' => 'btn btn-success']) ?>
-    </p>
 
     <?php // echo $this->render('_search', ['model' => $searchModel]); ?>
 
@@ -27,25 +18,80 @@ $this->params['breadcrumbs'][] = $this->title;
         'dataProvider' => $dataProvider,
         'filterModel' => $searchModel,
         'columns' => [
-            ['class' => 'yii\grid\SerialColumn'],
-
-            'id',
-            'token',
-            'first_name',
-            'last_name',
-            'class',
-            //'start_time',
-            //'end_time',
-            //'question_order',
-            //'no_questions',
-            //'no_answered',
-            //'no_correct',
-            //'quiz_id',
             [
-                'class' => ActionColumn::className(),
-                'urlCreator' => function ($action, Submission $model, $key, $index, $column) {
-                    return Url::toRoute([$action, 'id' => $model->id]);
-                 }
+                'header' => 'Voortgang',
+                'attribute' => 'no_answered',
+                'headerOptions' => ['style' => 'width:60px;'],
+                'contentOptions' => function ($model, $key, $index, $column) {
+                    if ( $model->no_answered == $model->no_questions ) {
+                        $backgroundColor = 'lightgreen';
+                    } else {
+                        $backgroundColor = "";
+                    }
+                    return ['style' => "background-color: $backgroundColor;"];
+                },
+                'value' => function ($model) {
+                    return $model->no_questions > 0 ? round(($model->no_answered / $model->no_questions) * 100, 0) . '%' : '0';
+                },
+            ],
+            [
+                'header' => 'Score',
+                'headerOptions' => ['style' => 'width:80px;'], 
+                'contentOptions' => function ($model, $key, $index, $column) {
+                    $score = $model->no_questions > 0 ? round(($model->no_correct / $model->no_questions) * 100, 0) : 0;
+                    if ( $model->no_answered ) {
+                        $backgroundColor = $score < 55 ? 'lightcoral' : 'lightgreen';
+                    } else {
+                        $backgroundColor = "";
+                    }
+                    return ['style' => "background-color: $backgroundColor;"];
+                },
+                'value' => function ($model) {
+                    return $model->no_questions > 0 ? round(($model->no_correct / $model->no_questions) * 100, 0) . '%' : '0';
+                },
+            ],
+            [
+                'attribute' => 'first_name',
+                'label' => 'Student',
+                'headerOptions' => ['style' => 'width:200px;'],
+                'contentOptions' => function ($model, $key, $index, $column) {
+                    if ( $model->no_answered == $model->no_questions ) {
+                        $backgroundColor = 'lightgreen';
+                    } else {
+                        $backgroundColor = "";
+                    }
+                    return ['style' => "background-color: $backgroundColor;"];
+                },
+                'value' => function ($model) {
+                    return $model->first_name.' '.$model->last_name;
+                },
+                
+            ],
+            [
+                'attribute' => 'class',
+                'label' => 'klas',
+                'headerOptions' => ['style' => 'width:60px;'],
+                
+            ],
+            [
+                'attribute' => 'no_answered',
+                'label' => '#vragen',
+                'headerOptions' => ['style' => 'width:60px;'],
+                'value' => function ($model) {
+                    return $model->no_answered.'/'.$model->no_questions;
+                },
+            ],
+            [
+                'attribute' => 'no_correct',
+                'label' => 'goed',
+                'headerOptions' => ['style' => 'width:60px;'],
+                
+            ],
+            [
+                'attribute' => 'last_updated',
+                'label' => 'Update',
+                'headerOptions' => ['style' => 'width:60px;'],
+                
             ],
         ],
     ]); ?>

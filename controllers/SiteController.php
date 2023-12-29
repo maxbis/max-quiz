@@ -57,11 +57,18 @@ class SiteController extends Controller
 
     public function actionIndex()
     {
-        return $this->redirect(['site/question']);
+        if (Yii::$app->user->isGuest) {
+            return $this->redirect(['site/question']);
+        } else {
+            return $this->redirect(['quiz/']);
+        }
+        
     }
 
     public function actionLogin()
     {
+        MyHelpers::CheckIP();
+
         if (!Yii::$app->user->isGuest) {
             return $this->goHome();
         }
@@ -123,7 +130,8 @@ class SiteController extends Controller
         if ( ! $token ) {
             return 0;
         }
-        $sql = "select id, quiz_id, no_answered, question_order, no_questions, no_correct, first_name, last_name from submission where token = '".$token."'";
+        $sql = "select id, quiz_id, no_answered, question_order, no_questions, no_correct, first_name, last_name
+                from submission where token = '".$token."'";
         $submission = Yii::$app->db->createCommand($sql)->queryOne();
 
         if (  $submission['no_answered'] !=  $submission['no_questions'] ) {

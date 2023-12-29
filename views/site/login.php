@@ -9,7 +9,6 @@ use yii\bootstrap5\ActiveForm;
 use yii\bootstrap5\Html;
 
 $this->title = 'Login';
-$this->params['breadcrumbs'][] = $this->title;
 ?>
 <div class="site-login">
     <h1><?= Html::encode($this->title) ?></h1>
@@ -17,7 +16,7 @@ $this->params['breadcrumbs'][] = $this->title;
     <p>Please fill out the following fields to login:</p>
 
     <div class="row">
-        <div class="col-lg-5">
+        <div class="col-lg-5 border shadow-sm p-4" style="background-color:#fefefe;" >
 
             <?php $form = ActiveForm::begin([
                 'id' => 'login-form',
@@ -46,8 +45,7 @@ $this->params['breadcrumbs'][] = $this->title;
             <?php ActiveForm::end(); ?>
 
             <div style="color:#999;">
-                You may login with <strong>admin/admin</strong> or <strong>demo/demo</strong>.<br>
-                To modify the username/password, please check out the code <code>app\models\User::$users</code>.
+                <!-- add soem text here....  -->
             </div>
 
         </div>
