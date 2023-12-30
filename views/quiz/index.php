@@ -77,8 +77,6 @@ $this->registerJs($js);
             ],
             'name',
             'password',
-            'active',
-            'no_questions',
             [
                 'class' => ActionColumn::className(),
                 'urlCreator' => function ($action, Quiz $model, $key, $index, $column) {

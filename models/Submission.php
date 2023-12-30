@@ -65,4 +65,9 @@ class Submission extends \yii\db\ActiveRecord
             'quiz_id' => 'Quiz ID',
         ];
     }
+
+    public function getQuiz()
+    {
+        return $this->hasOne(Quiz::className(), ['id' => 'quiz_id']);
+    }
 }

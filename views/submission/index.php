@@ -77,7 +77,9 @@ use yii\grid\GridView;
                 'attribute' => 'no_answered',
                 'label' => '#vragen',
                 'headerOptions' => ['style' => 'width:60px;'],
+                'format' => 'raw',
                 'value' => function ($model) {
+                    return Html::a($model->no_answered.'/'.$model->no_questions, ['submission/update', 'id' => $model->id]);
                     return $model->no_answered.'/'.$model->no_questions;
                 },
             ],
@@ -93,6 +95,7 @@ use yii\grid\GridView;
                 'headerOptions' => ['style' => 'width:60px;'],
                 
             ],
+
         ],
     ]); ?>
 

@@ -42,6 +42,8 @@ class SubmissionSearch extends Submission
     {
         $query = Submission::find();
 
+        $query->joinWith(['quiz']);
+
         // add conditions that should always apply here
 
         $dataProvider = new ActiveDataProvider([
@@ -72,6 +74,10 @@ class SubmissionSearch extends Submission
             ->andFilterWhere(['like', 'last_name', $this->last_name])
             ->andFilterWhere(['like', 'class', $this->class])
             ->andFilterWhere(['like', 'question_order', $this->question_order]);
+
+            $query->andFilterWhere([
+                'quiz.active' => 1,
+            ]);
 
         return $dataProvider;
     }

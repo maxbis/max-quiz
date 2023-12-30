@@ -11,7 +11,7 @@ $this->params['breadcrumbs'][] = ['label' => 'Submissions', 'url' => ['index']];
 $this->params['breadcrumbs'][] = $this->title;
 \yii\web\YiiAsset::register($this);
 ?>
-<div class="submission-view">
+<div class="submission-view"">
 
     <h1><?= Html::encode($this->title) ?></h1>
 
