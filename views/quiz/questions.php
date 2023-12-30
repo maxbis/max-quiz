@@ -3,6 +3,7 @@
 use yii\helpers\Html;
 use yii\widgets\DetailView;
 use yii\widgets\ActiveForm;
+use yii\grid\GridView;
 use yii\helpers\Url;
 
 /** @var yii\web\View $this */
@@ -124,13 +125,13 @@ $this->registerJs($script);
         <td style="text-align: left;vertical-align: bottom;">
             &nbsp;
             <?php
-                echo Html::a('Edit this quiz',
+                echo Html::a('Edit quiz',
                     ['quiz/update', 'id' => $id], 
                     [ 'class' => 'btn btn-primary button-sm m-2'],
                 );
             ?>&nbsp;
             <?php
-                echo Html::a('Copy this quiz',
+                echo Html::a('Copy quiz',
                     ['quiz/copy', 'id' => $id], 
                     [ 'class' => 'btn btn-warning button-sm m-2'],
                 );
@@ -148,7 +149,7 @@ $this->registerJs($script);
     <button type="submit" class="btn btn-primary btn-sm">Search</button>
 </form>
 
-<table class="table myTable" style="width:60%;">
+<table class="table myTable" style="width:70%;">
     <thead>
         <tr>
             <th>#</th>
@@ -158,8 +159,9 @@ $this->registerJs($script);
     </thead>
 
     <tbody>
-        <?php foreach ($questions as $question) : ?>
+        <?php $counter = 1;foreach ($questions as $question) : ?>
             <tr>
+            <td><?=$counter++;?></td>
                 <td>
                     <?php
                     $isChecked = in_array($question->id, $questionIds);
@@ -174,7 +176,7 @@ $this->registerJs($script);
                 <td><?= $question->label ?></td>
 
                 <td class="multiline-tooltip" data-tooltip="<?= Html::encode($question->question) ?>">
-                    <?= Html::encode(mb_substr($question->question, 0, 60)) ?>
+                    <?= Html::encode(mb_substr($question->question, 0, 80)) ?>
                 </td>
             </tr>
         <?php endforeach; ?>

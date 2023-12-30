@@ -7,10 +7,15 @@ use yii\grid\ActionColumn;
 use yii\grid\GridView;
 
 ?>
+
+
+<div class="d-grid gap-2 d-md-flex justify-content-md-end">
+    <a href="<?= Url::to(['submission/export']) ?>" class="btn btn-outline-dark">Excel</a>
+</div>
+
 <div class="submission-index">
 
     <h1><?= Html::encode($this->title) ?></h1>
-
 
     <?php // echo $this->render('_search', ['model' => $searchModel]); ?>
 
@@ -134,7 +139,7 @@ use yii\grid\GridView;
                 'format' => 'raw',
                 'value' => function ($model) {
                     return Html::a($model->no_answered.'/'.$model->no_questions, ['submission/update', 'id' => $model->id]);
-                    return $model->no_answered.'/'.$model->no_questions;
+                    // return $model->no_answered.'/'.$model->no_questions;
                 },
             ],
             [
@@ -177,6 +182,5 @@ use yii\grid\GridView;
 
         ],
     ]); ?>
-
 
 </div>

@@ -165,4 +165,17 @@ class QuestionController extends Controller
 
         throw new NotFoundHttpException('The requested page does not exist.');
     }
+
+    public function actionList($quiz_id) {
+        $sql = "select * from question q join quizquestion qq on qq.question_id = q.id where qq.quiz_id=$quiz_id";
+        $questions = Yii::$app->db->createCommand($sql)->queryAll();
+
+        $sql = "select name from quiz where id=$quiz_id";
+        $quiz = Yii::$app->db->createCommand($sql)->queryOne();
+
+        return $this->render('list', [
+            'questions' => $questions,
+            'quiz' => $quiz,
+        ]);
+    }
 }

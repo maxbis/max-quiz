@@ -68,14 +68,38 @@ class QuizController extends Controller
         ]);
     }
 
+    private function updateQuestionNumbers() {
+        $sql = "UPDATE quiz
+                    SET no_questions = (
+                    SELECT COUNT(*)
+                    FROM quizquestion
+                    WHERE quizquestion.quiz_id = quiz.id
+                )
+                WHERE EXISTS (
+                    SELECT 1
+                    FROM quizquestion
+                    WHERE quizquestion.quiz_id = quiz.id
+                );";
+        Yii::$app->db->createCommand($sql)->execute();
+    }
+
     public function actionList()
     {
+        $sql = "SELECT quiz_id, COUNT(*) AS count FROM quizquestion GROUP BY quiz_id";
+        $results = Yii::$app->db->createCommand($sql)->queryAll();
+
+        $quizCounts = [];
+        foreach ($results as $result) {
+            $quizCounts[$result['quiz_id']] = (int) $result['count'];
+        }
+
         $searchModel = new QuizSearch();
         $dataProvider = $searchModel->search($this->request->queryParams);
 
         return $this->render('list', [
             'searchModel' => $searchModel,
             'dataProvider' => $dataProvider,
+            'quizCounts' => $quizCounts,
         ]);
     }
 
@@ -121,7 +145,7 @@ class QuizController extends Controller
             //     Quiz::updateAll(['active' => 0], ['!=', 'id', $model->id]);
             // }
             if ($model->save()) {
-                return $this->redirect(['index', 'id' => $model->id]);
+                return $this->redirect(['list', 'id' => $model->id]);
             }
         }
 

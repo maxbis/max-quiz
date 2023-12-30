@@ -213,4 +213,45 @@ class SubmissionController extends Controller
         ]);
     }
 
+    public function actionExport()
+    {
+        $sql = "select q.name, first_name, last_name, class,
+                CASE 
+                    WHEN no_correct = 0 THEN 0
+                    ELSE ROUND((no_correct / CAST(s.no_questions AS DECIMAL)) * 100, 0)
+                END AS score,
+                s.no_questions, no_answered, no_correct,
+                start_time, end_time, TIMESTAMPDIFF(minute, start_time, end_time) duration
+                from submission s
+                join quiz q on q.id = s.quiz_id
+                where active = 1";
+        $submissions = Yii::$app->db->createCommand($sql)->queryAll();
+
+        if ($submissions) $this->exportExcel($submissions);
+    }
+
+    private function exportExcel($data) {
+        header('Content-type: text/csv; charset=utf-8');
+        header('Content-Disposition: attachment; filename="canvas-export' . date('YmdHi') . '.csv"');
+        // header("Pragma: no-cache");
+        // header("Expires: 0");
+        header('Content-Transfer-Encoding: binary');
+        echo "\xEF\xBB\xBF";
+
+        $seperator = ";"; // NL version, use , for EN
+
+        foreach ($data[0] as $key => $value) {
+            echo  "\"". $key ."\"". $seperator;
+        }
+        echo "\n";
+        foreach ($data as $line) {
+            foreach ($line as $key => $value) {
+                // echo preg_replace('/[\s+,;]/', ' ', $value) . $seperator;
+                echo  "\"". $value ."\"". $seperator;
+            }
+            echo "\n";
+        }
+    }
+
+
 }

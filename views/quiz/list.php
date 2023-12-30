@@ -105,6 +105,14 @@ $this->registerJs($js);
 
 ?>
 
+<style>
+    .quiz-button {
+        font-size: 10px;
+        padding: 2px 5px;
+        min-width: 55px;
+    }
+</style>
+
 <div class="quiz-index">
     <?= GridView::widget([
         'dataProvider' => $dataProvider,
@@ -125,20 +133,45 @@ $this->registerJs($js);
             [
                 'attribute' => 'name',
                 'format' => 'raw',
-                'contentOptions' => ['class' => 'editable-field', 'data-field' => 'name'],
                 'value' => function ($model) {
-                    return Html::tag('span', $model->name, ['contenteditable' => 'true']);
+                    return $model->name;
                 },
             ],
             [
                 'attribute' => 'password',
                 'format' => 'raw',
-                'contentOptions' => ['class' => 'editable-field', 'data-field' => 'password'],
                 'value' => function ($model) {
-                    return Html::tag('span', $model->password, ['contenteditable' => 'true']);
+                    return $model->password;
                 },
             ],
-            'question_count',
+            [
+                'label' => 'Questions',
+                'value' => function ($model) use ($quizCounts) {
+                    $id = $model->id;
+                    return isset($quizCounts[$id]) ? $quizCounts[$id] : 0;
+                },
+            ],
+            [
+                'class' => 'yii\grid\ActionColumn',
+                'template' => '{quizButton}', 
+                'buttons' => [
+                    'quizButton' => function ($url, $model) {
+                        $url = Yii::$app->urlManager->createUrl(['/question/list', 'quiz_id' => $model->id]);
+                        $b1 = Html::a('Open', $url, [ 'title' => 'View Questions',
+                            'class' => 'btn btn-outline-primary quiz-button',
+                            ]);
+                        $url = Yii::$app->urlManager->createUrl(['/quiz/update', 'id' => $model->id]);
+                        $b2 = Html::a('Edit', $url, [ 'title' => 'Edit Quiz',
+                            'class' => 'btn btn-outline-primary quiz-button',
+                            ]);
+                        $url = Yii::$app->urlManager->createUrl(['quiz/view', 'id' => $model->id]);
+                        $b3 = Html::a('Questions', $url, [ 'title' => 'Edit Questions',
+                            'class' => 'btn btn-outline-primary quiz-button',
+                            ]);
+                        return $b1.' '.$b2.' '.$b3;
+                    },
+                ],
+            ],
         ],
     ]); ?>
 </div>
