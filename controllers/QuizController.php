@@ -85,7 +85,7 @@ class QuizController extends Controller
 
     public function actionList()
     {
-        $sql = "SELECT quiz_id, COUNT(*) AS count FROM quizquestion GROUP BY quiz_id";
+        $sql = "select quiz_id, count(*) as count from quizquestion where active = 1 group by quiz_id";
         $results = Yii::$app->db->createCommand($sql)->queryAll();
 
         $quizCounts = [];

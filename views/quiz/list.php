@@ -119,15 +119,17 @@ $this->registerJs($js);
         'columns' => [
             [
                 'attribute' => 'id',
+                'headerOptions' => ['style' => 'width:40px;'],
                 'contentOptions' => ['class' => 'hidden-id'],
                 'visible' => true, // Hide the ID column
             ],
             [
                 'attribute' => 'active',
+                'headerOptions' => ['style' => 'width:40px;'],
                 'format' => 'raw',
                 'contentOptions' => ['class' => 'active-field'],
                 'value' => function ($model) {
-                    return Html::radio('active', $model->active, ['value' => $model->id, 'class' => 'active-radio']);
+                    return Html::checkbox('active', $model->active, ['value' => $model->id, 'class' => 'active-radio']);
                 },
             ],
             [
@@ -165,10 +167,14 @@ $this->registerJs($js);
                             'class' => 'btn btn-outline-primary quiz-button',
                             ]);
                         $url = Yii::$app->urlManager->createUrl(['quiz/view', 'id' => $model->id]);
-                        $b3 = Html::a('Questions', $url, [ 'title' => 'Edit Questions',
+                        $b3 = Html::a('QQQ', $url, [ 'title' => 'Old Qs',
                             'class' => 'btn btn-outline-primary quiz-button',
                             ]);
-                        return $b1.' '.$b2.' '.$b3;
+                        $url = Yii::$app->urlManager->createUrl(['question/index', 'quiz_id' => $model->id]);
+                        $b4 = Html::a('Questions', $url, [ 'title' => 'Questions',
+                            'class' => 'btn btn-outline-primary quiz-button',
+                            ]);
+                        return $b1.' '.$b2.' '.$b4.' '.$b3;
                     },
                 ],
             ],

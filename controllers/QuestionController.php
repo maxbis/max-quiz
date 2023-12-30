@@ -8,6 +8,7 @@ use yii\web\Controller;
 use yii\web\NotFoundHttpException;
 use yii\filters\VerbFilter;
 
+use yii\helpers\ArrayHelper;;
 use yii\filters\AccessControl;
 use Yii;
 
@@ -52,14 +53,30 @@ class QuestionController extends Controller
      *
      * @return string
      */
-    public function actionIndex()
+    public function actionIndex($quiz_id=0)
     {
         $searchModel = new QuestionSearch();
         $dataProvider = $searchModel->search($this->request->queryParams);
 
+        if ( $quiz_id == 0 ) {
+            $sql = "SELECT max(id) id FROM quiz WHERE active = 1";
+            $quiz_id = Yii::$app->db->createCommand($sql)->queryOne()['id'];
+        }
+
+        $sql = "SELECT question_id FROM quizquestion WHERE quiz_id = $quiz_id AND active = 1";
+        $quizQuestions = Yii::$app->db->createCommand($sql)->queryAll();
+        $questionIds = ArrayHelper::getColumn($quizQuestions, 'question_id');
+
+        $sql = "SELECT * FROM quiz WHERE id = $quiz_id";
+        $quiz = Yii::$app->db->createCommand($sql)->queryOne();
+
+
         return $this->render('index', [
             'searchModel' => $searchModel,
             'dataProvider' => $dataProvider,
+            'questionIds' => $questionIds,
+            'quiz_id' => $quiz_id,
+            'quiz' => $quiz,
         ]);
     }
 
@@ -167,7 +184,11 @@ class QuestionController extends Controller
     }
 
     public function actionList($quiz_id) {
-        $sql = "select * from question q join quizquestion qq on qq.question_id = q.id where qq.quiz_id=$quiz_id";
+        $sql = "select
+                q.id id, question question, a1, a2, a3, a4, a5, a6, correct, label
+                from question q
+                join quizquestion qq on qq.question_id = q.id
+                where qq.quiz_id=$quiz_id and qq.active=1";
         $questions = Yii::$app->db->createCommand($sql)->queryAll();
 
         $sql = "select name from quiz where id=$quiz_id";
