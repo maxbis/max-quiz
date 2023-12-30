@@ -17,7 +17,7 @@ class SubmissionSearch extends Submission
     public function rules()
     {
         return [
-            [['id', 'token', 'no_questions', 'no_answered', 'no_correct', 'quiz_id'], 'integer'],
+            [['id', 'token', 'no_questions', 'no_answered', 'no_correct', 'finished','quiz_id'], 'integer'],
             [['first_name', 'last_name', 'class', 'start_time', 'end_time', 'question_order'], 'safe'],
         ];
     }
@@ -67,6 +67,7 @@ class SubmissionSearch extends Submission
             'no_questions' => $this->no_questions,
             'no_answered' => $this->no_answered,
             'no_correct' => $this->no_correct,
+            'finished' => $this->finished,
             'quiz_id' => $this->quiz_id,
         ]);
 

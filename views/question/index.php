@@ -32,80 +32,76 @@ $this->params['breadcrumbs'][] = $this->title;
                 'attribute' => 'id',
                 'label' => 'id',
             ],
-            'question',
+            [
+                'attribute' => 'question',
+                'value' => function ($model) {
+                    return mb_substr($model->question, 0, 40) . (mb_strlen($model->question) > 80 ? '...' : '');
+                },
+                'contentOptions' => function ($model) {
+                    return ['title' => $model->question];
+                },
+            ],
             [
                 'attribute' => 'a1',
-                'label' => 'a1',
-                'contentOptions' => ['style' => 'width:80px; white-space: normal;'],
-                'format' => 'raw',
+                'label' => '1',
                 'value' => function ($model) {
-                    if ( $model->correct == 1 ) {
-                        return Html::tag('strong', Html::encode($model->a1));
-                    } else {
-                        return Html::encode($model->a1);
-                    }
+                    return mb_substr($model->a1, 0, 20) . (mb_strlen($model->a1) > 80 ? '...' : '');
+                },
+                'contentOptions' => function ($model) {
+                    return ['title' => $model->a1];
                 },
             ],
             [
                 'attribute' => 'a2',
-                'label' => 'a2',
-                'format' => 'raw', 
+                'label' => '2',
                 'value' => function ($model) {
-                    if ( $model->correct == 2 ) {
-                        return Html::tag('strong', Html::encode($model->a2));
-                    } else {
-                        return Html::encode($model->a2);
-                    }
+                    return mb_substr($model->a2, 0, 20) . (mb_strlen($model->a2) > 80 ? '...' : '');
+                },
+                'contentOptions' => function ($model) {
+                    return ['title' => $model->a2];
                 },
             ],
             [
                 'attribute' => 'a3',
-                'label' => 'a3',
-                'format' => 'raw',
+                'label' => '3',
                 'value' => function ($model) {
-                    if ( $model->correct == 3 ) {
-                        return Html::tag('strong', Html::encode($model->a3));
-                    } else {
-                        return Html::encode($model->a3);
-                    }
+                    return mb_substr($model->a3, 0, 20) . (mb_strlen($model->a3) > 80 ? '...' : '');
+                },
+                'contentOptions' => function ($model) {
+                    return ['title' => $model->a3];
                 },
             ],
             [
                 'attribute' => 'a4',
-                'label' => 'a4',
-                'format' => 'raw', 
+                'label' => '4',
                 'value' => function ($model) {
-                    if ( $model->correct == 4 ) {
-                        return Html::tag('strong', Html::encode($model->a4));
-                    } else {
-                        return Html::encode($model->a4);
-                    }
+                    return mb_substr($model->a4, 0, 20) . (mb_strlen($model->a4) > 80 ? '...' : '');
+                },
+                'contentOptions' => function ($model) {
+                    return ['title' => $model->a4];
                 },
             ],
             [
                 'attribute' => 'a5',
-                'label' => 'a5',
-                'format' => 'raw',
+                'label' => '5',
                 'value' => function ($model) {
-                    if ( $model->correct == 5 ) {
-                        return Html::tag('strong', Html::encode($model->a5));
-                    } else {
-                        return Html::encode($model->a5);
-                    }
+                    return mb_substr($model->a5, 0, 20) . (mb_strlen($model->a5) > 80 ? '...' : '');
+                },
+                'contentOptions' => function ($model) {
+                    return ['title' => $model->a5];
                 },
             ],
             [
                 'attribute' => 'a6',
-                'label' => 'a6',
-                'format' => 'raw',
+                'label' => '6',
                 'value' => function ($model) {
-                    if ( $model->correct == 6 ) {
-                        return Html::tag('strong', Html::encode($model->a6));
-                    } else {
-                        return Html::encode($model->a6);
-                    }
+                    return mb_substr($model->a6, 0, 20) . (mb_strlen($model->a6) > 80 ? '...' : '');
+                },
+                'contentOptions' => function ($model) {
+                    return ['title' => $model->a6];
                 },
             ],
+
             [
                 'attribute' => 'correct',
                 'label' => 'Correct'

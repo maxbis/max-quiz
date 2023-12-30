@@ -36,12 +36,13 @@ class Submission extends \yii\db\ActiveRecord
     public function rules()
     {
         return [
-            [['token', 'no_questions', 'no_answered', 'no_correct', 'quiz_id'], 'integer'],
-            [['first_name', 'last_name', 'class', 'question_order', 'no_questions', 'quiz_id'], 'required'],
+            [['no_questions', 'no_answered', 'no_correct', 'quiz_id'], 'integer'],
+            [['first_name', 'last_name', 'class', 'question_order', 'no_questions', 'finished', 'quiz_id'], 'required'],
             [['start_time', 'end_time'], 'safe'],
             [['first_name', 'last_name'], 'string', 'max' => 40],
             [['class'], 'string', 'max' => 8],
             [['question_order'], 'string', 'max' => 600],
+            [['token'], 'unique'],
         ];
     }
 
@@ -62,6 +63,7 @@ class Submission extends \yii\db\ActiveRecord
             'no_questions' => 'No Questions',
             'no_answered' => 'No Answered',
             'no_correct' => 'No Correct',
+            'finished' => 'Finished',
             'quiz_id' => 'Quiz ID',
         ];
     }

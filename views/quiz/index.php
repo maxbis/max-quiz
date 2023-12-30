@@ -38,7 +38,7 @@ function updateActiveStatus(id, active) {
     });
 }
 
-// Handle the change event of the radio buttons for active status
+// Handle the change event of the checkboxs for active status
 $('input[name="active"]').on('change', function() {
     var quizId = $(this).val();
     var isActive = $(this).prop('checked');
@@ -72,7 +72,7 @@ $this->registerJs($js);
                 'header' => '',
                 'filter' => false,
                 'value' => function ($model) {
-                    return Html::checkbox('active', $model->active, ['value' => $model->id, 'class' => 'active-radio']);
+                    return Html::checkbox('active', $model->active, ['value' => $model->id]);
                 },
             ],
             'name',

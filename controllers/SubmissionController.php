@@ -144,19 +144,25 @@ class SubmissionController extends Controller
         return $this->redirect(['site/question']);
         
     }
-    /**
-     * Updates an existing Submission model.
-     * If update is successful, the browser will be redirected to the 'view' page.
-     * @param int $id ID
-     * @return string|\yii\web\Response
-     * @throws NotFoundHttpException if the model cannot be found
-     */
+
+    public function actionRestart($token) {
+        $cookie = new Cookie([
+            'name' => 'token',
+            'value' => $token,
+            'expire' => time() + 3600 * 6, // 6 hours
+        ]);
+        Yii::$app->response->cookies->add($cookie);
+
+        return $this->redirect(['site/question']);
+    }
+
+
     public function actionUpdate($id)
     {
         $model = $this->findModel($id);
 
         if ($this->request->isPost && $model->load($this->request->post()) && $model->save()) {
-            return $this->redirect(['view', 'id' => $model->id]);
+            return $this->redirect(['index', 'id' => $model->id]);
         }
 
         return $this->render('update', [

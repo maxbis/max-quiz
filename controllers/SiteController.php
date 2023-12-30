@@ -130,8 +130,7 @@ class SiteController extends Controller
         if ( ! $token ) {
             return 0;
         }
-        $sql = "select id, quiz_id, no_answered, question_order, no_questions, no_correct, first_name, last_name
-                from submission where token = '".$token."'";
+        $sql = "select * from submission where token = '".$token."'";
         $submission = Yii::$app->db->createCommand($sql)->queryOne();
 
         if (  $submission['no_answered'] !=  $submission['no_questions'] ) {
@@ -159,9 +158,9 @@ class SiteController extends Controller
         if ( ! $submission ) {
             return $this->redirect(['submission/create']);
         }
-        // are we read
+        // are we ready
         // ToDo add some method to force to stop.
-        if (  $submission['no_answered'] ==  $submission['no_questions'] ) {
+        if (  $submission['no_answered'] ==  $submission['no_questions'] || $submission['finished']  ) {
             return $this->redirect(['site/finished']);
         }
 
@@ -170,8 +169,10 @@ class SiteController extends Controller
         $sql = "select id, question, a1, a2, a3, a4, a5, a6 from question where id = ${submission['thisQuestion']}";
         $question = Yii::$app->db->createCommand($sql)->queryOne();
 
+        $title = $quiz['name'] . ' ['.strtoupper(substr($submission['token'], -3)).'] ';
+
         $this->layout = false;
-        return $this->render('question', [ 'title' => $quiz['name'], 'question' => $question, 'submission' => $submission ]);
+        return $this->render('question', [ 'title' => $title, 'question' => $question, 'submission' => $submission ]);
     }
 
     public function actionAnswer() {
@@ -213,7 +214,7 @@ class SiteController extends Controller
 
         // are we ready?
         if (  $submission['no_answered']+1 ==  $submission['no_questions'] ) {
-            $sql = "update submission set end_time = NOW() where token = '".$this->getToken()."'";
+            $sql = "update submission set end_time = NOW(), finished=1 where token = '".$this->getToken()."'";
             $question = Yii::$app->db->createCommand($sql)->execute();
             return $this->redirect(['site/finished']);
         }
