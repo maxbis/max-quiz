@@ -61,6 +61,13 @@ class QuestionController extends Controller
         if ( $quiz_id == 0 ) {
             $sql = "SELECT max(id) id FROM quiz WHERE active = 1";
             $quiz_id = Yii::$app->db->createCommand($sql)->queryOne()['id'];
+            if ( $quiz_id == "" ) {
+                $sql = "SELECT max(id) id FROM quiz";
+                $quiz_id = Yii::$app->db->createCommand($sql)->queryOne()['id'];
+                if ( $quiz_id == "" ) {
+                    return $this->redirect(['quiz']);
+                }
+            }
         }
 
         $sql = "SELECT question_id FROM quizquestion WHERE quiz_id = $quiz_id AND active = 1";
@@ -198,5 +205,87 @@ class QuestionController extends Controller
             'questions' => $questions,
             'quiz' => $quiz,
         ]);
+    }
+
+    public function actionImport()
+    {
+        return $this->render('import');
+    }
+
+    private function parseBulkInput($input)
+    {
+        $input .= "\nQQ\n";
+        $lines = explode("\n", $input);
+
+        $questions = [];
+        $thisQuestion = [];
+        $currentData = "";
+        $currentKey = "";
+        $answerIndex = 1;
+
+        foreach ($lines as $line) {
+            # $line = chop($line);
+            $token = substr($line,0,2);
+            if ( $token == 'QQ' ) {
+                if ( $currentKey && $currentData ) {
+                    $thisQuestion[$currentKey] = $currentData;
+                    array_push($questions, $thisQuestion);
+                    $thisQuestion = [];
+                }
+                $currentKey = "question";
+                $currentData = "";
+                $answerIndex = 1;
+            } elseif ( $token == 'AA' or $token == 'AC' ) {
+                if ( $currentKey && $currentData ) {
+                    $thisQuestion[$currentKey] = $currentData;
+                }
+                $currentKey = "a".$answerIndex;
+                $currentData = "";
+                if ( $token == 'AC' ) {
+                    $thisQuestion['correct'] = $answerIndex;
+                }
+                $answerIndex++;
+            } elseif ( $token == 'LL' ) {
+                if ( $currentKey && $currentData ) {
+                    $thisQuestion[$currentKey] = $currentData;
+                }
+                $currentKey = "label";
+                $currentData = "";
+            } else {
+                $currentData .= $line;
+            }
+        }
+    
+        return $questions;
+    }
+
+    public function actionBulkImport()
+    {
+        if (Yii::$app->request->isPost) {
+            $bulkInput = Yii::$app->request->post('bulkInput');
+            $parsedQuestions = $this->parseBulkInput($bulkInput);
+
+            foreach ($parsedQuestions as $questionData) {
+                $this->insertQuestion($questionData);
+            }
+        }
+
+        return $this->redirect(['/question/index']);
+    }
+
+    private function insertQuestion($questionData)
+    {
+        $connection = Yii::$app->db;
+        $sql = "INSERT INTO question (question, a1, a2, a3, a4, a5, a6, correct, label) VALUES (:question, :a1, :a2, :a3, :a4, :a5, :a6, :correct, :label)";
+
+        $command = $connection->createCommand($sql);
+        $command->bindValue(':question', $questionData['question']);
+        for ($i = 1; $i <= 6; $i++) {
+            $command->bindValue(":a$i", $questionData['a'.$i] ?? null);
+        }
+        $command->bindValue(':correct', $questionData['correct'] ?? null);
+        $command->bindValue(':label', $questionData['label'] ?? null);
+
+        $command->execute();
     }
 }

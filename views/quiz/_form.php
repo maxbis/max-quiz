@@ -10,35 +10,41 @@ use yii\widgets\ActiveForm;
 $id = Yii::$app->request->get('id');
 ?>
 
-<div class="quiz-form" style="width:600px;">
+<style>
+    .quiz-button {
+        font-size: 10px;
+        padding: 2px 5px;
+        min-width: 55px;
+        margin: 5px;
+    }
+</style>
 
-    <?php $form = ActiveForm::begin(); ?>
+<br>
 
-    <?= $form->field($model, 'name')->textInput(['maxlength' => true]) ?>
+<div class="quiz-card" style="max-width:600px;border: 1px solid #ddd; padding: 15px; margin-bottom: 20px; border-radius: 5px; box-shadow: 0 2px 5px rgba(0,0,0,0.2);background-color:#fdfdfd;">
+    <div class="quiz-form" style="width:400px;">
+        <?php $form = ActiveForm::begin(); ?>
 
-    <?= $form->field($model, 'password')->textInput(['maxlength' => true]) ?>
+        <?= $form->field($model, 'name')->textInput(['maxlength' => true])->label('Quiz Name') ?>
 
-    <?= $form->field($model, 'active')->dropDownList(
+        <?= $form->field($model, 'password')->textInput(['maxlength' => true])->label('Unique code to access quiz') ?>
+
+        <?= $form->field($model, 'active')->dropDownList(
             [1 => 'Active', 0 => 'Not Active'], // Options: value => display text
-            ['prompt' => 'Select Status', 'style' => 'width: 200px;' ] // Optional: prompt message
-        )->label('Only an active quiz can be started') ?>
+            ['prompt' => 'Select Status', 'style' => 'width: 200px;'] // Optional: prompt message
+        )->label('Status') ?>
 
 
-    <?= $form->field($model, 'no_questions')->textInput(['style' => 'width: 200px;'])->label('Max number of questions') ?>
+        <!-- <?= $form->field($model, 'no_questions')->textInput(['style' => 'width: 200px;'])->label('Max number of questions') ?> -->
 
-    <div class="form-group">
-        <?= Html::submitButton('Save', ['class' => 'btn btn-success']) ?>
+        <div class="form-group">
+            <?= Html::submitButton('Save', ['class' => 'btn btn-success quiz-button']) ?>
+             <?= Html::a( 'Cancel', Yii::$app->request->referrer , ['class'=>'btn btn-primary quiz-button']); ?>
+        </div>
 
-        <?php
-        echo Html::a('Questions',
-                ['quiz/view', 'id' => $id], 
-                [ 'class' => 'btn btn-primary button-sm m-2'],
-        );
-        ?>
+        <?php ActiveForm::end(); ?>
+
+
     </div>
-
-    <?php ActiveForm::end(); ?>
-
-
 
 </div>

@@ -8,101 +8,108 @@ use yii\widgets\ActiveForm;
 /** @var yii\widgets\ActiveForm $form */
 ?>
 
+<style>
+    .quiz-button {
+        font-size: 10px;
+        padding: 2px 5px;
+        min-width: 55px;
+        margin: 5px;
+    }
+</style>
+
 <div class="question-form">
 
     <?php $form = ActiveForm::begin(); ?>
 
 
-    <div class="container">
+    <div class="card" style="width: 60rem;padding:30px;box-shadow: 0 2px 5px rgba(0,0,0,0.2);background-color:#fdfdfd;">
 
-        <div class="row">
+        <div class="row justify-content-start">
             <div class="col">
                 <?= $form->field($model, 'question')->textarea([
-                    'rows' => 8,
-                    'style' => 'font-family: monospace; width: 800px;', // Inline CSS for monospace font
+                    'rows' => 10,
+                    'style' => 'font-family: monospace;', // Inline CSS for monospace font
                     'maxlength' => true
                 ]) ?>
             </div>
         </div>
 
 
-        <div class="row">
+        <div class="row justify-content-start">
             <div class="col">
                 <?= $form->field($model, 'a1')->textarea([
-                    'rows' => 3,
-                    'style' => 'font-family: monospace; width: 600px;',
+                    'rows' => 2,
+                    'style' => 'font-family: monospace; ',
                     'maxlength' => true
                 ]) ?>
             </div>
             <div class="col">
                 <?= $form->field($model, 'a2')->textarea([
-                    'rows' => 3,
-                    'style' => 'font-family: monospace; width: 600px;',
+                    'rows' => 2,
+                    'style' => 'font-family: monospace;',
                     'maxlength' => true
                 ]) ?>
             </div>
         </div>
 
-        <div class="row">
+        <div class="row justify-content-start">
             <div class="col">
                 <?= $form->field($model, 'a3')->textarea([
-                    'rows' => 3,
-                    'style' => 'font-family: monospace; width: 600px;',
+                    'rows' => 2,
+                    'style' => 'font-family: monospace;',
                     'maxlength' => true
                 ]) ?>
             </div>
             <div class="col">
                 <?= $form->field($model, 'a4')->textarea([
-                    'rows' => 3,
-                    'style' => 'font-family: monospace; width: 600px;',
+                    'rows' => 2,
+                    'style' => 'font-family: monospace;',
                     'maxlength' => true
                 ]) ?>
             </div>
         </div>
 
-        <div class="row">
+        <div class="row justify-content-start">
             <div class="col">
                 <?= $form->field($model, 'a5')->textarea([
-                    'rows' => 3,
-                    'style' => 'font-family: monospace; width: 600px;',
+                    'rows' => 2,
+                    'style' => 'font-family: monospace;',
                     'maxlength' => true
                 ]) ?>
             </div>
             <div class="col">
                 <?= $form->field($model, 'a6')->textarea([
-                    'rows' => 3,
-                    'style' => 'font-family: monospace; width: 600px;',
+                    'rows' => 2,
+                    'style' => 'font-family: monospace;',
                     'maxlength' => true
                 ]) ?>
             </div>
         </div>
 
-        <div class="row">
+        <div class="row justify-content-start">
             <div class="col">
                 <?= $form->field($model, 'correct')->textInput([
-                    'style' => 'width: 200px;',
+                    'style' => 'width: 160px;',
                     'maxlength' => true
                 ]) ?>
             </div>
             <div class="col">
                 <?= $form->field($model, 'label')->textInput([
-                    'rows' => 3,
-                    'style' => 'width: 200px;',
+                    'rows' => 2,
+                    'style' => 'width: 160px;',
                     'maxlength' => true
                 ]) ?>
             </div>
-            <div class="col">
+            <div class="col-6">
 
             </div>
         </div>
 
+        <div class="form-group">
+            <?= Html::submitButton('Save', ['class' => 'btn btn-success quiz-button']) ?>
+            <?= Html::a('Cancel', Yii::$app->request->referrer, ['class' => 'btn btn-primary quiz-button']); ?>
+        </div>
+
     </div>
-
-
-    <div class="form-group">
-        <?= Html::submitButton('Save', ['class' => 'btn btn-success']) ?>
-    </div>
-
-    <?php ActiveForm::end(); ?>
 
 </div>

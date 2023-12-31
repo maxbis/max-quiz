@@ -57,7 +57,7 @@ class QuizController extends Controller
      *
      * @return string
      */
-    public function actionIndex()
+    public function actionIndex2()
     {
         $searchModel = new QuizSearch();
         $dataProvider = $searchModel->search($this->request->queryParams);
@@ -83,7 +83,7 @@ class QuizController extends Controller
         Yii::$app->db->createCommand($sql)->execute();
     }
 
-    public function actionList()
+    public function actionIndex()
     {
         $sql = "select quiz_id, count(*) as count from quizquestion where active = 1 group by quiz_id";
         $results = Yii::$app->db->createCommand($sql)->queryAll();
@@ -96,18 +96,14 @@ class QuizController extends Controller
         $searchModel = new QuizSearch();
         $dataProvider = $searchModel->search($this->request->queryParams);
 
-        return $this->render('list', [
+        return $this->render('index', [
             'searchModel' => $searchModel,
             'dataProvider' => $dataProvider,
             'quizCounts' => $quizCounts,
         ]);
     }
 
-    /**
-     * Creates a new Quiz model.
-     * If creation is successful, the browser will be redirected to the 'view' page.
-     * @return string|\yii\web\Response
-     */
+
     public function actionCreate()
     {
         $model = new Quiz();
@@ -124,18 +120,12 @@ class QuizController extends Controller
                 $model->loadDefaultValues();
             }
         }
-        return $this->render('start', [
+        return $this->render('create', [
             'model' => $model,
         ]);
     }
 
-    /**
-     * Updates an existing Quiz model.
-     * If update is successful, the browser will be redirected to the 'view' page.
-     * @param int $id ID
-     * @return string|\yii\web\Response
-     * @throws NotFoundHttpException if the model cannot be found
-     */
+
     public function actionUpdate($id)
     {
         $model = $this->findModel($id);
@@ -145,7 +135,7 @@ class QuizController extends Controller
             //     Quiz::updateAll(['active' => 0], ['!=', 'id', $model->id]);
             // }
             if ($model->save()) {
-                return $this->redirect(['list', 'id' => $model->id]);
+                return $this->redirect(['index', 'id' => $model->id]);
             }
         }
 
@@ -219,4 +209,5 @@ class QuizController extends Controller
 
         return $this->redirect(['quiz/view', 'id' => $newId]);
     }
+
 }

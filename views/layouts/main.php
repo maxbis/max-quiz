@@ -40,7 +40,7 @@ $this->registerLinkTag(['rel' => 'icon', 'type' => 'image/x-icon', 'href' => Yii
         'options' => ['class' => 'navbar-nav'],
         'items' => [
             ['label' => 'Home', 'url' => ['/submission/create']],
-            ['label' => 'Quiz', 'url' => ['/quiz/list']],
+            ['label' => 'Quiz', 'url' => ['/quiz']],
             ['label' => 'Questions', 'url' => ['/question']],
             ['label' => 'Progress', 'url' => ['/submission']],
             Yii::$app->user->isGuest
