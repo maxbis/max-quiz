@@ -177,7 +177,6 @@ class SiteController extends Controller
 
     public function actionAnswer() {
         $request = Yii::$app->request;
-        // dd(Yii::$app->request->post());
 
         if ($request->isPost) {
             $givenAnswer = $request->post('selectedAnswer');
@@ -200,8 +199,8 @@ class SiteController extends Controller
             $punt = 0;
         }
 
-        $sql = "insert into log (submission_id, question_id, answer_no)
-                values (${submission['id']}, ${submission['thisQuestion']}, ${givenAnswer})
+        $sql = "insert into log (submission_id, quiz_id, question_id, answer_no, correct)
+                values (${submission['id']}, ${submission['quiz_id']}, ${submission['thisQuestion']}, ${givenAnswer}, ${punt})
                 ";
         $log = Yii::$app->db->createCommand($sql)->execute();
 

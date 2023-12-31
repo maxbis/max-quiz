@@ -108,9 +108,8 @@ use yii\grid\GridView;
                 },
             ],
             [
-                'attribute' => 'first_name',
                 'label' => 'Student',
-                'headerOptions' => ['style' => 'width:200px;'],
+                'headerOptions' => ['style' => 'width:240px;'],
                 'contentOptions' => function ($model, $key, $index, $column) {
                     if ( ! $model->finished )return ['style' => ""];
                     $score = $model->no_questions > 0 ? round(($model->no_correct / $model->no_questions) * 100, 0) : 0;
@@ -122,7 +121,8 @@ use yii\grid\GridView;
                     return ['style' => "background-color: $backgroundColor;"];
                 },
                 'value' => function ($model) {
-                    return $model->first_name.' '.$model->last_name;
+                    $fullName = $model->first_name.' '.$model->last_name;
+                    return mb_substr($fullName, 0, 26) . (mb_strlen($fullName) > 26 ? '...' : '');
                 },
                 
             ],
@@ -134,8 +134,8 @@ use yii\grid\GridView;
             ],
             [
                 'attribute' => 'no_answered',
-                'label' => '#vragen',
-                'headerOptions' => ['style' => 'width:60px;'],
+                'label' => 'Progr.',
+                'headerOptions' => ['style' => 'width:60px;', 'title' => 'Number of Questions / Number of Answers' ],
                 'format' => 'raw',
                 'value' => function ($model) {
                     return Html::a($model->no_answered.'/'.$model->no_questions, ['submission/update', 'id' => $model->id]);
@@ -144,14 +144,19 @@ use yii\grid\GridView;
             ],
             [
                 'attribute' => 'no_correct',
-                'label' => 'goed',
-                'headerOptions' => ['style' => 'width:60px;'],
+                'label' => 'Corr',
+                'headerOptions' => ['style' => 'width:60px;', 'title' => 'Number of Correct Answers' ],
                 
             ],
             [
                 'attribute' => 'last_updated',
-                'label' => 'Update',
+                'label' => 'Last Update',
                 'headerOptions' => ['style' => 'width:200px;'],
+                'format' => 'raw',
+                'value' => function ($model) {
+                    $formattedDate = Yii::$app->formatter->asDatetime($model->last_updated, 'php:d-m H:i');
+                    return "<span style='color:#909090'>$formattedDate</span>";
+                },
             ],
             [   
                 'label' => 'Questions',
