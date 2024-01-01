@@ -31,6 +31,7 @@ $this->params['breadcrumbs'][] = $this->title;
     .multiline-tooltip:hover::after {
         display: block;
     }
+
     .dot {
         height: 10px;
         width: 10px;
@@ -45,11 +46,59 @@ $this->params['breadcrumbs'][] = $this->title;
     .dot-green {
         background-color: lightgreen;
     }
+
     .quiz-button {
         font-size: 12px;
         padding: 2px 5px;
         min-width: 55px;
         margin: 5px;
+    }
+
+    
+    .modal-overlay {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(0, 0, 0, 0.6);
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        z-index: 1000;
+        display: none;
+    }
+
+    .modal-dialog {
+        position: fixed;
+        top: 50%;
+        left: 50%;
+        background: #fff;
+        border-radius: 5px;
+        padding: 20px;
+        text-align: center;
+        box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.5);
+    }
+
+    .loader {
+        border: 4px solid #f3f3f3;
+        border-top: 4px solid #3498db;
+        border-radius: 50%;
+        width: 40px;
+        height: 40px;
+        animation: spin 2s linear infinite;
+        margin: 0 auto;
+        margin-bottom: 10px;
+    }
+
+    @keyframes spin {
+        0% {
+            transform: rotate(0deg);
+        }
+
+        100% {
+            transform: rotate(360deg);
+        }
     }
 </style>
 
@@ -59,10 +108,19 @@ $csrfToken = Yii::$app->request->getCsrfToken();
 $id = Yii::$app->request->get('id');
 
 $script = <<< JS
+ajaxActive=0;
 $('.status-checkbox').change(function() {
     var questionId = $(this).attr('question-id'); 
     var quizId = $(this).attr('quiz-id'); 
     var active = $(this).is(':checked');
+    var checkbox = $(this);
+
+    ajaxActive++;
+    if ( ajaxActive > 1 ) { // more than one update, show busy indicator
+        $('#modalOverlay').show();
+    }
+    
+    checkbox.css("visibility", "hidden");
 
     console.log('questionId: ' + questionId);
     console.log('quizId    : ' + quizId);
@@ -78,12 +136,19 @@ $('.status-checkbox').change(function() {
             active: active ? 1 : 0
         },
         success: function(response) {
-            // Handle success
+            checkbox.css("visibility", "visible");
+            ajaxActive--;
+            if ( ajaxActive == 0) { // hide busy indicator
+                $('#modalOverlay').hide();
+            }
             $('#countDisplay').text(response.result.count);
             console.log('Update successful', response);
         },
         error: function(xhr, status, error) {
-            // Handle error
+            ajaxActive--;
+            if ( ajaxActive == 0) { // hide busy indicator
+                $('#modalOverlay').hide();
+            }
             console.log('Update failed:', error);
         }
     });
@@ -108,6 +173,13 @@ $this->registerJs($script);
 
 ?>
 
+<!-- This is the busy overlay, show as more than one quesstion is updated via AJAX -->
+<div class="modal-overlay" id="modalOverlay">
+    <div class="modal-dialog">
+        <div class="loader"></div>
+        <p>Please wait... </p>
+    </div>
+</div>
 
 <div class="quiz-card" style="max-width:600px;border: 1px solid #ddd; padding: 15px; margin-bottom: 20px; border-radius: 5px; box-shadow: 0 2px 5px rgba(0,0,0,0.2);">
     <?php
@@ -139,11 +211,11 @@ $this->registerJs($script);
         'columns' => [
 
             ['class' => 'yii\grid\SerialColumn'],
-            // [
-            //     'attribute' => 'id',
-            //     'label' => 'id',
-            //     'headerOptions' => ['style' => 'width:40px;'],
-            // ],
+            [
+                'attribute' => 'id',
+                'label' => 'id',
+                'headerOptions' => ['style' => 'width:40px;'],
+            ],
             [
                 'attribute' => 'status',
                 'label' => '',
@@ -191,16 +263,41 @@ $this->registerJs($script);
 
 </div>
 
-<p>
-    <?php
-    echo Html::button('Check All', [
-        'class' => 'btn btn-outline-secondary quiz-button',
-        'onclick' => 'checkAllCheckboxes(true);',
-    ]);
-    echo Html::button('Uncheck All', [
-        'class' => 'btn btn-outline-secondary quiz-button',
-        'onclick' => 'checkAllCheckboxes(false);',
-    ]);
-    echo Html::a('New', ['create'], ['class' => 'btn btn-outline-success quiz-button', 'title' => 'Create new question']);
-    ?>
-</p>
+<div id="button-bar" style="display:block;">
+    <p>
+        <hr>
+        <?php
+        echo Html::a('New', ['create'], ['class' => 'btn btn-outline-success quiz-button', 'title' => 'Create new question']);
+        ?>
+        <span style="margin-left:50px;"> </span>
+
+        <?php
+        echo Html::button('Link All', [
+            'class' => 'btn btn-outline-secondary quiz-button',
+            'onclick' => 'checkAllCheckboxes(true);',
+        ]);
+        echo Html::button('Unlink All', [
+            'class' => 'btn btn-outline-secondary quiz-button',
+            'onclick' => 'checkAllCheckboxes(false);',
+        ]);
+        ?>
+        <span style="margin-left:50px;"> </span>
+        <?php
+        echo Html::a('import', ['import'], ['class' => 'btn btn-outline-secondary quiz-button', 'title' => '']);
+        echo Html::a('export', ['export'], ['class' => 'btn btn-outline-secondary quiz-button', 'title' => '']);
+        ?>
+        <span style="margin-left:50px;"> </span>
+        <?php
+        echo Html::a(
+            'Delete All',
+            ['bulk-delete', 'quiz_id' => $quiz['id']],
+            [
+                'class' => 'btn btn-outline-danger quiz-button',
+                'title' => 'Delete all linked',
+                'onclick' => 'return confirm("Are you sure you want to delete all linked items?");',
+            ]
+        );
+        ?>
+
+    </p>
+</div>

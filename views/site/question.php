@@ -66,6 +66,7 @@ $noAnswers = count($answers);
             text-align: left;
             /* Align text to the left */
             user-select: none;
+            overflow-x: hidden;
         }
 
         .question-title {
@@ -116,6 +117,12 @@ $noAnswers = count($answers);
             /* Initially slide the page out of view */
             transition: transform 0.5s ease-in-out;
         }
+        pre {
+            margin-left: 40px;
+            font-size: 16px;
+            font-family: monospace;
+            color: darkblue;
+        }
     </style>
     <script>
         document.addEventListener("DOMContentLoaded", function() {
@@ -141,8 +148,8 @@ $noAnswers = count($answers);
         <div class="row justify-content-center page-effect">
             <div class="col-12 question-title">Vraag <?= $submission['no_answered'] + 1 ?></div>
             <div class="col-12">
-                <div class="my-4 question-block">
-                    <pre><?= $question['question'] ?></pre>
+                <div class="question-block">
+                    <?= $question['question'] ?>
                 </div>
             </div>
 

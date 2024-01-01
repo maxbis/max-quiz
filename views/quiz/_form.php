@@ -39,7 +39,7 @@ $id = Yii::$app->request->get('id');
 
         <div class="form-group">
             <?= Html::submitButton('Save', ['class' => 'btn btn-success quiz-button']) ?>
-             <?= Html::a( 'Cancel', Yii::$app->request->referrer , ['class'=>'btn btn-primary quiz-button']); ?>
+            <?= Html::a( 'Cancel', Yii::$app->request->referrer , ['class'=>'btn btn-primary quiz-button']); ?>
         </div>
 
         <?php ActiveForm::end(); ?>

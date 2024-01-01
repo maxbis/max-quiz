@@ -19,7 +19,7 @@ class QuizQuestionController extends \yii\web\Controller
         if ( $result ) {
             $sql="update quizquestion set active=$active where quiz_id=$quizId and question_id=$questionId";
         } else {
-            $sql="insert into quizquestion (quiz_id, question_id, active) values ($quizId, $questionId, 0)";
+            $sql="insert into quizquestion (quiz_id, question_id, active) values ($quizId, $questionId, 1)";
         }
 
         Yii::$app->db->createCommand($sql)->execute();

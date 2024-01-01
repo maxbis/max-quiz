@@ -18,7 +18,6 @@ $csrfToken = Yii::$app->request->getCsrfToken();
 $id = Yii::$app->request->get('id');
 
 
-// JavaScript code to handle the AJAX calls
 $js = <<<JS
 
 function updateActiveStatus(id, active) {
@@ -48,56 +47,6 @@ $('input[name="active"]').on('change', function() {
     updateActiveStatus(quizId, isActive);
 });
 
-// Function to update the name of a quiz
-function updateName(id, newName) {
-    $.ajax({
-        url: '$updateNameUrl',
-        method: 'POST',
-        data: {id: id, name: newName},
-        success: function(data) {
-            // Handle the success response
-            console.log('Name updated successfully.');
-        },
-        error: function() {
-            // Handle any errors that occur during the AJAX call
-            console.error('Error updating name.');
-        }
-    });
-}
-
-// Function to update the password of a quiz
-function updatePassword(id, newPassword) {
-    $.ajax({
-        url: '$updatePasswordUrl',
-        method: 'POST',
-        data: {id: id, password: newPassword},
-        success: function(data) {
-            // Handle the success response
-            console.log('Password updated successfully.');
-        },
-        error: function() {
-            // Handle any errors that occur during the AJAX call
-            console.error('Error updating password.');
-        }
-    });
-}
-
-// Handle the blur event of the name and password fields
-$('span').on('blur', function() {
-    console.log('In edit');
-
-    var quizId = $(this).closest('tr').find('.hidden-id').val();
-    var fieldName = $(this).data('field');
-    var newValue = $(this).text();
-
-    console.log("quizId: "+quizId, $(this), newValue)
-    
-    if (fieldName === 'name') {
-        updateName(quizId, newValue);
-    } else if (fieldName === 'password') {
-        updatePassword(quizId, newValue);
-    }
-});
 JS;
 
 // Register the JavaScript code
@@ -145,7 +94,8 @@ $this->registerJs($js);
                 'attribute' => 'name',
                 'format' => 'raw',
                 'value' => function ($model) {
-                    return $model->name;
+                    $url = Yii::$app->urlManager->createUrl(['question/index', 'quiz_id' => $model->id]);
+                    return Html::a($model->name, $url);
                 },
             ],
             [
@@ -168,22 +118,14 @@ $this->registerJs($js);
                 'buttons' => [
                     'quizButton' => function ($url, $model) {
                         $url = Yii::$app->urlManager->createUrl(['/question/list', 'quiz_id' => $model->id]);
-                        $b1 = Html::a('Open', $url, [ 'title' => 'View Questions',
+                        $b1 = Html::a('View', $url, [ 'title' => 'View Questions',
                             'class' => 'btn btn-outline-primary quiz-button-small',
                             ]);
                         $url = Yii::$app->urlManager->createUrl(['/quiz/update', 'id' => $model->id]);
                         $b2 = Html::a('Edit', $url, [ 'title' => 'Edit Quiz',
                             'class' => 'btn btn-outline-primary quiz-button-small',
                             ]);
-                        $url = Yii::$app->urlManager->createUrl(['quiz/view', 'id' => $model->id]);
-                        $b3 = Html::a('QQQ', $url, [ 'title' => 'Old Qs',
-                            'class' => 'btn btn-outline-primary quiz-button',
-                            ]);
-                        $url = Yii::$app->urlManager->createUrl(['question/index', 'quiz_id' => $model->id]);
-                        $b4 = Html::a('Questions', $url, [ 'title' => 'Questions',
-                            'class' => 'btn btn-outline-primary quiz-button-small',
-                            ]);
-                        return $b1.' '.$b2.' '.$b4;
+                        return $b1.' '.$b2;
                     },
                 ],
             ],

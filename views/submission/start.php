@@ -53,20 +53,20 @@ $csrfToken = Yii::$app->request->getCsrfToken();
                             <form action="<?=Url::to(['submission/start']) ?>" method="POST">
                                 <input type="hidden" name="<?= $csrfTokenName ?>" value="<?= $csrfToken ?>">
                                 <div class="form-group">
-                                    <label for="voornaam">Voornaam</label>
-                                    <input type="text" class="form-control" id="first_name" name="first_name" placeholder="Voer voornaam in" required>
+                                    <label for="voornaam">First Name</label>
+                                    <input type="text" class="form-control" id="first_name" name="first_name" placeholder="Fist Name" required>
                                 </div>
                                 <div class="form-group">
-                                    <label for="achternaam">Achternaam</label>
-                                    <input type="text" class="form-control" id="last_name" name="last_name" placeholder="Voer achternaam in" required>
+                                    <label for="achternaam">Last Name</label>
+                                    <input type="text" class="form-control" id="last_name" name="last_name" placeholder="Last Name" required>
                                 </div>
                                 <div class="form-group">
-                                    <label for="klas">Klas</label>
-                                    <input type="text" class="form-control" id="class" name="class" placeholder="Voer klas in" required>
+                                    <label for="klas">Class</label>
+                                    <input type="text" class="form-control" id="class" name="class" placeholder="Class" required>
                                 </div>
                                 <div class="form-group">
-                                    <label for="wachtwoord">Wachtwoord</label>
-                                    <input type="text" class="form-control" id="password" name="password" placeholder="wachtwoord" required>
+                                    <label for="wachtwoord">Quiz Code</label>
+                                    <input type="text" class="form-control" id="password" name="password" placeholder="Quiz Code" required>
                                 </div>
                                 <button type="submit" class="btn btn-primary mt-3">Start</button>
                             </form>

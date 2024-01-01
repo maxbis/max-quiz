@@ -46,6 +46,11 @@ class QuestionSearch extends Question
 
         $dataProvider = new ActiveDataProvider([
             'query' => $query,
+            'sort' => [
+                'defaultOrder' => [
+                    'id' => SORT_DESC, // Sort by id in descending order
+                ],
+            ],
         ]);
 
         $this->load($params);

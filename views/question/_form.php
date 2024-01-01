@@ -110,6 +110,8 @@ use yii\widgets\ActiveForm;
             <?= Html::a('Cancel', Yii::$app->request->referrer, ['class' => 'btn btn-primary quiz-button']); ?>
         </div>
 
+        <?php ActiveForm::end(); ?>
+
     </div>
 
 </div>

@@ -48,6 +48,17 @@ class QuestionController extends Controller
         );
     }
 
+    public function actionIndex2()
+    {
+        $searchModel = new QuestionSearch();
+        $dataProvider = $searchModel->search($this->request->queryParams);
+
+        return $this->render('index3', [
+            'searchModel' => $searchModel,
+            'dataProvider' => $dataProvider,
+        ]);
+    }
+
     /**
      * Lists all Question models.
      *
@@ -76,7 +87,6 @@ class QuestionController extends Controller
 
         $sql = "SELECT * FROM quiz WHERE id = $quiz_id";
         $quiz = Yii::$app->db->createCommand($sql)->queryOne();
-
 
         return $this->render('index', [
             'searchModel' => $searchModel,
@@ -152,7 +162,8 @@ class QuestionController extends Controller
         $model = $this->findModel($id);
 
         if ($this->request->isPost && $model->load($this->request->post()) && $model->save()) {
-            return $this->redirect(['view', 'id' => $model->id]);
+            return $this->redirect(Yii::$app->request->referrer);
+            return $this->redirect(['/question']);
         }
 
         return $this->render('update', [
@@ -225,7 +236,7 @@ class QuestionController extends Controller
 
         foreach ($lines as $line) {
             # $line = chop($line);
-            $token = substr($line,0,2);
+            $token = strtoupper( substr($line,0,2) );
             if ( $token == 'QQ' ) {
                 if ( $currentKey && $currentData ) {
                     $thisQuestion[$currentKey] = $currentData;
@@ -251,11 +262,17 @@ class QuestionController extends Controller
                 }
                 $currentKey = "label";
                 $currentData = "";
+            }elseif ( $token == 'ID' ) {
+                if ( $currentKey && $currentData ) {
+                    $thisQuestion[$currentKey] = $currentData;
+                }
+                $currentKey = "id";
+                $currentData = "";
             } else {
                 $currentData .= $line;
             }
         }
-    
+
         return $questions;
     }
 
@@ -275,11 +292,21 @@ class QuestionController extends Controller
 
     private function insertQuestion($questionData)
     {
+        if ( isset($questionData['id']) ) {
+            $sql = "delete from question where id=".$questionData['id'];
+            Yii::$app->db->createCommand($sql)->execute();
+        }
+
         $connection = Yii::$app->db;
-        $sql = "INSERT INTO question (question, a1, a2, a3, a4, a5, a6, correct, label) VALUES (:question, :a1, :a2, :a3, :a4, :a5, :a6, :correct, :label)";
+        $sql = "INSERT INTO question (id, question, a1, a2, a3, a4, a5, a6, correct, label) VALUES (:id, :question, :a1, :a2, :a3, :a4, :a5, :a6, :correct, :label)";
 
         $command = $connection->createCommand($sql);
         $command->bindValue(':question', $questionData['question']);
+        if ( isset($questionData['id']) ) {
+            $command->bindValue(':id', $questionData['id']);
+        } else {
+            $command->bindValue(':id', null);
+        }
         for ($i = 1; $i <= 6; $i++) {
             $command->bindValue(":a$i", $questionData['a'.$i] ?? null);
         }
@@ -288,4 +315,66 @@ class QuestionController extends Controller
 
         $command->execute();
     }
+
+    public function actionExport($quiz_id=0) {
+        
+        if ( $quiz_id == 0 ) {
+            $sql = "SELECT max(id) id FROM quiz WHERE active = 1";
+            $quiz_id = Yii::$app->db->createCommand($sql)->queryOne()['id'];
+            if ( $quiz_id == "" ) {
+                $sql = "SELECT max(id) id FROM quiz";
+                $quiz_id = Yii::$app->db->createCommand($sql)->queryOne()['id'];
+                if ( $quiz_id == "" ) {
+                    return $this->redirect(['/question']);
+                }
+            }
+        }
+
+        // ToDO select only quetions for this quiz, join with quizquestion
+
+        // $sql = "select * from question";
+
+        $sql = "select
+                q.id id, question question, a1, a2, a3, a4, a5, a6, correct, label
+                from question q
+                join quizquestion qq on qq.question_id = q.id
+                where qq.quiz_id=$quiz_id and qq.active=1";
+       
+        $questions = Yii::$app->db->createCommand($sql)->queryAll();
+        $output = "";
+        foreach($questions as $question) {
+            $output .= "QQ\n".$question['question']."\n";
+            for ($i=1; $i<7; $i++) {
+                if ( $question['correct'] == $i ) {
+                    $output .= "AC\n". $question['a'.$i]."\n";
+                } else {
+                    $output .= "AA\n". $question['a'.$i]."\n";
+                }
+            }
+            $output .= "LL\n".$question['label']."\n";
+            $output .= "ID\n".$question['id']."\n";
+        }
+
+        return $this->render('export', [ 'output' => $output ]);
+    }
+
+    public function actionBulkDelete($quiz_id) {
+        $sql = "delete from question where id in (
+                    select q.id from question q
+                    join quizquestion qq on qq.question_id = q.id
+                    where qq.active = 1
+                    and qq.quiz_id=$quiz_id
+                )";
+        Yii::$app->db->createCommand($sql)->execute();
+        // delete connections from questions that do not exists anymore
+        $sql = "delete from quizquestion
+                where id not in (
+                    select qq.id from question q
+                    join quizquestion qq on qq.question_id = q.id
+                )";
+        Yii::$app->db->createCommand($sql)->execute();
+
+        return $this->redirect(['/quiz']);
+    }
+
 }

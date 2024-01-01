@@ -37,6 +37,7 @@ use yii\helpers\Html;
         <input type="hidden" name="_csrf" value="<?= Yii::$app->request->csrfToken ?>">
         <textarea name="bulkInput" rows="25" style="width:100%;overflow-y: auto; max-height: 500px;"></textarea>
         <br>
-        <button type="submit" class="btn btn-success quiz-button">Import</button>
+        <?= Html::a( 'Cancel', Yii::$app->request->referrer , ['class'=>'btn btn-outline-primary quiz-button']); ?>
+        <button type="submit" class="btn btn-outline-success quiz-button">Import</button>
     </form>
 </div></div>
