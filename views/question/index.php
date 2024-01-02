@@ -107,6 +107,7 @@ $this->params['breadcrumbs'][] = $this->title;
 
 <?php
 $csrfToken = Yii::$app->request->getCsrfToken();
+$apiUrl= Url::toRoute(['/quiz-question/connect']);
 $id = Yii::$app->request->get('id');
 
 $script = <<< JS
@@ -127,6 +128,7 @@ $('.status-checkbox').change(function() {
     console.log('questionId: ' + questionId);
     console.log('quizId    : ' + quizId);
     console.log('active    : ' + active );
+    console.log('apiUrl    : ' + '$apiUrl' );
 
     $.ajax({
         url: '/quiz-question/connect',
