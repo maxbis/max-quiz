@@ -67,8 +67,6 @@ class QuestionController extends Controller
      */
     public function actionIndex($quiz_id=0, $show=1)
     {
-        $searchModel = new QuestionSearch();
-        $dataProvider = $searchModel->search($this->request->queryParams);
 
         if ( $quiz_id == 0 ) {
             $sql = "SELECT max(id) id FROM quiz WHERE active = 1";
@@ -81,6 +79,13 @@ class QuestionController extends Controller
                 }
             }
         }
+
+        if ($show == 1) $active = 1;
+        if ($show == 2) $active = 0;
+        if ($show == 0) $active = "";
+
+        $searchModel = new QuestionSearch();
+        $dataProvider = $searchModel->search($this->request->queryParams, $quiz_id, $active);
 
         $sql = "SELECT question_id FROM quizquestion WHERE quiz_id = $quiz_id AND active = 1";
         $quizQuestions = Yii::$app->db->createCommand($sql)->queryAll();

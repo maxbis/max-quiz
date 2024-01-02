@@ -111,7 +111,7 @@ $this->params['breadcrumbs'][] = $this->title;
         color: #0a58ca;
         text-decoration: none;
         background-color: transparent;
-        border: 3px solid blue;
+        border: 2px solid #0a58ca;
         display: inline-block;
         min-width:16px;
         font-size:12px;
@@ -125,8 +125,10 @@ $this->params['breadcrumbs'][] = $this->title;
 $currentRoute = Yii::$app->controller->getRoute();
 $params = Yii::$app->request->getQueryParams();
 
-# 
+# headerStatus is the view-status: all, only-checked, onlyunchecked
 $headerStatus = ['O', '&#x2713', 'X'];
+# When navigating to the next status, determine the next URL
+# the show parameter circles through 0,1,2
 $nextShow = $show + 1;
 if ($nextShow > 2) $nextShow = 0;
 $params['show'] = $nextShow;
@@ -256,14 +258,14 @@ $this->registerJs($script);
     <?= GridView::widget([
         'dataProvider' => $dataProvider,
         'filterModel' => $searchModel,
-        'rowOptions' => function ($model, $key, $index, $grid) use ($questionIds, $show) {
-            if ($show) {
-                $isChecked = in_array($model->id, $questionIds);
-                if (($show == 1 && !$isChecked) || ($show == 2 && $isChecked)) {
-                    return ['class' => 'hidden-row'];
-                }
-            }
-        },
+        // 'rowOptions' => function ($model, $key, $index, $grid) use ($questionIds, $show) {
+        //     if ($show) {
+        //         $isChecked = in_array($model->id, $questionIds);
+        //         if (($show == 1 && !$isChecked) || ($show == 2 && $isChecked)) {
+        //             return ['class' => 'xhidden-row'];
+        //         }
+        //     }
+        // },
         'columns' => [
 
             // ['class' => 'yii\grid\SerialColumn'],

@@ -38,9 +38,18 @@ class QuestionSearch extends Question
      *
      * @return ActiveDataProvider
      */
-    public function search($params)
+    public function search($params, $quiz_id = null, $active = "")
     {
         $query = Question::find();
+
+        if ( $quiz_id ) {
+            $query->joinWith(['quizquestion' => function ($query) use ($quiz_id, $active) {
+                $query->onCondition(['quizquestion.quiz_id' => $quiz_id]);
+            }]);
+            if ( $active  != "") {
+                $query->andWhere(['quizquestion.active' => $active]);
+            }
+        }
 
         // add conditions that should always apply here
 
