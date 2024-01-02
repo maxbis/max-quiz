@@ -60,4 +60,5 @@ class Question extends \yii\db\ActiveRecord
             'label' => 'Label',
         ];
     }
+
 }

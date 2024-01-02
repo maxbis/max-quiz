@@ -65,7 +65,7 @@ class QuestionController extends Controller
      *
      * @return string
      */
-    public function actionIndex($quiz_id=0)
+    public function actionIndex($quiz_id=0, $show=1)
     {
         $searchModel = new QuestionSearch();
         $dataProvider = $searchModel->search($this->request->queryParams);
@@ -95,6 +95,7 @@ class QuestionController extends Controller
             'questionIds' => $questionIds,
             'quiz_id' => $quiz_id,
             'quiz' => $quiz,
+            'show' => $show,
         ]);
     }
 

@@ -102,12 +102,38 @@ $this->params['breadcrumbs'][] = $this->title;
             transform: rotate(360deg);
         }
     }
+
+    .hidden-row {
+        display: none;
+    }
+
+    a.nostyle {
+        color: #0a58ca;
+        text-decoration: none;
+        background-color: transparent;
+        border: 3px solid blue;
+        display: inline-block;
+        min-width:16px;
+        font-size:12px;
+        padding-left: 3px;
+        padding-right: 3px;
+    }
 </style>
 
 
 <?php
+$currentRoute = Yii::$app->controller->getRoute();
+$params = Yii::$app->request->getQueryParams();
+
+# 
+$headerStatus = ['O', '&#x2713', 'X'];
+$nextShow = $show + 1;
+if ($nextShow > 2) $nextShow = 0;
+$params['show'] = $nextShow;
+$clickedOnHeader = Url::toRoute(array_merge([$currentRoute], $params));
+
 $csrfToken = Yii::$app->request->getCsrfToken();
-$apiUrl= Url::toRoute(['/quiz-question/connect']);
+$apiUrl = Url::toRoute(['/quiz-question/connect']);
 $id = Yii::$app->request->get('id');
 
 $script = <<< JS
@@ -174,12 +200,13 @@ $script = <<< JS
 JS;
 $this->registerJs($script);
 
-// $this->registerJs("
-//     $('[data-toggle=\"tooltip\"]').tooltip({
-//         html: true
-//     });
-// ", \yii\web\View::POS_READY);
-
+$script = <<< JS
+    window.headerCheckbox = function headerCheckbox(show) {
+        console.log('$clickedOnHeader');
+        window.location.href='$clickedOnHeader';
+    }
+JS;
+$this->registerJs($script);
 ?>
 
 <!-- This is the busy overlay, show as more than one quesstion is updated via AJAX -->
@@ -213,8 +240,8 @@ $this->registerJs($script);
     <div style="display: flex; justify-content: flex-end; align-items: left;">
         <?= Html::a('Edit', ['quiz/update', 'id' => $quiz['id']], ['class' => 'btn btn-outline-primary quiz-button'],) ?>
         <?php
-            $url = Yii::$app->urlManager->createUrl(['/question/list', 'quiz_id' => $quiz['id']]);
-            echo Html::a('View', $url, [ 'title' => 'View Questions', 'class' => 'btn btn-outline-success quiz-button',]);
+        $url = Yii::$app->urlManager->createUrl(['/question/list', 'quiz_id' => $quiz['id']]);
+        echo Html::a('View', $url, ['title' => 'View Questions', 'class' => 'btn btn-outline-success quiz-button',]);
         ?>
         <?= Html::a('Copy', ['quiz/copy',   'id' => $quiz['id']], ['class' => 'btn btn-outline-danger quiz-button'],); ?>
     </div>
@@ -223,15 +250,23 @@ $this->registerJs($script);
 
 <div class="question-index">
 
-    <?php // echo $this->render('_search', ['model' => $searchModel]); 
+    <?php // echo $this->render('_search', ['model' => $searchModel]);
     ?>
 
     <?= GridView::widget([
         'dataProvider' => $dataProvider,
         'filterModel' => $searchModel,
+        'rowOptions' => function ($model, $key, $index, $grid) use ($questionIds, $show) {
+            if ($show) {
+                $isChecked = in_array($model->id, $questionIds);
+                if (($show == 1 && !$isChecked) || ($show == 2 && $isChecked)) {
+                    return ['class' => 'hidden-row'];
+                }
+            }
+        },
         'columns' => [
 
-            ['class' => 'yii\grid\SerialColumn'],
+            // ['class' => 'yii\grid\SerialColumn'],
             [
                 'attribute' => 'id',
                 'label' => 'id',
@@ -239,6 +274,9 @@ $this->registerJs($script);
             ],
             [
                 'attribute' => 'status',
+                'headerOptions' => ['style' => 'width:40px;'],
+                'header' => '<a href="#" id="header-checkbox" name="header-checkbox" class="nostyle""
+                            onclick="headerCheckbox(' . $show . ');" >' . $headerStatus[$show] . '</a>',
                 'label' => '',
                 'format' => 'raw', // to render raw HTML
                 'value' => function ($model) use ($questionIds, $quiz_id) {
