@@ -8,6 +8,7 @@ use yii\web\Controller;
 use yii\web\NotFoundHttpException;
 use yii\filters\VerbFilter;
 
+use yii\filters\AccessControl;
 use Yii;
 use yii\web\Cookie;
 
@@ -20,19 +21,35 @@ class SubmissionController extends Controller
      * @inheritDoc
      */
     public function behaviors()
-    {
-        return array_merge(
-            parent::behaviors(),
-            [
-                'verbs' => [
-                    'class' => VerbFilter::className(),
-                    'actions' => [
-                        'delete' => ['POST'],
+{
+    return array_merge(
+        parent::behaviors(),
+        [
+            // VerbFilter
+            'verbs' => [
+                'class' => VerbFilter::className(),
+                'actions' => [
+                    'delete' => ['POST'],
+                ],
+            ],
+            // Access Control Filter (ACF)
+            'access' => [
+                'class' => AccessControl::className(),
+                'rules' => [
+                    [
+                        'actions' => ['create', 'start', 'restart'],
+                        'allow' => true,
+                        'roles' => ['?'], // '?' represents guest users
+                    ],
+                    [
+                        'allow' => true,
+                        'roles' => ['@'], // '@' represents authenticated users
                     ],
                 ],
-            ]
-        );
-    }
+            ],
+        ]
+    );
+}
 
     /**
      * Lists all Submission models.

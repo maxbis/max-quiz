@@ -246,7 +246,7 @@ CREATE TABLE `tbl_user` (
 --
 
 INSERT INTO `tbl_user` (`id`, `username`, `password`, `authKey`, `role`) VALUES
-(5, 'admin', '51fec7363f394e7b031c4bad7756c880580e4ca8', '195f646de713fe51073524410c2201d2', '');
+(5, 'admin', 'd033e22ae348aeb5660fc2140aec35850c4da997', '195f646de713fe51073524410c2201d2', '');
 
 --
 -- Indexes for dumped tables
