@@ -27,7 +27,7 @@ class Submission extends \yii\db\ActiveRecord
      */
     public static function tableName()
     {
-        return 'Submission';
+        return 'submission';
     }
 
     /**
