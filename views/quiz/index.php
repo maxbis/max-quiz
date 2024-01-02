@@ -62,6 +62,7 @@ $this->registerJs($js);
         margin-left: 5px;
         margin-right: 5px;
     }
+
     .quiz-button {
         font-size: 14px;
         padding: 2px 5px;
@@ -114,18 +115,27 @@ $this->registerJs($js);
             ],
             [
                 'class' => 'yii\grid\ActionColumn',
-                'template' => '{quizButton}', 
+                'template' => '{quizButton}',
                 'buttons' => [
                     'quizButton' => function ($url, $model) {
                         $url = Yii::$app->urlManager->createUrl(['/question/list', 'quiz_id' => $model->id]);
-                        $b1 = Html::a('View', $url, [ 'title' => 'View Questions',
+                        $b1 = Html::a('View', $url, [
+                            'title' => 'View Questions',
                             'class' => 'btn btn-outline-success quiz-button-small',
-                            ]);
+                        ]);
                         $url = Yii::$app->urlManager->createUrl(['/quiz/update', 'id' => $model->id]);
-                        $b2 = Html::a('Edit', $url, [ 'title' => 'Edit Quiz',
+                        $b2 = Html::a('Edit', $url, [
+                            'title' => 'Edit Quiz',
                             'class' => 'btn btn-outline-primary quiz-button-small',
-                            ]);
-                        return $b2.' '.$b1;
+                        ]);
+                        $url = Yii::$app->urlManager->createUrl(['/quiz/delete', 'id' => $model->id]);
+                        $b3 = Html::a('Delete', $url, [
+                            'title' => 'Delete Quiz',
+                            'class' => 'btn btn-outline-danger quiz-button-small',
+                            'data-confirm' => 'Are you sure you want to delete this quiz?',
+                            'data-method' => 'post',
+                        ]);
+                        return $b2 . ' ' . $b1 . ' ' . $b3;
                     },
                 ],
             ],

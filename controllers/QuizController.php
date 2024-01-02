@@ -194,7 +194,7 @@ class QuizController extends Controller
     }
 
     public function actionCopy($id) {
-        $sql = "insert into quiz ( name ) select concat('copy of ',name) from quiz where id = $id";
+        $sql = "insert into quiz ( name, password ) select concat('copy of ',name), concat('copy_',password) from quiz where id = $id";
         Yii::$app->db->createCommand($sql)->execute();
         $sql = "select max(id) id from quiz;";
         $newId = Yii::$app->db->createCommand($sql)->queryOne()['id'];
@@ -207,7 +207,7 @@ class QuizController extends Controller
             Yii::$app->db->createCommand($sql)->execute();
         }
 
-        return $this->redirect(['quiz/view', 'id' => $newId]);
+        return $this->redirect(['question/index', 'quiz_id' => $newId]);
     }
 
 }

@@ -194,7 +194,8 @@ $noAnswers = count($answers);
                                 'id' => 'submitButton-org', 'title' => 'Edit Question',
                                 'class' => 'btn btn-light',
                             ]);
-                            echo Html::a('Back', '/question', ['id' => 'submitButton', 'title' => 'Back','class' => 'btn btn-light']);
+                            $url = Yii::$app->urlManager->createUrl(['/question']);
+                            echo Html::a('Back', $url, ['id' => 'submitButton', 'title' => 'Back','class' => 'btn btn-light']);
                         } ?>
                     </form>
                 </div>
