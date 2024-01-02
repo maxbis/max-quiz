@@ -131,7 +131,7 @@ $('.status-checkbox').change(function() {
     console.log('apiUrl    : ' + '$apiUrl' );
 
     $.ajax({
-        url: '/quiz-question/connect',
+        url: '$apiUrl',
         type: 'POST',
         data: {
             _csrf: '$csrfToken',
