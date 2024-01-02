@@ -148,7 +148,7 @@ $('.status-checkbox').change(function() {
             $('#countDisplay').text(response.result.count);
             console.log('Update successful', response);
         },
-        error: function(xhr, status, error) {
+        error: function(error) {
             ajaxActive--;
             if ( ajaxActive == 0) { // hide busy indicator
                 $('#modalOverlay').hide();
