@@ -152,7 +152,6 @@ class SiteController extends Controller
         return $quiz;
     }
 
-
     public function actionQuestion() {
         $submission = $this->getSubmission();
         if ( ! $submission ) {
@@ -166,7 +165,7 @@ class SiteController extends Controller
 
         $quiz = $this->getQuiz( $submission['quiz_id'] );
 
-        $sql = "select id, question, a1, a2, a3, a4, a5, a6 from question where id = ${submission['thisQuestion']}";
+        $sql = "select id, question, a1, a2, a3, a4, a5, a6 from question where id = ".$submission['thisQuestion'];
         $question = Yii::$app->db->createCommand($sql)->queryOne();
 
         $title = $quiz['name'] . ' ['.strtoupper(substr($submission['token'], -3)).'] ';

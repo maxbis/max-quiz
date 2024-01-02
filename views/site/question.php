@@ -53,18 +53,13 @@ $noAnswers = count($answers);
         }
 
         .question-block {
+            white-space: pre;
             font-family: monospace;
-            /* Monospaced font */
             background-color: #f8f8f8;
-            /* Paper-like background color */
             border: 1px solid #ddd;
-            /* Optional: adds a subtle border */
             padding: 15px;
-            /* Padding around the text */
             min-height: 9em;
-            /* Minimum height for about five lines of text */
             text-align: left;
-            /* Align text to the left */
             user-select: none;
             overflow-x: hidden;
         }
@@ -117,11 +112,17 @@ $noAnswers = count($answers);
             /* Initially slide the page out of view */
             transition: transform 0.5s ease-in-out;
         }
+
+        code,
         pre {
-            margin-left: 40px;
+            margin-left: 30px;
             font-size: 16px;
-            font-family: monospace;
             color: darkblue;
+            border-left: 2px solid lightgray;
+            padding-left: 10px;
+        }
+        .btn {
+            margin-right: 20px;
         }
     </style>
     <script>
@@ -149,7 +150,7 @@ $noAnswers = count($answers);
             <div class="col-12 question-title">Vraag <?= $submission['no_answered'] + 1 ?></div>
             <div class="col-12">
                 <div class="question-block">
-                    <?= $question['question'] ?>
+<?= $question['question'] ?>
                 </div>
             </div>
 
@@ -178,40 +179,52 @@ $noAnswers = count($answers);
                     <div class="answer" onclick="selectAnswer(this, '<?= $answers[5] ?>')"><?= $question[$answers[5]] ?></div>
                 <?php } ?>
             </div>
+
             <div class="col-md-6">
                 <div class="col-12">
                     <form id="answer" class="mt-4" action="<?= Url::to(['site/answer']) ?>" method="POST">
                         <input type="hidden" id="selectedAnswer" name="selectedAnswer">
                         <input type="hidden" name="<?= $csrfTokenName ?>" value="<?= $csrfToken ?>">
-                        <button type="submit" id="submitButton" class="btn btn-light" title="Click eerst op een antwoord" disabled>Volgende vraag >></button>
+                        <?php if ($submission['id'] != 0) { ?>
+                            <button type="submit" id="submitButton" class="btn btn-light" title="Click eerst op een antwoord" disabled>Volgende vraag >></button>
+
+                        <?php } else {
+                            $url = Yii::$app->urlManager->createUrl(['/question/update', 'id' => $question['id']]);
+                            echo Html::a('Edit', $url, [
+                                'id' => 'submitButton-org', 'title' => 'Edit Question',
+                                'class' => 'btn btn-light',
+                            ]);
+                            echo Html::a('Back', '/question', ['id' => 'submitButton', 'title' => 'Back','class' => 'btn btn-light']);
+                        } ?>
                     </form>
                 </div>
             </div>
         </div>
+    </div>
 
-        <script>
-            function selectAnswer(element, answer) {
-                // Remove 'selected' class from all answers
-                document.querySelectorAll('.answer').forEach(function(el) {
-                    el.classList.remove('selected');
-                });
+    <script>
+        function selectAnswer(element, answer) {
+            // Remove 'selected' class from all answers
+            document.querySelectorAll('.answer').forEach(function(el) {
+                el.classList.remove('selected');
+            });
 
-                // Add 'selected' class to clicked answer
-                element.classList.add('selected');
+            // Add 'selected' class to clicked answer
+            element.classList.add('selected');
 
-                // Set the value of the hidden input
-                document.getElementById('selectedAnswer').value = answer.substring(1);
+            // Set the value of the hidden input
+            document.getElementById('selectedAnswer').value = answer.substring(1);
 
-                // Enable submit button
-                document.getElementById('submitButton').className = "btn btn-danger";
-                document.getElementById('submitButton').title = "Click voor volgende vraag";
-                document.getElementById('submitButton').disabled = false;
-            }
-        </script>
+            // Enable submit button
+            document.getElementById('submitButton').className = "btn btn-danger";
+            document.getElementById('submitButton').title = "Click voor volgende vraag";
+            document.getElementById('submitButton').disabled = false;
+        }
+    </script>
 
-        <script src="https://code.jquery.com/jquery-3.3.1.slim.min.js"></script>
-        <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.7/umd/popper.min.js"></script>
-        <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js"></script>
+    <script src="https://code.jquery.com/jquery-3.3.1.slim.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.7/umd/popper.min.js"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js"></script>
 </body>
 
 </html>

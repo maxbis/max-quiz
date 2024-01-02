@@ -37,6 +37,8 @@ $this->params['breadcrumbs'][] = $this->title;
         width: 10px;
         border-radius: 50%;
         display: inline-block;
+        margin-bottom: 5px;
+        margin-right: 5px;
     }
 
     .dot-red {
@@ -54,7 +56,7 @@ $this->params['breadcrumbs'][] = $this->title;
         margin: 5px;
     }
 
-    
+
     .modal-overlay {
         position: fixed;
         top: 0;
@@ -170,6 +172,11 @@ $script = <<< JS
 JS;
 $this->registerJs($script);
 
+// $this->registerJs("
+//     $('[data-toggle=\"tooltip\"]').tooltip({
+//         html: true
+//     });
+// ", \yii\web\View::POS_READY);
 
 ?>
 
@@ -180,6 +187,13 @@ $this->registerJs($script);
         <p>Please wait... </p>
     </div>
 </div>
+
+<?php if (Yii::$app->session->hasFlash('error')) : ?>
+    <div class="alert alert-danger alert-dismissable">
+        <button aria-hidden="true" data-dismiss="alert" class="close" type="button">×</button>
+        <?= Yii::$app->session->getFlash('error') ?>
+    </div>
+<?php endif; ?>
 
 <div class="quiz-card" style="max-width:600px;border: 1px solid #ddd; padding: 15px; margin-bottom: 20px; border-radius: 5px; box-shadow: 0 2px 5px rgba(0,0,0,0.2);">
     <?php
@@ -192,9 +206,14 @@ $this->registerJs($script);
     <p style="color:#404080;">
         Password: <?= Html::encode($quiz['password']) ?>
         <br>
+        questions: <span id="countDisplay"><?= count($questionIds); ?></span>
     </p>
     <div style="display: flex; justify-content: flex-end; align-items: left;">
         <?= Html::a('Edit', ['quiz/update', 'id' => $quiz['id']], ['class' => 'btn btn-outline-primary quiz-button'],) ?>
+        <?php
+            $url = Yii::$app->urlManager->createUrl(['/question/list', 'quiz_id' => $quiz['id']]);
+            echo Html::a('View', $url, [ 'title' => 'View Questions', 'class' => 'btn btn-outline-success quiz-button',]);
+        ?>
         <?= Html::a('Copy', ['quiz/copy',   'id' => $quiz['id']], ['class' => 'btn btn-outline-danger quiz-button'],); ?>
     </div>
 </div>
@@ -240,7 +259,7 @@ $this->registerJs($script);
                     return [
                         'class' => 'multiline-tooltip',
                         'style' => 'color: #404080;',
-                        'data-tooltip' => Html::encode($model->question)
+                        'data-tooltip' =>  $model->question,
                     ];
                 },
             ],

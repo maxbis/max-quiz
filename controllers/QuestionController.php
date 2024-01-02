@@ -10,6 +10,7 @@ use yii\filters\VerbFilter;
 
 use yii\helpers\ArrayHelper;;
 use yii\filters\AccessControl;
+
 use Yii;
 
 /**
@@ -103,14 +104,22 @@ class QuestionController extends Controller
      * @return string
      * @throws NotFoundHttpException if the model cannot be found
      */
-    public function actionView($id)
+    public function actionViewOld($id)
     {
         return $this->render('view', [
             'model' => $this->findModel($id),
         ]);
     }
 
+    public function actionView($id)
+    {
+        $submission = ['id' => 0, 'token'=>'', 'first_name' => '', 'last_name' => '', 'class' => '',
+                        'quiz_id' => '', 'no_answered' => 0, 'no_questions' => 1 ];
+        $sql = "select * from question where id=".$id;
+        $question = Yii::$app->db->createCommand($sql)->queryOne();
 
+        return $this->render('/site/question', [ 'title' => 'Question', 'question' => $question, 'submission' => $submission ]);
+    }
 
     /**
      * Creates a new Question model.
@@ -162,8 +171,7 @@ class QuestionController extends Controller
         $model = $this->findModel($id);
 
         if ($this->request->isPost && $model->load($this->request->post()) && $model->save()) {
-            return $this->redirect(Yii::$app->request->referrer);
-            return $this->redirect(['/question']);
+            return $this->redirect(['/question/view', 'id' => $id]);
         }
 
         return $this->render('update', [
@@ -218,9 +226,9 @@ class QuestionController extends Controller
         ]);
     }
 
-    public function actionImport()
+    public function actionImport($input="")
     {
-        return $this->render('import');
+        return $this->render('import', [ 'input' => $input ]);
     }
 
     private function parseBulkInput($input)
@@ -310,8 +318,13 @@ class QuestionController extends Controller
         for ($i = 1; $i <= 6; $i++) {
             $command->bindValue(":a$i", $questionData['a'.$i] ?? null);
         }
-        $command->bindValue(':correct', $questionData['correct'] ?? null);
         $command->bindValue(':label', $questionData['label'] ?? null);
+
+        if ( ! isset($questionData['correct']) ) {
+            $questionData['correct'] = 1;
+            Yii::$app->session->setFlash('error', "A correct answer is missing, answer 1 is randomly added as correct.");
+        }
+        $command->bindValue(':correct', $questionData['correct']);
 
         $command->execute();
     }
