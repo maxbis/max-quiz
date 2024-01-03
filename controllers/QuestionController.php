@@ -12,6 +12,7 @@ use yii\helpers\ArrayHelper;;
 use yii\filters\AccessControl;
 
 use Yii;
+use app\models\Quizquestion;
 
 /**
  * QuestionController implements the CRUD actions for Question model.
@@ -128,12 +129,19 @@ class QuestionController extends Controller
      * If creation is successful, the browser will be redirected to the 'view' page.
      * @return string|\yii\web\Response
      */
-    public function actionCreate()
+    public function actionCreate($quiz_id=null)
     {
         $model = new Question();
 
         if ($this->request->isPost) {
             if ($model->load($this->request->post()) && $model->save()) {
+                if ($quiz_id) {
+                    $quizquestion = new Quizquestion();
+                    $quizquestion->question_id = $model->id;
+                    $quizquestion->quiz_id = $quiz_id;
+                    $quizquestion->active = 1;
+                    $quizquestion->save();
+                }
                 return $this->redirect(['view', 'id' => $model->id]);
             }
         } else {
@@ -287,21 +295,22 @@ class QuestionController extends Controller
         return $questions;
     }
 
-    public function actionBulkImport()
+    public function actionBulkImport($quiz_id = null)
     {
         if (Yii::$app->request->isPost) {
             $bulkInput = Yii::$app->request->post('bulkInput');
             $parsedQuestions = $this->parseBulkInput($bulkInput);
 
             foreach ($parsedQuestions as $questionData) {
-                $this->insertQuestion($questionData);
+                $this->insertQuestion($questionData, $quiz_id);
             }
         }
 
         return $this->redirect(['/question/index']);
     }
 
-    private function insertQuestion($questionData)
+    
+    private function insertQuestion($questionData, $quiz_id = null)
     {
         if ( isset($questionData['id']) ) {
             $sql = "delete from question where id=".$questionData['id'];
@@ -309,7 +318,8 @@ class QuestionController extends Controller
         }
 
         $connection = Yii::$app->db;
-        $sql = "INSERT INTO question (id, question, a1, a2, a3, a4, a5, a6, correct, label) VALUES (:id, :question, :a1, :a2, :a3, :a4, :a5, :a6, :correct, :label)";
+        $sql = "INSERT INTO question (id, question, a1, a2, a3, a4, a5, a6, correct, label)
+                VALUES (:id, :question, :a1, :a2, :a3, :a4, :a5, :a6, :correct, :label)";
 
         $command = $connection->createCommand($sql);
         $command->bindValue(':question', $questionData['question']);
@@ -324,13 +334,13 @@ class QuestionController extends Controller
         $command->bindValue(':label', $questionData['label'] ?? null);
 
         if ( ! isset($questionData['correct']) ) {
-            $questionData['correct'] = 1;
-            Yii::$app->session->setFlash('error', "A correct answer is missing, answer 1 is randomly added as correct.");
+            $questionData['correct'] = 0;
         }
         $command->bindValue(':correct', $questionData['correct']);
 
         $command->execute();
-    }
+
+        }
 
     public function actionExport($quiz_id=0) {
         

@@ -137,9 +137,10 @@ class SubmissionController extends Controller
         $token = $this->generateRandomToken();
 
         // Get all questions connected, shuffle and create space seprated string
-        $sql = "select question_id from quizquestion where quiz_id = $quiz_id";
+        $sql = "select question_id from quizquestion where quiz_id = $quiz_id and active = 1";
         $result = Yii::$app->db->createCommand($sql)->queryAll();
         $questionIds = array_column( $result, 'question_id' );
+        
         $no_questions = count($questionIds);
         shuffle( $questionIds );
         $question_order = implode(" ",$questionIds);

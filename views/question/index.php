@@ -274,11 +274,11 @@ $this->registerJs($script);
         'columns' => [
 
             ['class' => 'yii\grid\SerialColumn'],
-            // [
-            //     'attribute' => 'id',
-            //     'label' => 'id',
-            //     'headerOptions' => ['style' => 'width:30px;'],
-            // ],
+            [
+                'attribute' => 'id',
+                'label' => 'id',
+                'headerOptions' => ['style' => 'width:30px;'],
+            ],
             [
                 'attribute' => 'status',
                 'headerOptions' => ['style' => 'width:40px;'],
@@ -333,7 +333,7 @@ $this->registerJs($script);
     <p>
         <hr>
         <?php
-        echo Html::a('New', ['create'], ['class' => 'btn btn-outline-success quiz-button', 'title' => 'Create new question']);
+        echo Html::a('New', ['create', 'quiz_id' => $quiz['id']], ['class' => 'btn btn-outline-success quiz-button', 'title' => 'Create new question']);
         ?>
         <span style="margin-left:50px;"> </span>
 
