@@ -113,8 +113,8 @@ $this->params['breadcrumbs'][] = $this->title;
         background-color: transparent;
         border: 2px solid #0a58ca;
         display: inline-block;
-        min-width:16px;
-        font-size:12px;
+        min-width: 16px;
+        font-size: 12px;
         padding-left: 3px;
         padding-right: 3px;
     }
@@ -349,15 +349,17 @@ $this->registerJs($script);
         ?>
         <span style="margin-left:50px;"> </span>
         <?php
-        echo Html::a(
-            'Delete All',
-            ['bulk-delete', 'quiz_id' => $quiz['id']],
-            [
-                'class' => 'btn btn-outline-danger quiz-button',
-                'title' => 'Delete all linked',
-                'onclick' => 'return confirm("Are you sure you want to delete all linked items?");',
-            ]
-        );
+        if ( $show == 1 ) {
+            echo Html::a(
+                'Delete All',
+                ['bulk-delete', 'quiz_id' => $quiz['id']],
+                [
+                    'class' => 'btn btn-outline-danger quiz-button',
+                    'title' => 'Delete all linked',
+                    'onclick' => 'return confirm("Are you sure you want to delete all linked items?");',
+                ]
+            );
+        }
         ?>
 
     </p>
