@@ -350,9 +350,12 @@ class QuestionController extends Controller
     private function insertQuestion($questionData, $quiz_id = null, $label = null)
     {
         $succes = 0;
+        $question = null;
+
         if (isset($questionData['id'])) {
             $question = Question::findOne( $questionData['id'] );
-        } else {
+        } 
+        if ($question === null) { // nothing to update
             $questionText = rtrim($questionData['question'], "\r\n");
             $existingQuestion = Question::find()->where(['like', 'question', $questionText . '%', false])->one();
             if ($existingQuestion !== null) {
