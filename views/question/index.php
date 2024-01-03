@@ -11,7 +11,7 @@ use yii\grid\GridView;
 /** @var yii\data\ActiveDataProvider $dataProvider */
 
 $this->title = 'Questions';
-$this->params['breadcrumbs'][] = $this->title;
+// $this->params['breadcrumbs'][] = $this->title;
 ?>
 
 <style>
@@ -19,6 +19,7 @@ $this->params['breadcrumbs'][] = $this->title;
         content: attr(data-tooltip);
         display: none;
         position: absolute;
+        left: 120px;
         z-index: 1;
         background: #dbe6ff;
         border: 1px solid #ccc;
@@ -224,33 +225,33 @@ $this->registerJs($script);
     </div>
 </div>
 
-<?php if (Yii::$app->session->hasFlash('error')) : ?>
-    <div class="alert alert-danger alert-dismissable">
-        <button aria-hidden="true" data-dismiss="alert" class="close" type="button">×</button>
-        <?= Yii::$app->session->getFlash('error') ?>
-    </div>
-<?php endif; ?>
-
 <div class="quiz-card" style="max-width:600px;border: 1px solid #ddd; padding: 15px; margin-bottom: 20px; border-radius: 5px; box-shadow: 0 2px 5px rgba(0,0,0,0.2);">
-    <?php
-    $statusClass = $quiz['active'] == 1 ? 'dot-green' : 'dot-red';
-    $statusHelp = $quiz['active'] == 1 ? 'active' : 'inactive';
-    ?>
-    <h3>
-        <div title="<?= $statusHelp ?>" class="dot <?= $statusClass ?>"></div> <?= Html::encode($quiz['name']) ?>
-    </h3>
-    <p style="color:#404080;">
-        Password: <?= Html::encode($quiz['password']) ?>
-        <br>
-        questions: <span id="countDisplay"><?= count($questionIds); ?></span>
-    </p>
-    <div style="display: flex; justify-content: flex-end; align-items: left;">
-        <?= Html::a('Edit', ['quiz/update', 'id' => $quiz['id']], ['class' => 'btn btn-outline-primary quiz-button'],) ?>
-        <?php
-        $url = Yii::$app->urlManager->createUrl(['/question/list', 'quiz_id' => $quiz['id']]);
-        echo Html::a('View', $url, ['title' => 'View Questions', 'class' => 'btn btn-outline-success quiz-button',]);
-        ?>
-        <?= Html::a('Copy', ['quiz/copy',   'id' => $quiz['id']], ['class' => 'btn btn-outline-danger quiz-button'],); ?>
+    <div class="container">
+        <div class="row">
+            <div class="col-md-7">
+                <?php
+                $statusClass = $quiz['active'] == 1 ? 'dot-green' : 'dot-red';
+                $statusHelp = $quiz['active'] == 1 ? 'active' : 'inactive';
+                ?>
+                <h3>
+                    <div title="<?= $statusHelp ?>" class="dot <?= $statusClass ?>"></div> <?= Html::encode($quiz['name']) ?>
+                </h3>
+                <p style="color:#404080;">
+                    Password: <?= Html::encode($quiz['password']) ?>
+                    <br>
+                    questions: <span id="countDisplay"><?= count($questionIds); ?></span>
+                </p>
+            </div>
+            <div class="col-md-5 d-flex align-items-end">
+                <?= Html::a('Edit', ['quiz/update', 'id' => $quiz['id']], ['class' => 'btn btn-outline-primary quiz-button'],) ?>
+                <?php
+                $url = Yii::$app->urlManager->createUrl(['/question/list', 'quiz_id' => $quiz['id']]);
+                echo Html::a('View', $url, ['title' => 'View Questions', 'class' => 'btn btn-outline-success quiz-button',]);
+                ?>
+                <?= Html::a('Copy', ['quiz/copy',   'id' => $quiz['id']], ['class' => 'btn btn-outline-danger quiz-button'],); ?>
+
+            </div>
+        </div>
     </div>
 </div>
 
@@ -275,15 +276,10 @@ $this->registerJs($script);
 
             ['class' => 'yii\grid\SerialColumn'],
             [
-                'attribute' => 'id',
-                'label' => 'id',
-                'headerOptions' => ['style' => 'width:30px;'],
-            ],
-            [
                 'attribute' => 'status',
                 'headerOptions' => ['style' => 'width:40px;'],
                 'header' => '<a href="#" id="header-checkbox" name="header-checkbox" class="nostyle""
-                            onclick="headerCheckbox(' . $show . ');" >' . $headerStatus[$show+1] . '</a>',
+                            onclick="headerCheckbox(' . $show . ');" >' . $headerStatus[$show + 1] . '</a>',
                 'label' => '',
                 'format' => 'raw', // to render raw HTML
                 'value' => function ($model) use ($questionIds, $quiz_id) {
@@ -302,6 +298,17 @@ $this->registerJs($script);
                 'value' => function ($model) {
                     return mb_substr($model->question, 0, 100) . (mb_strlen($model->question) > 100 ? '...' : '');
                 },
+            ],
+            [
+                'attribute' => 'label',
+                'label' => 'Label',
+                'headerOptions' => ['style' => 'width:200px;'],
+                'contentOptions' => ['style' => 'color: #404080;'],
+            ],
+            [
+                'attribute' => 'id',
+                'label' => 'id',
+                'headerOptions' => ['style' => 'width:30px;'],
                 'contentOptions' => function ($model) {
                     return [
                         'class' => 'multiline-tooltip',
@@ -309,12 +316,6 @@ $this->registerJs($script);
                         'data-tooltip' =>  $model->question,
                     ];
                 },
-            ],
-            [
-                'attribute' => 'label',
-                'label' => 'Label',
-                'headerOptions' => ['style' => 'width:200px;'],
-                'contentOptions' => ['style' => 'color: #404080;'],
             ],
             [
                 'class' => ActionColumn::className(),
@@ -349,8 +350,8 @@ $this->registerJs($script);
         ?>
         <span style="margin-left:50px;"> </span>
         <?php
-        echo Html::a('import', ['import'], ['class' => 'btn btn-outline-secondary quiz-button', 'title' => '']);
-        echo Html::a('export', ['export'], ['class' => 'btn btn-outline-secondary quiz-button', 'title' => '']);
+        echo Html::a('import', [ 'import', 'quiz_id' => $quiz['id'] ], ['class' => 'btn btn-outline-secondary quiz-button', 'title' => '']);
+        echo Html::a('export', [ 'export', 'quiz_id' => $quiz['id'] ], ['class' => 'btn btn-outline-secondary quiz-button', 'title' => '']);
         ?>
         <span style="margin-left:50px;"> </span>
         <?php

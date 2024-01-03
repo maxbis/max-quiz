@@ -75,7 +75,7 @@ class QuestionSearch extends Question
 
         // grid filtering conditions
         $query->andFilterWhere([
-            'id' => $this->id,
+            'question.id' => $this->id,
             'correct' => $this->correct,
         ]);
 

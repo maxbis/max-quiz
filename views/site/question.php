@@ -7,8 +7,9 @@ $csrfTokenName = Yii::$app->request->csrfParam;
 $csrfToken = Yii::$app->request->getCsrfToken();
 
 $answers = [];
+//dd($question);
 for ($i = 1; $i < 7; $i++) {
-    if ($question['a' . $i] != "") {
+    if ( rtrim($question['a' . $i], "\n\r") != "" ) {
         array_push($answers, 'a' . $i);
     }
 }

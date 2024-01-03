@@ -96,15 +96,12 @@ use yii\widgets\ActiveForm;
             <div class="col">
                 <?= $form->field($model, 'label')->textInput([
                     'rows' => 2,
-                    'style' => 'width: 160px;',
                     'maxlength' => true
                 ]) ?>
             </div>
-            <div class="col-6">
 
-            </div>
         </div>
-
+        <hr>
         <div class="form-group">
             <?= Html::submitButton('Save', ['class' => 'btn btn-success quiz-button']) ?>
             <?= Html::a('Cancel', Yii::$app->request->referrer, ['class' => 'btn btn-primary quiz-button']); ?>

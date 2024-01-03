@@ -9,6 +9,7 @@ use yii\web\NotFoundHttpException;
 use yii\filters\VerbFilter;
 
 use yii\helpers\ArrayHelper;;
+
 use yii\filters\AccessControl;
 
 use Yii;
@@ -50,12 +51,12 @@ class QuestionController extends Controller
         );
     }
 
-    public function actionIndex2()
+    public function actionIndexRaw()
     {
         $searchModel = new QuestionSearch();
         $dataProvider = $searchModel->search($this->request->queryParams);
 
-        return $this->render('index3', [
+        return $this->render('indexraw', [
             'searchModel' => $searchModel,
             'dataProvider' => $dataProvider,
         ]);
@@ -66,16 +67,16 @@ class QuestionController extends Controller
      *
      * @return string
      */
-    public function actionIndex($quiz_id=0, $show=1)
+    public function actionIndex($quiz_id = 0, $show = 1)
     {
 
-        if ( $quiz_id == 0 ) {
+        if ($quiz_id == 0) {
             $sql = "SELECT max(id) id FROM quiz WHERE active = 1";
             $quiz_id = Yii::$app->db->createCommand($sql)->queryOne()['id'];
-            if ( $quiz_id == "" ) {
+            if ($quiz_id == "") {
                 $sql = "SELECT max(id) id FROM quiz";
                 $quiz_id = Yii::$app->db->createCommand($sql)->queryOne()['id'];
-                if ( $quiz_id == "" ) {
+                if ($quiz_id == "") {
                     return $this->redirect(['quiz']);
                 }
             }
@@ -83,6 +84,8 @@ class QuestionController extends Controller
 
         $searchModel = new QuestionSearch();
         $dataProvider = $searchModel->search($this->request->queryParams, $quiz_id, $show);
+
+        $keysShown = $dataProvider->getKeys();
 
         $sql = "SELECT question_id FROM quizquestion WHERE quiz_id = $quiz_id AND active = 1";
         $quizQuestions = Yii::$app->db->createCommand($sql)->queryAll();
@@ -98,6 +101,7 @@ class QuestionController extends Controller
             'quiz_id' => $quiz_id,
             'quiz' => $quiz,
             'show' => $show,
+            'keysShown' => $keysShown,
         ]);
     }
 
@@ -116,12 +120,14 @@ class QuestionController extends Controller
 
     public function actionView($id)
     {
-        $submission = ['id' => 0, 'token'=>'', 'first_name' => '', 'last_name' => '', 'class' => '',
-                        'quiz_id' => '', 'no_answered' => 0, 'no_questions' => 1 ];
-        $sql = "select * from question where id=".$id;
+        $submission = [
+            'id' => 0, 'token' => '', 'first_name' => '', 'last_name' => '', 'class' => '',
+            'quiz_id' => '', 'no_answered' => 0, 'no_questions' => 1
+        ];
+        $sql = "select * from question where id=" . $id;
         $question = Yii::$app->db->createCommand($sql)->queryOne();
 
-        return $this->render('/site/question', [ 'title' => 'Question', 'question' => $question, 'submission' => $submission ]);
+        return $this->render('/site/question', ['title' => 'Question', 'question' => $question, 'submission' => $submission]);
     }
 
     /**
@@ -129,7 +135,7 @@ class QuestionController extends Controller
      * If creation is successful, the browser will be redirected to the 'view' page.
      * @return string|\yii\web\Response
      */
-    public function actionCreate($quiz_id=null)
+    public function actionCreate($quiz_id = null)
     {
         $model = new Question();
 
@@ -197,9 +203,21 @@ class QuestionController extends Controller
      * @return \yii\web\Response
      * @throws NotFoundHttpException if the model cannot be found
      */
-    public function actionDelete($id, $show=null)
+    public function actionDelete($id, $show = null)
     {
+
+        $sql = "delete from quizquestion where question_id=$id";
+        Yii::$app->db->createCommand($sql)->execute();
+
         $this->findModel($id)->delete();
+
+        // if question is deleted, delete links
+        // $sql = "delete FROM quizquestion
+        //             WHERE question_id not in  (
+        //             SELECT id
+        //             FROM question
+        //         )";
+        // Yii::$app->db->createCommand($sql)->execute();
 
         return $this->redirect(['index', 'show' => $show]);
     }
@@ -220,7 +238,8 @@ class QuestionController extends Controller
         throw new NotFoundHttpException('The requested page does not exist.');
     }
 
-    public function actionList($quiz_id) {
+    public function actionList($quiz_id)
+    {
         $sql = "select
                 q.id id, question question, a1, a2, a3, a4, a5, a6, correct, label
                 from question q
@@ -237,14 +256,13 @@ class QuestionController extends Controller
         ]);
     }
 
-    public function actionImport($input="")
+    public function actionImport($input = "")
     {
-        return $this->render('import', [ 'input' => $input ]);
+        return $this->render('import', ['input' => $input]);
     }
 
     private function parseBulkInput($input)
     {
-        $input .= "\nQQ\n";
         $lines = explode("\n", $input);
 
         $questions = [];
@@ -255,136 +273,173 @@ class QuestionController extends Controller
 
         foreach ($lines as $line) {
             # $line = chop($line);
-            $token = strtoupper( substr($line,0,2) );
-            if ( $token == 'QQ' ) {
-                if ( $currentKey && $currentData ) {
+            $token = substr($line, 0, 2);
+            // _d(['Newline token, line, currentQuestion, curretnData, currentKey',$token, $line, $thisQuestion, $currentData, $currentKey]);
+            if ($token == 'QQ') {
+                if ($currentKey && $currentData) {
                     $thisQuestion[$currentKey] = $currentData;
-                    array_push($questions, $thisQuestion);
-                    $thisQuestion = [];
                 }
+                // QQ is the beginning of a new question so save previous question
+                if (count($thisQuestion) > 2) { // but only if the curretn question is not empty,, which it will be the first time
+                    array_push($questions, $thisQuestion);
+                }
+                $thisQuestion = [];
                 $currentKey = "question";
                 $currentData = "";
                 $answerIndex = 1;
-            } elseif ( $token == 'AA' or $token == 'AC' ) {
-                if ( $currentKey && $currentData ) {
+            } elseif ($token == 'AA' or $token == 'AC') {
+                if ($currentKey && $currentData) {
+                    $thisQuestion[$currentKey] = $currentData;
                     $thisQuestion[$currentKey] = $currentData;
                 }
-                $currentKey = "a".$answerIndex;
+                $currentKey = "a" . $answerIndex;
                 $currentData = "";
-                if ( $token == 'AC' ) {
+                if ($token == 'AC') {
                     $thisQuestion['correct'] = $answerIndex;
                 }
                 $answerIndex++;
-            } elseif ( $token == 'LL' ) {
-                if ( $currentKey && $currentData ) {
+            } elseif ($token == 'LL') {
+                if ($currentKey && $currentData) {
                     $thisQuestion[$currentKey] = $currentData;
                 }
                 $currentKey = "label";
                 $currentData = "";
-            }elseif ( $token == 'ID' ) {
-                if ( $currentKey && $currentData ) {
+            } elseif ($token == 'ID') {
+                if ($currentKey && $currentData) {
                     $thisQuestion[$currentKey] = $currentData;
                 }
                 $currentKey = "id";
                 $currentData = "";
             } else {
-                $currentData .= $line;
+                // remove empty lines if token <> QQ
+                if ($currentKey <> "question") {
+                    $currentData .= rtrim($line, "\n\r");
+                } else {
+                    $currentData .= $line;
+                }
             }
         }
+        if ($currentData) {
+            $thisQuestion[$currentKey] = $currentData;
+        }
+        array_push($questions, $thisQuestion); // save the last question
 
+        // dd($questions);
         return $questions;
     }
 
-    public function actionBulkImport($quiz_id = null)
+    public function actionBulkImport()
     {
+        $no_succes = 0;
         if (Yii::$app->request->isPost) {
             $bulkInput = Yii::$app->request->post('bulkInput');
+            $quiz_id = Yii::$app->request->post('quiz_id');
             $parsedQuestions = $this->parseBulkInput($bulkInput);
+            $label = Yii::$app->request->post('label');
 
             foreach ($parsedQuestions as $questionData) {
-                $this->insertQuestion($questionData, $quiz_id);
+                $no_succes += $this->insertQuestion($questionData, $quiz_id, $label);
             }
         }
+        Yii::$app->session->setFlash('success', ' Question(s) imported: ' . $no_succes);
 
         return $this->redirect(['/question/index']);
     }
 
-    
-    private function insertQuestion($questionData, $quiz_id = null)
+
+    private function insertQuestion($questionData, $quiz_id = null, $label = null)
     {
-        if ( isset($questionData['id']) ) {
-            $sql = "delete from question where id=".$questionData['id'];
-            Yii::$app->db->createCommand($sql)->execute();
-        }
-
-        $connection = Yii::$app->db;
-        $sql = "INSERT INTO question (id, question, a1, a2, a3, a4, a5, a6, correct, label)
-                VALUES (:id, :question, :a1, :a2, :a3, :a4, :a5, :a6, :correct, :label)";
-
-        $command = $connection->createCommand($sql);
-        $command->bindValue(':question', $questionData['question']);
-        if ( isset($questionData['id']) ) {
-            $command->bindValue(':id', $questionData['id']);
+        $succes = 0;
+        if (isset($questionData['id'])) {
+            $question = Question::findOne( $questionData['id'] );
         } else {
-            $command->bindValue(':id', null);
-        }
-        for ($i = 1; $i <= 6; $i++) {
-            $command->bindValue(":a$i", $questionData['a'.$i] ?? null);
-        }
-        $command->bindValue(':label', $questionData['label'] ?? null);
-
-        if ( ! isset($questionData['correct']) ) {
-            $questionData['correct'] = 0;
-        }
-        $command->bindValue(':correct', $questionData['correct']);
-
-        $command->execute();
-
+            $questionText = rtrim($questionData['question'], "\r\n");
+            $existingQuestion = Question::find()->where(['like', 'question', $questionText . '%', false])->one();
+            if ($existingQuestion !== null) {
+                return $succes;
+            }
+            $question = new Question();
         }
 
-    public function actionExport($quiz_id=0) {
+        $question->question = $questionData['question'];
+        $question->a1 = $questionData['a1'] ?? '-';
+        $question->a2 = $questionData['a2'] ?? '-';
+        $question->a3 = $questionData['a3'] ?? null;
+        $question->a4 = $questionData['a4'] ?? null;
+        $question->a5 = $questionData['a5'] ?? null;
+        $question->a6 = $questionData['a6'] ?? null;
+        $question->correct = $questionData['correct'] ?? 0;
+        if ( $label <> "" ) {
+            $question->label = $label;
+        } else {
+            $question->label =  $questionData['label'] ?? 'Imported';
+        }
         
-        if ( $quiz_id == 0 ) {
+        if ($question->save()) {
+            $succes++;
+            if ($quiz_id) {
+                $exists = Quizquestion::findOne(['quiz_id' => $quiz_id, 'question_id' => $question->id]);
+                if ($exists === null) {
+                    $quizQuestion = new Quizquestion();
+                    $quizQuestion->quiz_id = $quiz_id;
+                    $quizQuestion->question_id = $question->id;
+                    $quizQuestion->active = 1;
+                    $quizQuestion->save();
+                }
+            }
+        }
+        return $succes;
+    }
+
+    public function actionExport()
+    {
+        $request = Yii::$app->request;
+        $quiz_id = $request->get('quiz_id');
+
+        if ( $quiz_id=="" ) {
             $sql = "SELECT max(id) id FROM quiz WHERE active = 1";
             $quiz_id = Yii::$app->db->createCommand($sql)->queryOne()['id'];
-            if ( $quiz_id == "" ) {
+            if ($quiz_id == "") {
                 $sql = "SELECT max(id) id FROM quiz";
                 $quiz_id = Yii::$app->db->createCommand($sql)->queryOne()['id'];
-                if ( $quiz_id == "" ) {
+                if ($quiz_id == "") {
                     return $this->redirect(['/question']);
                 }
             }
         }
 
-        // ToDO select only quetions for this quiz, join with quizquestion
 
+        // ToDO select only quetions for this quiz, join with quizquestion
         // $sql = "select * from question";
+        // where qq.quiz_id=$quiz_id and qq.active=1
 
         $sql = "select
                 q.id id, question question, a1, a2, a3, a4, a5, a6, correct, label
                 from question q
                 join quizquestion qq on qq.question_id = q.id
-                where qq.quiz_id=$quiz_id and qq.active=1";
-       
+                where qq.quiz_id=$quiz_id and qq.active=1
+                order by id DESC";
+
         $questions = Yii::$app->db->createCommand($sql)->queryAll();
         $output = "";
-        foreach($questions as $question) {
-            $output .= "QQ\n".$question['question']."\n";
-            for ($i=1; $i<7; $i++) {
-                if ( $question['correct'] == $i ) {
-                    $output .= "AC\n". $question['a'.$i]."\n";
+        foreach ($questions as $question) {
+            $output .= "QQ\n" . $question['question'] . "\n";
+            $output .= "ID\n" . $question['id'] . "\n";
+            for ($i = 1; $i < 7; $i++) {
+                if ($question['correct'] == $i) {
+                    $output .= "AC\n" . $question['a' . $i] . "\n";
                 } else {
-                    $output .= "AA\n". $question['a'.$i]."\n";
+                    $output .= "AA\n" . $question['a' . $i] . "\n";
                 }
             }
-            $output .= "LL\n".$question['label']."\n";
-            $output .= "ID\n".$question['id']."\n";
+            $output .= "LL\n" . $question['label'] . "\n";
         }
 
-        return $this->render('export', [ 'output' => $output ]);
+        return $this->render('export', ['output' => $output]);
     }
 
-    public function actionBulkDelete($quiz_id) {
+    public function actionBulkDelete($quiz_id)
+    {
         $sql = "delete from question where id in (
                     select q.id from question q
                     join quizquestion qq on qq.question_id = q.id
@@ -402,5 +457,4 @@ class QuestionController extends Controller
 
         return $this->redirect(['/quiz']);
     }
-
 }

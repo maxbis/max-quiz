@@ -113,7 +113,7 @@ class SubmissionController extends Controller
         return $token;
     }
 
-    public function actionStart()
+    public function actionStart() // start a new quiz
     {
         $request = Yii::$app->request;
 
@@ -126,14 +126,14 @@ class SubmissionController extends Controller
             return $this->redirect(['/submission/create']);
         }
 
-        $sql = "select id, name from quiz where password='$password' and active = 1";
-        $result = Yii::$app->db->createCommand($sql)->queryOne();
-        if ( ! $result ) {
+        $sql = "select * from quiz where password='$password' and active = 1";
+        $quiz = Yii::$app->db->createCommand($sql)->queryOne();
+        if ( ! $quiz ) {
             return $this->redirect(Yii::$app->request->referrer);
         }
 
-        $quiz_name = $result['name'];
-        $quiz_id = $result['id'];
+        $quiz_name = $quiz['name'];
+        $quiz_id = $quiz['id'];
         $token = $this->generateRandomToken();
 
         // Get all questions connected, shuffle and create space seprated string
@@ -141,8 +141,12 @@ class SubmissionController extends Controller
         $result = Yii::$app->db->createCommand($sql)->queryAll();
         $questionIds = array_column( $result, 'question_id' );
         
-        $no_questions = count($questionIds);
         shuffle( $questionIds );
+        if ( $quiz['no_questions'] ) {
+            $limitArrayToN = fn (array $array, int $N) => ($N >= count($array)) ? $array : array_slice($array, 0, $N);
+            $questionIds = $limitArrayToN($questionIds, $quiz['no_questions']);
+        }
+        $no_questions = count($questionIds);
         $question_order = implode(" ",$questionIds);
 
         $ip_address = Yii::$app->request->userIP;

@@ -35,7 +35,7 @@ $id = Yii::$app->request->get('id');
         )->label('Status') ?>
 
 
-        <!-- <?= $form->field($model, 'no_questions')->textInput(['style' => 'width: 200px;'])->label('Max number of questions') ?> -->
+        <?= $form->field($model, 'no_questions')->textInput(['style' => 'width: 200px;'])->label('Max number of questions') ?>
 
         <div class="form-group">
             <?= Html::submitButton('Save', ['class' => 'btn btn-success quiz-button']) ?>
