@@ -145,14 +145,14 @@ class QuizController extends Controller
     }
 
 
-    public function actionDelete($id)
+    public function actionDelete($id, $show=1)
     {
         $sql = "delete from quizquestion where quiz_id=$id";
         Yii::$app->db->createCommand($sql)->execute();
 
         $this->findModel($id)->delete();
 
-        return $this->redirect(['index']);
+        return $this->redirect(['index', 'show' => $show]);
     }
 
     /**

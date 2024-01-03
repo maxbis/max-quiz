@@ -135,7 +135,12 @@ $this->registerJs($js);
                             'data-confirm' => 'Are you sure you want to delete this quiz?',
                             'data-method' => 'post',
                         ]);
-                        return $b2 . ' ' . $b1 . ' ' . $b3;
+                        $url = Yii::$app->urlManager->createUrl(['/submission', 'quiz_id' => $model->id]);
+                        $b4 = Html::a('Results', $url, [
+                            'title' => 'Show Results/Progress',
+                            'class' => 'btn btn-outline-dark quiz-button-small',
+                        ]);
+                        return $b2 . ' ' . $b1 . ' ' . $b3. ' ' . $b4;
                     },
                 ],
             ],

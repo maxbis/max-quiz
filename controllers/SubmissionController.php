@@ -56,10 +56,10 @@ class SubmissionController extends Controller
      *
      * @return string
      */
-    public function actionIndex()
+    public function actionIndex($quiz_id=null)
     {
         $searchModel = new SubmissionSearch();
-        $dataProvider = $searchModel->search($this->request->queryParams);
+        $dataProvider = $searchModel->search($this->request->queryParams, $quiz_id);
 
         return $this->render('index', [
             'searchModel' => $searchModel,

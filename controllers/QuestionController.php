@@ -80,12 +80,8 @@ class QuestionController extends Controller
             }
         }
 
-        if ($show == 1) $active = 1;
-        if ($show == 2) $active = 0;
-        if ($show == 0) $active = -1;
-
         $searchModel = new QuestionSearch();
-        $dataProvider = $searchModel->search($this->request->queryParams, $quiz_id, $active);
+        $dataProvider = $searchModel->search($this->request->queryParams, $quiz_id, $show);
 
         $sql = "SELECT question_id FROM quizquestion WHERE quiz_id = $quiz_id AND active = 1";
         $quizQuestions = Yii::$app->db->createCommand($sql)->queryAll();
@@ -155,6 +151,7 @@ class QuestionController extends Controller
 
         $newModel = new Question();
         $newModel->attributes = $model->attributes;
+        $newModel->question = "(Copy)\n" . $model->question;
 
         if ($newModel->save()) {
             Yii::$app->session->setFlash('success', 'Question copied successfully.');
@@ -192,11 +189,11 @@ class QuestionController extends Controller
      * @return \yii\web\Response
      * @throws NotFoundHttpException if the model cannot be found
      */
-    public function actionDelete($id)
+    public function actionDelete($id, $show=null)
     {
         $this->findModel($id)->delete();
 
-        return $this->redirect(['index']);
+        return $this->redirect(['index', 'show' => $show]);
     }
 
     /**

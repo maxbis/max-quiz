@@ -1,0 +1,1 @@
+Export does not work on curret quiz, but on active one.

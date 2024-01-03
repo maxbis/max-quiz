@@ -118,6 +118,11 @@ $this->params['breadcrumbs'][] = $this->title;
         padding-left: 3px;
         padding-right: 3px;
     }
+
+    .pagination li {
+        margin-right: 10px;
+        /* Adjust the value as needed */
+    }
 </style>
 
 
@@ -126,11 +131,11 @@ $currentRoute = Yii::$app->controller->getRoute();
 $params = Yii::$app->request->getQueryParams();
 
 # headerStatus is the view-status: all, only-checked, onlyunchecked
-$headerStatus = ['O', '&#x2713', 'X'];
+$headerStatus = ['A', 'X', '&#x2713'];
 # When navigating to the next status, determine the next URL
-# the show parameter circles through 0,1,2
-$nextShow = $show + 1;
-if ($nextShow > 2) $nextShow = 0;
+# the show parameter circles through 1,0,-1
+$nextShow = $show - 1;
+if ($nextShow < -1) $nextShow = 1;
 $params['show'] = $nextShow;
 $clickedOnHeader = Url::toRoute(array_merge([$currentRoute], $params));
 
@@ -278,7 +283,7 @@ $this->registerJs($script);
                 'attribute' => 'status',
                 'headerOptions' => ['style' => 'width:40px;'],
                 'header' => '<a href="#" id="header-checkbox" name="header-checkbox" class="nostyle""
-                            onclick="headerCheckbox(' . $show . ');" >' . $headerStatus[$show] . '</a>',
+                            onclick="headerCheckbox(' . $show . ');" >' . $headerStatus[$show+1] . '</a>',
                 'label' => '',
                 'format' => 'raw', // to render raw HTML
                 'value' => function ($model) use ($questionIds, $quiz_id) {
@@ -314,8 +319,8 @@ $this->registerJs($script);
             [
                 'class' => ActionColumn::className(),
                 'headerOptions' => ['style' => 'width:80px;'],
-                'urlCreator' => function ($action, Question $model, $key, $index, $column) {
-                    return Url::toRoute([$action, 'id' => $model->id]);
+                'urlCreator' => function ($action, Question $model, $key, $index, $column) use ($show) {
+                    return Url::toRoute([$action, 'id' => $model->id, 'show' => $show]);
                 }
             ],
         ],
@@ -349,7 +354,7 @@ $this->registerJs($script);
         ?>
         <span style="margin-left:50px;"> </span>
         <?php
-        if ( $show == 1 ) {
+        if ($show == 1) {
             echo Html::a(
                 'Delete All',
                 ['bulk-delete', 'quiz_id' => $quiz['id']],

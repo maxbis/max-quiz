@@ -17,7 +17,7 @@ class SubmissionSearch extends Submission
     public function rules()
     {
         return [
-            [['id', 'token', 'no_questions', 'no_answered', 'no_correct', 'finished','quiz_id'], 'integer'],
+            [['id', 'token', 'no_questions', 'no_answered', 'no_correct', 'finished', 'quiz_id'], 'integer'],
             [['first_name', 'last_name', 'class', 'start_time', 'end_time', 'question_order'], 'safe'],
         ];
     }
@@ -38,9 +38,13 @@ class SubmissionSearch extends Submission
      *
      * @return ActiveDataProvider
      */
-    public function search($params)
+    public function search($params, $quiz_id = null)
     {
         $query = Submission::find();
+
+        if ($quiz_id) {
+            $query->andWhere(['quiz_id' => $quiz_id]);
+        }
 
         $query->joinWith(['quiz']);
 
@@ -76,9 +80,12 @@ class SubmissionSearch extends Submission
             ->andFilterWhere(['like', 'class', $this->class])
             ->andFilterWhere(['like', 'question_order', $this->question_order]);
 
+        if  ($quiz_id == null ) {
             $query->andFilterWhere([
                 'quiz.active' => 1,
             ]);
+        }
+
 
         return $dataProvider;
     }

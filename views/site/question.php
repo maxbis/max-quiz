@@ -194,6 +194,11 @@ $noAnswers = count($answers);
                                 'id' => 'submitButton-org', 'title' => 'Edit Question',
                                 'class' => 'btn btn-light',
                             ]);
+                            $url = Yii::$app->urlManager->createUrl(['/question/copy', 'id' => $question['id']]);
+                            echo Html::a('Copy', $url, [
+                                'id' => 'submitButton-org', 'title' => 'Copy Question',
+                                'class' => 'btn btn-light',
+                            ]);
                             $url = Yii::$app->urlManager->createUrl(['/question']);
                             echo Html::a('Back', $url, ['id' => 'submitButton', 'title' => 'Back','class' => 'btn btn-light']);
                         } ?>

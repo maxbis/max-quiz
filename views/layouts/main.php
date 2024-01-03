@@ -41,7 +41,7 @@ $this->registerLinkTag(['rel' => 'icon', 'type' => 'image/x-icon', 'href' => Yii
         'items' => [
             ['label' => 'Home', 'url' => ['/submission/create']],
             ['label' => 'Quiz', 'url' => ['/quiz']],
-            ['label' => 'Questions', 'url' => ['/question']],
+            ['label' => 'Questions', 'url' => ['/question?show=-1']],
             ['label' => 'Progress', 'url' => ['/submission']],
             Yii::$app->user->isGuest
                 ? ['label' => 'Login', 'url' => ['/site/login']]
