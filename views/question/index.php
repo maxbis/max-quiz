@@ -268,12 +268,12 @@ $this->registerJs($script);
         // },
         'columns' => [
 
-            // ['class' => 'yii\grid\SerialColumn'],
-            [
-                'attribute' => 'id',
-                'label' => 'id',
-                'headerOptions' => ['style' => 'width:40px;'],
-            ],
+            ['class' => 'yii\grid\SerialColumn'],
+            // [
+            //     'attribute' => 'id',
+            //     'label' => 'id',
+            //     'headerOptions' => ['style' => 'width:30px;'],
+            // ],
             [
                 'attribute' => 'status',
                 'headerOptions' => ['style' => 'width:40px;'],
