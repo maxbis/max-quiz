@@ -82,7 +82,7 @@ class QuestionController extends Controller
 
         if ($show == 1) $active = 1;
         if ($show == 2) $active = 0;
-        if ($show == 0) $active = "";
+        if ($show == 0) $active = -1;
 
         $searchModel = new QuestionSearch();
         $dataProvider = $searchModel->search($this->request->queryParams, $quiz_id, $active);
