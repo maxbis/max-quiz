@@ -17,7 +17,18 @@ use yii\grid\GridView;
 
     <h1><?= Html::encode($this->title) ?></h1>
 
-    <?php // echo $this->render('_search', ['model' => $searchModel]); ?>
+    <?php // echo $this->render('_search', ['model' => $searchModel]);
+        $contentOptionsReady = function ($model, $key, $index, $column) {
+            if (!$model->finished) return ['style' => ""];
+            $score = $model->no_questions > 0 ? round(($model->no_correct / $model->no_questions) * 100, 0) : 0;
+            if ($model->no_answered) {
+                $backgroundColor = $score < 55 ? 'lightcoral' : 'lightgreen';
+            } else {
+                $backgroundColor = "";
+            }
+            return ['style' => "background-color: $backgroundColor;"];
+        };
+    ?>
 
     <?= GridView::widget([
         'dataProvider' => $dataProvider,
@@ -26,8 +37,10 @@ use yii\grid\GridView;
             [
                 'label' => 'Code', // You can change the label as needed
                 'headerOptions' => ['style' => 'width:40px;'],
+                'format' => 'raw',
                 'value' => function ($model) {
-                    return strtoupper(substr($model->token, -3));
+                    return Html::a( strtoupper(substr($model->token, -3)) , ['submission/update', 'id' => $model->id]);
+                    // return $model->no_answered.'/'.$model->no_questions;
                 },
             ],
             [
@@ -36,14 +49,7 @@ use yii\grid\GridView;
                 'contentOptions' => ['class' => 'active-field'],
                 'header' => 'Ready',
                 'headerOptions' => ['style' => 'width:40px;'],
-                'contentOptions' => function ($model, $key, $index, $column) {
-                    if ( $model->finished ) {
-                        $backgroundColor = 'lightgreen';
-                    } else {
-                        $backgroundColor = "";
-                    }
-                    return ['style' => "background-color: $backgroundColor;"];
-                },
+                'contentOptions' => $contentOptionsReady,
                 'value' => function ($model) {
                     return Html::checkbox('finished', $model->finished, ['value' => $model->id, 'disabled' => true,]);
                 },
@@ -130,22 +136,25 @@ use yii\grid\GridView;
                 'attribute' => 'class',
                 'label' => 'klas',
                 'headerOptions' => ['style' => 'width:60px;'],
+                'contentOptions' => $contentOptionsReady,
                 
             ],
             [
                 'attribute' => 'no_answered',
                 'label' => 'Progr.',
                 'headerOptions' => ['style' => 'width:60px;', 'title' => 'Number of Questions / Number of Answers' ],
+                'contentOptions' => $contentOptionsReady,
                 'format' => 'raw',
                 'value' => function ($model) {
-                    return Html::a($model->no_answered.'/'.$model->no_questions, ['submission/update', 'id' => $model->id]);
-                    // return $model->no_answered.'/'.$model->no_questions;
+                    // return Html::a($model->no_answered.'/'.$model->no_questions, ['submission/update', 'id' => $model->id]);
+                    return $model->no_answered.'/'.$model->no_questions;
                 },
             ],
             [
                 'attribute' => 'no_correct',
                 'label' => 'Corr',
                 'headerOptions' => ['style' => 'width:60px;', 'title' => 'Number of Correct Answers' ],
+                'contentOptions' => $contentOptionsReady,
                 
             ],
             [
