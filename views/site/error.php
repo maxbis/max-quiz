@@ -1,27 +1,31 @@
 <?php
-
-/** @var yii\web\View $this */
-/** @var string $name */
-/** @var string $message */
-/** @var Exception$exception */
+/* @var $this yii\web\View */
+/* @var $message string */
 
 use yii\helpers\Html;
 
-$this->title = $name;
+$this->title = 'Error';
+$this->registerCss("
+    .paper {
+        box-shadow: 0 4px 8px 0 rgba(0, 0, 0, 0.2);
+        background-color: white;
+        padding: 20px;
+        margin: 20px 0;
+        border-radius: 5px;
+    }
+    .error-message {
+        color: salmon;
+        font-weight: bold;
+    }
+");
 ?>
 <div class="site-error">
-
-    <h1><?= Html::encode($this->title) ?></h1>
-
-    <div class="alert alert-danger">
-        <?= nl2br(Html::encode($message)) ?>
+    <div class="paper">
+        <div class="alert alert-danger">
+            <h1><?= Html::encode($this->title) ?></h1>
+            <div class="error-message">
+                <?= nl2br(Html::encode($message)) ?>
+            </div>
+        </div>
     </div>
-
-    <p>
-        The above error occurred while the Web server was processing your request.
-    </p>
-    <p>
-        Please contact us if you think this is a server error. Thank you.
-    </p>
-
 </div>

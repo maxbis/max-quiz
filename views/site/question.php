@@ -7,9 +7,8 @@ $csrfTokenName = Yii::$app->request->csrfParam;
 $csrfToken = Yii::$app->request->getCsrfToken();
 
 $answers = [];
-//dd($question);
 for ($i = 1; $i < 7; $i++) {
-    if ( rtrim($question['a' . $i], "\n\r") != "" ) {
+    if (rtrim($question['a' . $i], "\n\r") != "") {
         array_push($answers, 'a' . $i);
     }
 }
@@ -53,11 +52,8 @@ $noAnswers = count($answers);
             color: white;
         }
 
-        .not_used {
-            white-space: pre;
-        }
-
         .question-block {
+            white-space: pre;
             font-family: monospace;
             background-color: #f8f8f8;
             border: 1px solid #ddd;
@@ -66,6 +62,13 @@ $noAnswers = count($answers);
             text-align: left;
             user-select: none;
             overflow-x: hidden;
+        }
+
+        @media (min-width: 601px) {
+            .question-block {
+                white-space: normal;
+                min-height: 4em;
+            }
         }
 
         .question-title {
@@ -125,6 +128,7 @@ $noAnswers = count($answers);
             border-left: 2px solid lightgray;
             padding-left: 10px;
         }
+
         .btn {
             margin-right: 20px;
         }
@@ -154,7 +158,7 @@ $noAnswers = count($answers);
             <div class="col-12 question-title">Vraag <?= $submission['no_answered'] + 1 ?></div>
             <div class="col-12">
                 <div class="question-block">
-<?= $question['question'] ?>
+                    <?= $question['question'] ?>
                 </div>
             </div>
 
@@ -204,7 +208,7 @@ $noAnswers = count($answers);
                                 'class' => 'btn btn-light',
                             ]);
                             $url = Yii::$app->urlManager->createUrl(['/question']);
-                            echo Html::a('Back', $url, ['id' => 'submitButton', 'title' => 'Back','class' => 'btn btn-light']);
+                            echo Html::a('Back', $url, ['id' => 'submitButton', 'title' => 'Back', 'class' => 'btn btn-light']);
                         } ?>
                     </form>
                 </div>

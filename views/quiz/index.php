@@ -17,6 +17,7 @@ $updatePasswordUrl = '/quiz/a';
 $csrfToken = Yii::$app->request->getCsrfToken();
 $id = Yii::$app->request->get('id');
 
+$apiUrl = Url::toRoute(['/quiz-question/active']);
 
 $js = <<<JS
 
@@ -24,7 +25,7 @@ function updateActiveStatus(id, active) {
     console.log("id: "+id);
     console.log("active: "+active);
     $.ajax({
-        url: '/quiz-question/active',
+        url: '$apiUrl',
         method: 'POST',
         data: {  _csrf: '$csrfToken',
                 id: id,

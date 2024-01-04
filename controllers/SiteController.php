@@ -167,6 +167,10 @@ class SiteController extends Controller
 
         $sql = "select id, question, a1, a2, a3, a4, a5, a6 from question where id = ".$submission['thisQuestion'];
         $question = Yii::$app->db->createCommand($sql)->queryOne();
+        if ( ! $question ) {
+            $message = "Question id ".$submission['thisQuestion']."not availabel anymore, cannot coninue this quiz.";
+            return $this->render('/site/error', ['message' => $message ]);
+        }
 
         $title = $quiz['name'] . ' ['.strtoupper(substr($submission['token'], -3)).'] ';
 

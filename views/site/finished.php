@@ -78,6 +78,29 @@ $score = round($submission['no_correct'] * 100 / $submission['no_questions'], 0)
       /* Start with zero opacity to hide the content */
       transition: opacity 3s ease-in-out;
     }
+
+    @media (max-width: 800px) {
+      .name {
+        font-size: 30px;
+      }
+      .score {
+        font-size: 24px;
+      }
+      .signature, .date {
+        font-size: 12px;
+      }
+    }
+    @media (max-width: 400px) {
+      .name {
+        font-size: 20px;
+      }
+      .score {
+        font-size: 18px;
+      }
+      .signature, .date {
+        font-size: 10px;
+      }
+    }
   </style>
 </head>
 
@@ -100,7 +123,7 @@ $score = round($submission['no_correct'] * 100 / $submission['no_questions'], 0)
 </script>
 
 <body>
-  <div class="certificate-container">
+  <div class="certificate-container" class="dynamic-size">
     <img src="<?= Url::to('@web/img/certificate.jpg') ?>" alt="Certificate of Appreciation" class="delayed-content certificate-image" data-delay="0">
     <div class="delayed-content name" data-delay="400"><?= $submission['first_name'] . " " . $submission['last_name'] ?></div>
     <div class="delayed-content score" data-delay="2000">Score <b><span class="delayed-content" data-delay="3000"><?= $score ?>%<span></b></div>
