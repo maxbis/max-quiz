@@ -53,8 +53,11 @@ $noAnswers = count($answers);
             color: white;
         }
 
-        .question-block {
+        .not_used {
             white-space: pre;
+        }
+
+        .question-block {
             font-family: monospace;
             background-color: #f8f8f8;
             border: 1px solid #ddd;
