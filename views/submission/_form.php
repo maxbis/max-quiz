@@ -47,8 +47,8 @@ $this->registerJs($script);
             </div>
             <div class="col">
                 <?= $form->field($model, 'end_time')->textInput(['readonly' => true, 'style' => 'background-color: #f0f0f0;']) ?>
-                <?= $form->field($model, 'token')->textInput(['readonly' => true, 'style' => 'background-color: #f0f0f0;']) ?>
-                <?= $form->field($model, 'question_order')->textInput(['readonly' => true, 'maxlength' => true, 'style' => 'background-color: #f0f0f0;']) ?>
+                <?= $form->field($model, 'token')->textInput(['readonly' => false, 'style' => 'background-color: #f0f0f0;']) ?>
+                <?= $form->field($model, 'question_order')->textInput(['readonly' => true, 'maxlength' => true ]) ?>
                 <?= $form->field($model, 'no_correct')->textInput() ?>
                 <?= $form->field($model, 'last_name')->textInput(['maxlength' => true, 'style' => 'background-color: #FFFFE0;']) ?>
 
