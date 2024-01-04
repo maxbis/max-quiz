@@ -38,13 +38,23 @@ $noAnswers = count($answers);
 
         .answer {
             padding: 6px;
-            border: 1px solid #ddd;
+            border: 2px solid #ddd;
+            background-color: #fbfbfd;
             margin: 40px;
             cursor: pointer;
-            text-align: left;
+            text-align: middle;
             min-height: 4em;
             font-family: monospace;
             user-select: none;
+            display: flex;
+            align-items: center; /* Vertical centering */
+            justify-content: center;
+        }
+        .answer:not(.selected):hover {
+            background-color: #bbd7fc;
+        }
+        .answer:active {
+            background-color: #007bff;
         }
 
         .selected {
@@ -53,7 +63,7 @@ $noAnswers = count($answers);
         }
 
         .question-block {
-            white-space: pre;
+            white-space: pre-wrap;
             font-family: monospace;
             background-color: #f8f8f8;
             border: 1px solid #ddd;
@@ -64,10 +74,11 @@ $noAnswers = count($answers);
             overflow-x: hidden;
         }
 
-        @media (min-width: 601px) {
+        @media (max-width: 601px) {
             .question-block {
                 white-space: normal;
                 min-height: 4em;
+                font-size:smaller;
             }
         }
 
@@ -158,7 +169,7 @@ $noAnswers = count($answers);
             <div class="col-12 question-title">Vraag <?= $submission['no_answered'] + 1 ?></div>
             <div class="col-12">
                 <div class="question-block">
-                    <?= $question['question'] ?>
+<?= $question['question'] ?>
                 </div>
             </div>
 

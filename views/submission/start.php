@@ -50,8 +50,9 @@ $csrfToken = Yii::$app->request->getCsrfToken();
                     <div class="col-md-6 offset-md-6 d-flex align-items-center justify-content-center">
                         <div class="form-container">
                             <h2 class="mb-5">Start Quiz</h2>
-                            <form action="<?=Url::to(['submission/start']) ?>" method="POST">
+                            <form action="<?=Url::to(['/submission/start']) ?>" method="POST">
                                 <input type="hidden" name="<?= $csrfTokenName ?>" value="<?= $csrfToken ?>">
+                                <input type="hidden" name="answer_order" value="">
                                 <div class="form-group">
                                     <label for="voornaam">First Name</label>
                                     <input type="text" class="form-control" id="first_name" name="first_name" placeholder="Fist Name" required>

@@ -39,6 +39,7 @@ $this->params['breadcrumbs'][] = $this->title;
             'question_order',
             'no_questions',
             'no_answered',
+            'answer_order',
             'no_correct',
             'quiz_id',
         ],

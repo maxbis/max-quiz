@@ -151,8 +151,8 @@ class SubmissionController extends Controller
 
         $ip_address = Yii::$app->request->userIP;
 
-        $sql = "insert into submission (token, first_name, last_name, class, question_order, no_questions, no_answered, no_correct, quiz_id, ip_address)
-                values ('$token', '$first_name', '$last_name', '$class', '$question_order', $no_questions, 0, 0, $quiz_id, '$ip_address')";
+        $sql = "insert into submission (token, first_name, last_name, class, question_order, no_questions, no_answered, no_correct, quiz_id, ip_address, answer_order)
+                values ('$token', '$first_name', '$last_name', '$class', '$question_order', $no_questions, 0, 0, $quiz_id, '$ip_address', '')";
         $result = Yii::$app->db->createCommand($sql)->execute();
         
         $cookie = new Cookie([
@@ -184,7 +184,7 @@ class SubmissionController extends Controller
         $model = $this->findModel($id);
 
         if ($this->request->isPost && $model->load($this->request->post()) && $model->save()) {
-            return $this->redirect(['index', 'id' => $model->id]);
+            return $this->redirect(['update', 'id' => $model->id]);
         }
 
         return $this->render('update', [

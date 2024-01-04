@@ -9,20 +9,13 @@ use yii\helpers\Html;
 <head>
     <title>Multiple Choice Quiz</title>
     <style>
-        /* Add your CSS styles here for formatting the quiz */
         .question-container {
             background-color: #f5f5f5;
-            /* Paper-like background color */
             border: 1px solid #ccc;
-            /* Border to resemble paper */
             padding: 20px;
-            /* Padding to create space inside the paper */
             box-shadow: 3px 3px 5px #888888;
-            /* Slight shadow on the bottom and right sides */
             margin-bottom: 40px;
-            /* Increase the margin for more space between questions */
             font-family: monospace;
-            /* Use a non-proportional font (e.g., monospace) */
         }
 
         .question {
@@ -33,12 +26,10 @@ use yii\helpers\Html;
 
         .answers {
             margin-left: 20px;
-            /* Adjust the margin for answers */
         }
 
         .answers label {
             display: block;
-            /* Put each answer on a new line */
         }
 
         label {

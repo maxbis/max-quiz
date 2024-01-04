@@ -100,7 +100,7 @@ $this->registerJs($js);
                     return Html::a($model->name, $url);
                 },
             ],
-            [
+            [ 
                 'attribute' => 'password',
                 'format' => 'raw',
                 'value' => function ($model) {
@@ -113,6 +113,18 @@ $this->registerJs($js);
                     $id = $model->id;
                     return isset($quizCounts[$id]) ? $quizCounts[$id] : 0;
                 },
+            ],
+            [
+                'label' => 'Review',
+                'attribute' => 'review',
+                'value' => function ($model)  {
+                    if ( $model->review )  {
+                        return "Yes";
+                    } else {
+                        return "No";
+                    }
+                },
+
             ],
             [
                 'class' => 'yii\grid\ActionColumn',

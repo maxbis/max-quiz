@@ -37,6 +37,11 @@ $id = Yii::$app->request->get('id');
 
         <?= $form->field($model, 'no_questions')->textInput(['style' => 'width: 200px;'])->label('Max number of questions') ?>
 
+        <?= $form->field($model, 'review')->dropDownList(
+                    [1 => 'Review possible', 0 => 'No Review'], // Options: value => display text
+                    ['prompt' => 'Select Status', 'style' => 'width: 200px;'] // Optional: prompt message
+                )->label('Review Quiz after completion') ?>
+
         <div class="form-group">
             <?= Html::submitButton('Save', ['class' => 'btn btn-success quiz-button']) ?>
             <?= Html::a( 'Cancel', Yii::$app->request->referrer , ['class'=>'btn btn-primary quiz-button']); ?>

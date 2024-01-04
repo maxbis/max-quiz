@@ -1,6 +1,7 @@
 <?php
 
 use yii\helpers\Url;
+use yii\helpers\Html;
 
 $score = round($submission['no_correct'] * 100 / $submission['no_questions'], 0);
 
@@ -15,8 +16,11 @@ $score = round($submission['no_correct'] * 100 / $submission['no_questions'], 0)
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Certificate of Appreciation</title>
   <style>
-    body,
-    html {
+    body {
+      background-color: #f7f7f7;
+    }
+
+    .main-block {
       height: 100%;
       margin: 0;
       display: flex;
@@ -26,8 +30,11 @@ $score = round($submission['no_correct'] * 100 / $submission['no_questions'], 0)
     }
 
     .certificate-container {
+      display: block;
       position: relative;
       text-align: center;
+      margin-top: 80px;
+      margin-bottom: 80px;
     }
 
     .certificate-image {
@@ -83,25 +90,100 @@ $score = round($submission['no_correct'] * 100 / $submission['no_questions'], 0)
       .name {
         font-size: 30px;
       }
+
       .score {
         font-size: 24px;
       }
-      .signature, .date {
+
+      .signature,
+      .date {
         font-size: 12px;
       }
     }
+
     @media (max-width: 400px) {
       .name {
         font-size: 20px;
       }
+
       .score {
         font-size: 18px;
       }
-      .signature, .date {
+
+      .signature,
+      .date {
         font-size: 10px;
       }
     }
   </style>
+
+  <style>
+    .custom-btn {
+      display: inline-block;
+      padding: 6px 12px;
+      margin-bottom: 0;
+      font-size: 14px;
+      font-weight: 400;
+      line-height: 1.42857143;
+      text-align: center;
+      white-space: nowrap;
+      vertical-align: middle;
+      -ms-touch-action: manipulation;
+      touch-action: manipulation;
+      cursor: pointer;
+      -webkit-user-select: none;
+      -moz-user-select: none;
+      -ms-user-select: none;
+      user-select: none;
+      background-image: none;
+      border: 1px solid transparent;
+      border-radius: 4px;
+      color: #fff;
+      background-color: #337ab7;
+      border-color: #2e6da4;
+      text-decoration: none;
+    }
+
+    .custom-btn:hover,
+    .custom-btn:focus,
+    .custom-btn:active {
+      color: #fff;
+      background-color: #286090;
+      border-color: #204d74;
+    }
+
+    .centered {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      background-color: #f7f7f7;
+    }
+  </style>
+
+  <style>
+    .myButton {
+      display: inline-block;
+      outline: none;
+      cursor: pointer;
+      padding: 0 16px;
+      background-color: #fff;
+      border-radius: 0.25rem;
+      border: 1px solid #dddbda;
+      color: #0070d2;
+      font-size: 13px;
+      line-height: 30px;
+      font-weight: 400;
+      text-align: center;
+      text-decoration: none;
+      font-family: 'Lucida Sans', 'Lucida Sans Regular', 'Lucida Grande', 'Lucida Sans Unicode', Geneva, Verdana, sans-serif;
+    }
+
+    .myButton:hover {
+      background-color: lightblue;
+      color: black;
+    }
+  </style>
+
 </head>
 
 <script>
@@ -123,13 +205,22 @@ $score = round($submission['no_correct'] * 100 / $submission['no_questions'], 0)
 </script>
 
 <body>
-  <div class="certificate-container" class="dynamic-size">
-    <img src="<?= Url::to('@web/img/certificate.jpg') ?>" alt="Certificate of Appreciation" class="delayed-content certificate-image" data-delay="0">
-    <div class="delayed-content name" data-delay="400"><?= $submission['first_name'] . " " . $submission['last_name'] ?></div>
-    <div class="delayed-content score" data-delay="2000">Score <b><span class="delayed-content" data-delay="3000"><?= $score ?>%<span></b></div>
-    <div class="delayed-content date" data-delay="800">28 december 2023</div>
-    <div class="delayed-content signature" data-delay="1200">PHP L1 (score: <?= $submission['no_correct'] ?>/<?= $submission['no_questions'] ?>)</div>
+  <div class="main-block">
+    <div class="certificate-container dynamic-size">
+      <img src="<?= Url::to('@web/img/certificate.jpg') ?>" alt="Certificate of Appreciation" class="delayed-content certificate-image" data-delay="0">
+      <div class="delayed-content name" data-delay="400"><?= $submission['first_name'] . " " . $submission['last_name'] ?></div>
+      <div class="delayed-content score delayed-content" data-delay="1600">Score 
+        <b><span class="delayed-content" data-delay="2400"><?= $score ?>%<span></b>
+      </div>
+      <div class="delayed-content date" data-delay="800">28 december 2023</div>
+      <div class="delayed-content signature" data-delay="1200">PHP L1 (score: <?= $submission['no_correct'] ?>/<?= $submission['no_questions'] ?>)</div>
+    </div>
   </div>
+  <?php  if ( $submission['quiz_review'] ) { ?>
+    <div class="centered delayed-content" data-delay="2600">
+      <?= Html::a('Results', ['/site/results', 'token' => $submission['token']], ['class' => 'myButton']); ?>
+    </div>
+  <?php } ?>
 </body>
 
 </html>

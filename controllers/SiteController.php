@@ -10,6 +10,9 @@ use yii\filters\VerbFilter;
 use app\models\LoginForm;
 use app\models\ContactForm;
 
+use app\models\submission;
+use app\models\Question;
+
 class SiteController extends Controller
 {
     /**
@@ -62,7 +65,6 @@ class SiteController extends Controller
         } else {
             return $this->redirect(['quiz/']);
         }
-        
     }
 
     public function actionLogin()
@@ -112,28 +114,33 @@ class SiteController extends Controller
 
     /* Quiz functions */
 
-    private function getToken() {
-         // check valid cookie (no time-out)
-         $request = Yii::$app->request;
-         $cookies = $request->cookies;
-         if ($cookies->has('token')) {
-             $token = $cookies->getValue('token');
-         } else { // No cookie, start quiz
-             return 0;
-         }
-         return $token;
+    private function getToken()
+    {
+        // check valid cookie (no time-out)
+        $request = Yii::$app->request;
+        $cookies = $request->cookies;
+        if ($cookies->has('token')) {
+            $token = $cookies->getValue('token');
+        } else { // No cookie, start quiz
+            return 0;
+        }
+        return $token;
     }
 
 
-    private function getSubmission() {
+    private function getSubmission()
+    {
         $token = $this->getToken();
-        if ( ! $token ) {
+        if (!$token) {
             return 0;
         }
-        $sql = "select * from submission where token = '".$token."'";
+        $sql = "select * from submission where token = '" . $token . "'";
+        $sql = "select s.*, q.name quiz_name, q.review quiz_review, q.active quiz_active
+                from submission s join quiz q on q.id = s.quiz_id
+                where token = '" . $token . "'";
         $submission = Yii::$app->db->createCommand($sql)->queryOne();
 
-        if (  $submission['no_answered'] !=  $submission['no_questions'] ) {
+        if ($submission['no_answered'] !=  $submission['no_questions']) {
             $questionOrderArray = explode(' ', $submission['question_order']);
             // dd($submission);
             $thisQuestion = $questionOrderArray[$submission['no_answered']];
@@ -144,7 +151,8 @@ class SiteController extends Controller
     }
 
 
-    private function getQuiz($id) {
+    private function getQuiz($id)
+    {
         // check if quiz is still ative, otherwise redirect to final page
         $sql = "select name from quiz where id = $id";
         $quiz = Yii::$app->db->createCommand($sql)->queryOne();
@@ -152,33 +160,35 @@ class SiteController extends Controller
         return $quiz;
     }
 
-    public function actionQuestion() {
+    public function actionQuestion()
+    {
         $submission = $this->getSubmission();
-        if ( ! $submission ) {
+        if (!$submission) {
             return $this->redirect(['submission/create']);
         }
         // are we ready
         // ToDo add some method to force to stop.
-        if (  $submission['no_answered'] ==  $submission['no_questions'] || $submission['finished']  ) {
+        if ($submission['no_answered'] ==  $submission['no_questions'] || $submission['finished']) {
             return $this->redirect(['site/finished']);
         }
 
-        $quiz = $this->getQuiz( $submission['quiz_id'] );
+        $quiz = $this->getQuiz($submission['quiz_id']);
 
-        $sql = "select id, question, a1, a2, a3, a4, a5, a6 from question where id = ".$submission['thisQuestion'];
+        $sql = "select id, question, a1, a2, a3, a4, a5, a6 from question where id = " . $submission['thisQuestion'];
         $question = Yii::$app->db->createCommand($sql)->queryOne();
-        if ( ! $question ) {
-            $message = "Question id ".$submission['thisQuestion']."not availabel anymore, cannot coninue this quiz.";
-            return $this->render('/site/error', ['message' => $message ]);
+        if (!$question) {
+            $message = "Question id " . $submission['thisQuestion'] . "not availabel anymore, cannot coninue this quiz.";
+            return $this->render('/site/error', ['message' => $message]);
         }
 
-        $title = $quiz['name'] . ' ['.strtoupper(substr($submission['token'], -3)).'] ';
+        $title = $quiz['name'] . ' [' . strtoupper(substr($submission['token'], -3)) . '] ';
 
         $this->layout = false;
-        return $this->render('question', [ 'title' => $title, 'question' => $question, 'submission' => $submission ]);
+        return $this->render('question', ['title' => $title, 'question' => $question, 'submission' => $submission]);
     }
 
-    public function actionAnswer() {
+    public function actionAnswer()
+    {
         $request = Yii::$app->request;
 
         if ($request->isPost) {
@@ -187,16 +197,15 @@ class SiteController extends Controller
             return $this->redirect(['site/question']);
         }
 
-        if ( $givenAnswer == "" ) {
+        if ($givenAnswer == "") {
             return $this->redirect(['site/question']);
         }
-        
-        $token = $this->getToken();
+
         $submission = $this->getSubmission();
-        $sql = "select correct from question where id = ${submission['thisQuestion']}";
+        $sql = "select correct from question where id = ". $submission['thisQuestion'];
         $question = Yii::$app->db->createCommand($sql)->queryOne();
 
-        if ( $givenAnswer == $question['correct'] ) {
+        if ($givenAnswer == $question['correct']) {
             $punt = 1;
         } else {
             $punt = 0;
@@ -211,12 +220,12 @@ class SiteController extends Controller
                 set no_correct = no_correct + $punt,
                 no_answered = no_answered + 1,
                 answer_order = concat(answer_order, ' ', '$givenAnswer') 
-                where token = '".$this->getToken()."'";
+                where token = '" . $this->getToken() . "'";
         $question = Yii::$app->db->createCommand($sql)->execute();
 
         // are we ready?
-        if (  $submission['no_answered']+1 ==  $submission['no_questions'] ) {
-            $sql = "update submission set end_time = NOW(), finished=1 where token = '".$this->getToken()."'";
+        if ($submission['no_answered'] + 1 ==  $submission['no_questions']) {
+            $sql = "update submission set end_time = NOW(), finished=1 where token = '" . $this->getToken() . "'";
             $question = Yii::$app->db->createCommand($sql)->execute();
             return $this->redirect(['site/finished']);
         }
@@ -224,15 +233,40 @@ class SiteController extends Controller
         return $this->redirect(['site/question']);
     }
 
-    public function actionFinished() {
+    public function actionFinished()
+    {
         $submission = $this->getSubmission();
-        if ( ! $submission ) {
+        if (!$submission) {
             return $this->redirect(['submission/create']);
         }
 
         $this->layout = false;
-        return $this->render('finished', [ 'submission' => $submission ]);
+        return $this->render('finished', ['submission' => $submission]);
     }
 
+    public function actionResults($token)
+    {
+        $submission = Submission::find()
+            ->where(['submission.token' => $token])
+            ->joinWith('quiz')
+            ->andWhere(['quiz.active' => 1])
+            ->andWhere(['>', 'quiz.review', 0])
+            ->one();
 
+        if ($submission === null) {
+            throw new \yii\web\NotFoundHttpException('The requested results is not available to view.');
+        }
+
+        $questionIds = explode(" ", $submission['question_order']);
+        $questions = Question::find()->where(['id' => $questionIds])->asArray()->all();
+        $questionsById = [];
+        foreach ($questions as $question) {
+            $questionsById[$question['id']] = $question;
+        }
+        
+        return $this->render('results', [
+            'questionsById' => $questionsById,
+            'submission' => $submission,
+        ]);
+    }
 }

@@ -30,7 +30,7 @@ class Quiz extends \yii\db\ActiveRecord
     {
         return [
             [['name', 'password', 'active'], 'required'],
-            [['active', 'no_questions'], 'integer'],
+            [['active', 'no_questions', 'review'], 'integer'],
             [['name'], 'string', 'max' => 40],
             [['password'], 'string', 'max' => 20],
         ];
@@ -47,6 +47,7 @@ class Quiz extends \yii\db\ActiveRecord
             'password' => 'Code',
             'active' => 'Active',
             'no_questions' => 'No Questions',
+            'review' => 'Review'
         ];
     }
 }
