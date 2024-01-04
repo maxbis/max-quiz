@@ -80,6 +80,10 @@ $noAnswers = count($answers);
                 min-height: 4em;
                 font-size:smaller;
             }
+            .answer {
+                margin: 10px;
+                min-height: 3em;
+            }
         }
 
         .question-title {
