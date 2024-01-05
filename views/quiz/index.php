@@ -111,7 +111,9 @@ $this->registerJs($js);
                 'label' => 'Questions',
                 'value' => function ($model) use ($quizCounts) {
                     $id = $model->id;
-                    return isset($quizCounts[$id]) ? $quizCounts[$id] : 0;
+                    $aantalQuestion = isset($quizCounts[$id]) ? $quizCounts[$id] : 0;
+                    $maxQuestions = isset($model['no_questions'] ) ? $model['no_questions'] : $aantalQuestion ;
+                    return $maxQuestions .' from '. $aantalQuestion;
                 },
             ],
             [
