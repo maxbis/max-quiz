@@ -271,13 +271,19 @@ class QuestionController extends Controller
         $currentKey = "";
         $answerIndex = 1;
 
+        $trimEmptyLines = function ($text) {
+            $trimmedText = preg_replace('/^\h*\v+/m', '', $text); // Remove empty lines from the beginning of the text
+            $trimmedText = preg_replace('/\v+\h*$/m', '', $trimmedText); // Remove empty lines from the end of the text
+            return $trimmedText;
+        };
+
         foreach ($lines as $line) {
             # $line = chop($line);
             $token = substr($line, 0, 2);
             // _d(['Newline token, line, currentQuestion, curretnData, currentKey',$token, $line, $thisQuestion, $currentData, $currentKey]);
             if ($token == 'QQ') {
                 if ($currentKey && $currentData) {
-                    $thisQuestion[$currentKey] = $currentData;
+                    $thisQuestion[$currentKey] = $trimEmptyLines($currentData);
                 }
                 // QQ is the beginning of a new question so save previous question
                 if (count($thisQuestion) > 2) { // but only if the curretn question is not empty,, which it will be the first time
@@ -289,8 +295,7 @@ class QuestionController extends Controller
                 $answerIndex = 1;
             } elseif ($token == 'AA' or $token == 'AC') {
                 if ($currentKey && $currentData) {
-                    $thisQuestion[$currentKey] = $currentData;
-                    $thisQuestion[$currentKey] = $currentData;
+                    $thisQuestion[$currentKey] = $trimEmptyLines($currentData);
                 }
                 $currentKey = "a" . $answerIndex;
                 $currentData = "";
@@ -300,13 +305,13 @@ class QuestionController extends Controller
                 $answerIndex++;
             } elseif ($token == 'LL') {
                 if ($currentKey && $currentData) {
-                    $thisQuestion[$currentKey] = $currentData;
+                    $thisQuestion[$currentKey] = $trimEmptyLines($currentData);
                 }
                 $currentKey = "label";
                 $currentData = "";
             } elseif ($token == 'ID') {
                 if ($currentKey && $currentData) {
-                    $thisQuestion[$currentKey] = $currentData;
+                    $thisQuestion[$currentKey] = $trimEmptyLines($currentData);
                 }
                 $currentKey = "id";
                 $currentData = "";
@@ -320,7 +325,7 @@ class QuestionController extends Controller
             }
         }
         if ($currentData) {
-            $thisQuestion[$currentKey] = $currentData;
+            $thisQuestion[$currentKey] = $trimEmptyLines($currentData);;
         }
         array_push($questions, $thisQuestion); // save the last question
 
@@ -333,12 +338,13 @@ class QuestionController extends Controller
         $no_succes = 0;
         if (Yii::$app->request->isPost) {
             $bulkInput = Yii::$app->request->post('bulkInput');
+            $action = Yii::$app->request->post('action', null);
             $quiz_id = Yii::$app->request->post('quiz_id');
             $parsedQuestions = $this->parseBulkInput($bulkInput);
             $label = Yii::$app->request->post('label');
 
             foreach ($parsedQuestions as $questionData) {
-                $no_succes += $this->insertQuestion($questionData, $quiz_id, $label);
+                $no_succes += $this->insertQuestion($questionData, $action, $quiz_id, $label);
             }
         }
         Yii::$app->session->setFlash('success', ' Question(s) imported: ' . $no_succes);
@@ -347,16 +353,19 @@ class QuestionController extends Controller
     }
 
 
-    private function insertQuestion($questionData, $quiz_id = null, $label = null)
+    private function insertQuestion($questionData, $mode, $quiz_id = null, $label = null)
     {
         $succes = 0;
         $question = null;
 
-        if (isset($questionData['id'])) {
+        // if mode is update and id give, retriece existing question
+        if ($mode == 'update' && isset($questionData['id'])) {
             $question = Question::findOne($questionData['id']);
         }
         if ($question === null) { // nothing to update
             $questionText = rtrim($questionData['question'], "\r\n");
+
+            // Check for duplicate
             $existingQuestion = Question::find()->where(['like', 'question', $questionText . '%', false])->one();
             if ($existingQuestion !== null) {
                 return $succes;
@@ -381,6 +390,7 @@ class QuestionController extends Controller
         if ($question->save()) {
             $succes++;
             if ($quiz_id) {
+                // connect question to quiz
                 $exists = Quizquestion::findOne(['quiz_id' => $quiz_id, 'question_id' => $question->id]);
                 if ($exists === null) {
                     $quizQuestion = new Quizquestion();
@@ -470,5 +480,23 @@ class QuestionController extends Controller
         }
 
         return $this->redirect(['index-raw']);
+    }
+
+    public function actionMultipleUpdate($quiz_id)
+    {
+        // Example: Load multiple models (adjust the query as needed)
+        $models =   Question::find()->joinWith('quizquestions')->where(['quizquestion.quiz_id' => $quiz_id])->all();
+
+        if (Yii::$app->request->isPost) {
+            if (Question::loadMultiple($models, Yii::$app->request->post()) && Question::validateMultiple($models)) {
+                foreach ($models as $model) {
+                    $model->save(false); // Save without validation as it's already done
+                }
+                return $this->redirect(['question/index', 'quiz_id' => $quiz_id]);
+            }
+        }
+
+        
+        return $this->render('multipleUpdate', ['models' => $models]);
     }
 }

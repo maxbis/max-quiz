@@ -99,8 +99,8 @@ use yii\widgets\ActiveForm;
                     'maxlength' => true
                 ]) ?>
             </div>
-
         </div>
+        
         <hr>
         <div class="form-group">
             <?= Html::submitButton('Save', ['class' => 'btn btn-success quiz-button']) ?>

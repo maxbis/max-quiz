@@ -358,6 +358,7 @@ $this->registerJs($script);
         <?php
         echo Html::a('import', [ 'import', 'quiz_id' => $quiz['id'] ], ['class' => 'btn btn-outline-secondary quiz-button', 'title' => '']);
         echo Html::a('export', [ 'export', 'quiz_id' => $quiz['id'] ], ['class' => 'btn btn-outline-secondary quiz-button', 'title' => '']);
+        echo Html::a('Multi Edit', [ 'multiple-update', 'quiz_id' => $quiz['id'] ], ['class' => 'btn btn-outline-secondary quiz-button', 'title' => '']);
         ?>
         <span style="margin-left:50px;"> </span>
         <?php
@@ -372,7 +373,6 @@ $this->registerJs($script);
                 ]
             );
         }
-        ?>
-
+        ?>        
     </p>
 </div>
