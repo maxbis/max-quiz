@@ -253,6 +253,8 @@ class SiteController extends Controller
             ->andWhere(['>', 'quiz.review', 0])
             ->one();
 
+        $this->layout = false;
+
         if ($submission === null) {
             throw new \yii\web\NotFoundHttpException('The requested results is not available to view.');
         }

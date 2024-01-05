@@ -22,7 +22,7 @@ $score = round($submission['no_correct'] * 100 / $submission['no_questions'], 0)
 
     .main-block {
       height: 100%;
-      margin: 0;
+      margin: 20px;;
       display: flex;
       justify-content: center;
       align-items: center;
@@ -87,6 +87,10 @@ $score = round($submission['no_correct'] * 100 / $submission['no_questions'], 0)
     }
 
     @media (max-width: 800px) {
+      .main-block {
+        margin: 0;
+      }
+
       .name {
         font-size: 30px;
       }
@@ -117,48 +121,6 @@ $score = round($submission['no_correct'] * 100 / $submission['no_questions'], 0)
     }
   </style>
 
-  <style>
-    .custom-btn {
-      display: inline-block;
-      padding: 6px 12px;
-      margin-bottom: 0;
-      font-size: 14px;
-      font-weight: 400;
-      line-height: 1.42857143;
-      text-align: center;
-      white-space: nowrap;
-      vertical-align: middle;
-      -ms-touch-action: manipulation;
-      touch-action: manipulation;
-      cursor: pointer;
-      -webkit-user-select: none;
-      -moz-user-select: none;
-      -ms-user-select: none;
-      user-select: none;
-      background-image: none;
-      border: 1px solid transparent;
-      border-radius: 4px;
-      color: #fff;
-      background-color: #337ab7;
-      border-color: #2e6da4;
-      text-decoration: none;
-    }
-
-    .custom-btn:hover,
-    .custom-btn:focus,
-    .custom-btn:active {
-      color: #fff;
-      background-color: #286090;
-      border-color: #204d74;
-    }
-
-    .centered {
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      background-color: #f7f7f7;
-    }
-  </style>
 
   <style>
     .myButton {
@@ -181,6 +143,13 @@ $score = round($submission['no_correct'] * 100 / $submission['no_questions'], 0)
     .myButton:hover {
       background-color: lightblue;
       color: black;
+    }
+
+    .centered {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      background-color: #f7f7f7;
     }
   </style>
 
@@ -209,14 +178,14 @@ $score = round($submission['no_correct'] * 100 / $submission['no_questions'], 0)
     <div class="certificate-container dynamic-size">
       <img src="<?= Url::to('@web/img/certificate.jpg') ?>" alt="Certificate of Appreciation" class="delayed-content certificate-image" data-delay="0">
       <div class="delayed-content name" data-delay="400"><?= $submission['first_name'] . " " . $submission['last_name'] ?></div>
-      <div class="delayed-content score delayed-content" data-delay="1600">Score 
+      <div class="delayed-content score delayed-content" data-delay="1600">Score
         <b><span class="delayed-content" data-delay="2400"><?= $score ?>%<span></b>
       </div>
       <div class="delayed-content date" data-delay="800">28 december 2023</div>
       <div class="delayed-content signature" data-delay="1200">PHP L1 (score: <?= $submission['no_correct'] ?>/<?= $submission['no_questions'] ?>)</div>
     </div>
   </div>
-  <?php  if ( $submission['quiz_review'] ) { ?>
+  <?php if ($submission['quiz_review']) { ?>
     <div class="centered delayed-content" data-delay="2600">
       <?= Html::a('Results', ['/site/results', 'token' => $submission['token']], ['class' => 'myButton']); ?>
     </div>

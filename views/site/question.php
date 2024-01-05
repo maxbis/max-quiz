@@ -74,6 +74,23 @@ $noAnswers = count($answers);
             overflow-x: hidden;
         }
 
+        .question-title {
+            margin-top: 40px;
+            margin-bottom: 10px;
+            font-size: larger;
+            text-align: left;
+            color: darkblue;
+        }
+
+        .banner-container {
+            position: relative;
+            background-image: url('<?= Url::to('@web/img/banner1.jpg') ?>');
+            background-size: cover;
+            background-position: center;
+            padding: 16px;
+        }
+
+
         @media (max-width: 601px) {
             .question-block {
                 white-space: normal;
@@ -84,14 +101,14 @@ $noAnswers = count($answers);
                 margin: 10px;
                 min-height: 3em;
             }
-        }
-
-        .question-title {
-            margin-top: 80px;
-            font-size: larger;
-            /* Makes the font larger */
-            text-align: left;
-            /* Aligns text to the left */
+            .question-title {
+                margin-top: 20px;
+                margin-bottom: 5px;
+                font-size: smaller;
+            }
+            .banner-container {
+                padding: 4px;
+            }
         }
 
         .banner-content {
@@ -106,12 +123,6 @@ $noAnswers = count($answers);
                 1px 1px 0 #fff;
         }
 
-        .banner-container {
-            position: relative;
-            background-image: url('<?= Url::to('@web/img/banner1.jpg') ?>');
-            background-size: cover;
-            background-position: center;
-        }
 
         .banner-container::before {
             content: '';
@@ -161,7 +172,7 @@ $noAnswers = count($answers);
 
 <body class="background-image">
 
-    <div class="container-fluid banner-container text-white text-center py-3">
+    <div class="container-fluid banner-container text-white text-center ppy-3">
         <div class="banner-content">
             <h1><?= $title ?></h1>
             <p>vraag <?= $submission['no_answered'] + 1 ?> van <?= $submission['no_questions'] ?></p>
