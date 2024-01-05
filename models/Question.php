@@ -65,4 +65,8 @@ class Question extends \yii\db\ActiveRecord
     {
         return $this->hasOne(Quizquestion::className(), ['question_id' => 'id']);
     }
+    public function getQuizquestions()
+    {
+        return $this->hasMany(Quizquestion::className(), ['question_id' => 'id']);
+    }
 }

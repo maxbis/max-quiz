@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: 127.0.0.1
--- Generation Time: Jan 02, 2024 at 04:13 PM
+-- Generation Time: Jan 05, 2024 at 03:18 PM
 -- Server version: 10.4.28-MariaDB
 -- PHP Version: 8.0.25
 
@@ -67,7 +67,28 @@ INSERT INTO `log` (`id`, `submission_id`, `quiz_id`, `question_id`, `answer_no`,
 (21, 22, 1, 1, 4, 1, '2023-12-31 20:01:17'),
 (22, 24, 3, 12, 1, 1, '2024-01-01 13:29:32'),
 (23, 24, 3, 13, 1, 1, '2024-01-01 13:29:35'),
-(24, 26, 4, 49, 2, 1, '2024-01-02 14:18:40');
+(24, 26, 4, 49, 2, 1, '2024-01-02 14:18:40'),
+(25, 28, 4, 10, 3, 1, '2024-01-03 10:31:48'),
+(26, 28, 4, 30, 4, 1, '2024-01-03 10:32:10'),
+(27, 29, 3, 34, 1, 1, '2024-01-03 14:13:02'),
+(28, 30, 27, 105, 2, 0, '2024-01-03 16:33:16'),
+(29, 30, 27, 111, 1, 1, '2024-01-03 16:33:19'),
+(30, 31, 27, 101, 1, 1, '2024-01-03 16:36:16'),
+(31, 31, 27, 112, 3, 0, '2024-01-03 16:36:50'),
+(32, 32, 28, 137, 1, 1, '2024-01-03 19:09:54'),
+(33, 32, 28, 136, 1, 1, '2024-01-03 19:10:03'),
+(34, 32, 28, 135, 2, 0, '2024-01-03 19:10:12'),
+(35, 32, 28, 130, 4, 0, '2024-01-03 19:10:22'),
+(36, 34, 1, 2, 4, 1, '2024-01-04 22:02:10'),
+(37, 34, 1, 5, 2, 1, '2024-01-04 22:02:20'),
+(38, 34, 1, 6, 2, 1, '2024-01-04 22:05:32'),
+(39, 34, 1, 2, 4, 1, '2024-01-04 22:23:52'),
+(40, 34, 1, 5, 4, 0, '2024-01-04 22:37:50'),
+(41, 34, 1, 5, 4, 0, '2024-01-04 22:38:14'),
+(42, 34, 1, 6, 2, 1, '2024-01-04 22:38:18'),
+(43, 35, 1, 2, 4, 1, '2024-01-04 22:44:31'),
+(44, 35, 1, 6, 2, 1, '2024-01-04 22:44:35'),
+(45, 35, 1, 5, 2, 1, '2024-01-04 22:44:44');
 
 -- --------------------------------------------------------
 
@@ -93,21 +114,11 @@ CREATE TABLE `question` (
 --
 
 INSERT INTO `question` (`id`, `question`, `a1`, `a2`, `a3`, `a4`, `a5`, `a6`, `correct`, `label`) VALUES
-(2, 'Deze vraag gaat over PHP.\r\n\r\n<pre>\r\nfunction bereken($a, $b) {\r\n  $c = $a - $b;\r\n  if ($c < 0) {\r\n    $c = 0;\r\n  }\r\n  return $c\r\n}\r\n\r\necho bereken(10,8);\r\n</pre>\r\nWat is de output van de code?', '-1', '0', '1', '2', '', '', 4, 'PHP'),
-(5, '\r\nDeze vraag gaat over PHP.\r\n\r\n<pre>\r\n$a = 12;\r\n$b = $a - 2;\r\n$a = $a + $b;\r\n$b = 2;\r\n$a = $b + 2;\r\necho $a;\r\n</pre>\r\nWat is de output van de code?', '2', '4', '12', '10', '', '', 2, 'PHP'),
-(6, 'Als je in PHP door een associatieve array heen wilt lopen en de waarden wilt afdrukken, wat heb je dan in ieder geval nodig?', 'Een functie', 'Een loop', 'Een if-then constructie', 'Een return', '', '', 2, 'PHP'),
-(7, 'Als je programmeert in OOP, wat is dan een class?', 'Een beschrijving van een property (variabele).', 'Een beschrijving van een method (function).', 'Een object, bijvoorbeeld een \'hond\' met de naam \'Max\'', 'Een beschrijving van een object.', '', '', 4, 'PHP OOP'),
-(10, 'Deze vraag gaat over PHP.\r\n\r\n<pre>\r\n$leeftijd = 12;\r\n$leerling = \"Alice\";\r\n$groep = 6;\r\n$leeftijd++;\r\n</pre>\r\nHoeveel variabelen worden in deze code gebruikt?\r\n\r\n', '4\r\n', '6\r\n', '3\r\n', '1\r\n', '', '', 3, 'PHP B4P1'),
-(30, 'Deze vraag gaat over PHP\r\n\r\n<pre>\r\nfunction myFunction($a, $b) {\r\n  $c=$a+b;\r\n  return $c\r\n}\r\n</pre>\r\nWat is de input van deze functie?\r\n', '$c\r\n', '$a\r\n', '$b\r\n', '$a en $b\r\n', '$a, $b en $c\r\n', '', 4, 'PHP B4P1'),
-(31, 'Deze vraag gaat over PHP\r\n\r\n<pre>\r\nfunction optellen($a) {\r\n  $som=0;\r\n  foreach($a as $element) {\r\n    $som=$som+1;\r\n  }\r\n  return $som;\r\n}\r\n</pre>\r\n\r\nWat doet deze functie?\r\n', 'Telt het aantal elementen in array $a\r\n', 'Telt alle getallen van array $a bij elkaar op\r\n', 'Berekent de som van het getal $a\r\n', 'Bepaalt het grootste getal van array $a\r\n', '', '', 2, 'PHP B4P1'),
-(32, 'Deze vraag gaat over PHP\r\r<pre>\rforeach($a as $item) {\r  echo $item[2];\r}\r</pre>\r\rWat is $a voor een type variabele?\r\r', 'Integer\r', 'String\r', 'Array\r', 'Array van arrays\r', 'Associatieve array\r', 'Array van associatieve arrays\r', 4, 'PHP B4P1\r'),
-(33, 'Deze vraag gaat over PHP\r\r<pre>\r$uitslagen=[\r [\'thuis\' => \'Feyenoord\', \'uit\' => \'FC Twente\', \'uitslag\'=> [1,2] ],\r [\'thuis\' => \'AZ\', \'uit\' => \'RKC Waalwijk\', \'uitslag\'=> [1,3] ],\r [\'thuis\' => \'PEC Zwolle\', \'uit\' => \'PSV\', \'uitslag\'=> [1,2] ],\r];\r</pre>\r\rMet welke code druk je af hoeveel doelpunten PSV tegen PEC Zwolle heeft gescoord?\r\r', 'echo $uitslagen[\'uitslag\'][1];\r', 'echo $uitslagen[2][\'uitslag\'][1];\r', 'echo $uitslagen[\'uit\'][\'uitslag\'][1];\r', 'echo $uitslagen->score->uit;\r', 'echo $uitslag[2][\'uit\'];\r', 'echo $uitslag[\'uit\'][1];\r', 2, 'PHP B4P1\r'),
-(34, 'Wat is het antwoord op deze <b>vraag</b>?\r\n', '1\r\n', '2\r\n', '3\r\n', '4\r\n', '', '', 1, 'Test'),
-(40, 'Wat is het antwoord op deze vraag?\r', '1\r', '2\r', '3\r', '4\r', NULL, NULL, 1, 'Test\r'),
-(41, 'Wat is het antwoord op deze vraag?\r', '1\r', '2\r', '3\r', '4\r', NULL, NULL, 1, 'Test\r'),
-(49, 'Deze vraag gaat over SQL.\r\n\r\nIn een query staat:\r\n\r\n<pre>\r\nWHERE naam like \'%a%\'\r\n</pre>\r\nWelke namen worden door deze query geselecteerd?\r\n', 'Benoit, Anton, Charlie\r\n', 'Jappie, Elisia, Daria\r\n', 'Daan, Cees, Ayoub\r\n', 'Mohammed, Elise, Abdel\r\n', '', '', 2, 'B4P1 SQL'),
-(50, 'Deze vraag gaat over SQL.\r\n\r\n<pre>\r\nSELECT *\r\nFROM gebruiker\r\nJOIN klas on ..... = .......\r\n</pre>\r\nWat moet er op de ..... komen?', 'De naam van de (twee) tabellen', 'De PK van klas en FK van gebruiker', 'De PK van klas en PK van gebruiker', 'De FK van klas en FK van gebruiker', '', '', 2, 'B4P1 SQL'),
-(51, 'Stel je hebt 4 queries:\r\n\r\n<pre>\r\nselect sum(cijfer) from resultaten\r\nselect count(cijfer) from resultaten\r\nselect min(cijfer) from resultaten\r\nselect max(cijfer) from resultaten\r\n</pre>\r\nIn de antwoorden staan telkens vier uitkomsten. Dit zijn uitkomsten van de queries 1, 2, 3 en 4.\r\n\r\nWelke combinatie van uitkomsten is <i>mogelijk</i>?\r\n\r\n', '1, 100, 1000, 10\r\n', '150, 10, 10, 20\r\n', '0, 1, 10, 10\r\n', '100, 5, 1, 2\r\n', '', '', 2, 'B4P1 SQL');
+(202, 'Which city is known as \"The Eternal City\"?\r', 'Rome', 'Paris', 'Athens', 'London', NULL, NULL, 1, 'Demo'),
+(203, 'What is the official language of Brazil?\r', 'Portuguese', 'Spanish', 'English', 'French', NULL, NULL, 1, 'Demo'),
+(204, 'In which country can you visit the ancient Inca city of Machu Picchu?\r', 'Peru', 'Bolivia', 'Chile', 'Ecuador', NULL, NULL, 1, 'Demo'),
+(205, 'What currency is used in Japan?\r', 'Yen', 'Won', 'Yuan', 'Rupee', NULL, NULL, 1, 'Demo'),
+(206, 'Which country is known for having a city that spans two continents, Europe and Asia?\r', 'Turkey', 'Russia', 'Egypt', 'Kazakhstan', NULL, NULL, 1, 'Demo');
 
 -- --------------------------------------------------------
 
@@ -120,18 +131,16 @@ CREATE TABLE `quiz` (
   `name` varchar(40) NOT NULL,
   `password` varchar(20) NOT NULL,
   `active` tinyint(1) NOT NULL,
-  `no_questions` int(11) DEFAULT NULL
+  `no_questions` int(11) DEFAULT NULL,
+  `review` int(11) DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf32 COLLATE=utf32_general_ci;
 
 --
 -- Dumping data for table `quiz`
 --
 
-INSERT INTO `quiz` (`id`, `name`, `password`, `active`, `no_questions`) VALUES
-(1, 'PHP Level 2 -- poging 1', 'paars23', 0, NULL),
-(2, 'PHP Level 2 - poging 2', 'paars24', 0, NULL),
-(3, 'test', 'test', 0, NULL),
-(4, 'Blok 4 Poging 1 (B1P4)', 'KAAS121', 1, 2);
+INSERT INTO `quiz` (`id`, `name`, `password`, `active`, `no_questions`, `review`) VALUES
+(31, 'Demo', 'Demo', 1, 3, 1);
 
 -- --------------------------------------------------------
 
@@ -151,39 +160,11 @@ CREATE TABLE `quizquestion` (
 --
 
 INSERT INTO `quizquestion` (`id`, `quiz_id`, `question_id`, `active`) VALUES
-(6, 1, 1, 1),
-(7, 1, 2, 1),
-(8, 1, 5, 1),
-(9, 1, 6, 0),
-(10, 1, 7, 0),
-(22, 4, 1, 0),
-(39, 2, 1, 1),
-(40, 2, 2, 1),
-(41, 2, 5, 1),
-(46, 3, 1, 0),
-(47, 3, 2, 0),
-(48, 3, 5, 0),
-(49, 3, 6, 0),
-(50, 3, 7, 0),
-(51, 3, 10, 0),
-(59, 2, 7, 0),
-(60, 2, 6, 0),
-(61, 2, 10, 0),
-(71, 4, 2, 1),
-(77, 4, 5, 1),
-(78, 4, 6, 1),
-(79, 4, 7, 0),
-(80, 4, 10, 1),
-(87, 4, 30, 1),
-(88, 4, 31, 1),
-(89, 4, 32, 1),
-(90, 4, 33, 1),
-(99, 3, 34, 0),
-(107, 4, 34, 0),
-(108, 4, 41, 0),
-(109, 4, 50, 1),
-(110, 4, 49, 1),
-(111, 4, 51, 1);
+(351, 31, 202, 1),
+(352, 31, 203, 1),
+(353, 31, 204, 1),
+(354, 31, 205, 1),
+(355, 31, 206, 1);
 
 -- --------------------------------------------------------
 
@@ -201,7 +182,7 @@ CREATE TABLE `submission` (
   `end_time` timestamp NULL DEFAULT NULL,
   `ip_address` varchar(32) NOT NULL,
   `question_order` varchar(600) NOT NULL,
-  `answer_order` varchar(600) NOT NULL,
+  `answer_order` varchar(600) DEFAULT '''''',
   `no_questions` int(11) NOT NULL,
   `no_answered` int(11) DEFAULT NULL,
   `no_correct` int(11) DEFAULT NULL,
@@ -215,17 +196,21 @@ CREATE TABLE `submission` (
 --
 
 INSERT INTO `submission` (`id`, `token`, `first_name`, `last_name`, `class`, `start_time`, `end_time`, `ip_address`, `question_order`, `answer_order`, `no_questions`, `no_answered`, `no_correct`, `finished`, `quiz_id`, `last_updated`) VALUES
-(16, '0c0e8058d671a4b0c5028b779fa14e544d67123d14e8ca8efffdcf5cf93bd935', 'Max', 'De Wielen', '3C', '2023-12-29 13:32:45', '2023-12-29 13:33:17', '::1', '1 5 2', ' 4 2 4', 3, 3, 3, 1, 1, '2023-12-31 20:02:24'),
 (17, '7351a289dd2bab38e21f3e7b6445d3f824a7f7ef7bae8f54494d19ae6d818fa9', 'Max', 'Bisschop', '3C', '2023-12-29 13:34:43', NULL, '::1', '2 5 1', ' 4 1', 3, 2, 1, NULL, 1, '2023-12-29 14:03:17'),
-(18, '396e1c0aa3e290ae27c74bd67ba7f73b865eb7edeaae264c7ac6c4e8b2bb3507', 'Tjeerd', 'Groothuizen', '3A', '2023-12-29 14:12:33', NULL, '::1', '5 1 2', ' 2', 3, 1, 1, 0, 1, '2023-12-31 17:21:55'),
-(19, 'bcf9dd4fcfba64de280f45662257d2e447efbf0d86c26a69cc506bced8dc5bb7', 'André', 'Grootveld', '3A', '2023-12-30 09:20:50', NULL, '::1', '6 7 1 2 5', ' 2 4 2', 5, 3, 2, 1, 1, '2023-12-30 09:22:45'),
+(18, '396e1c0aa3e290ae27c74bd67ba7f73b865eb7edeaae264c7ac6c4e8b2bb3507', 'Tjeerd', 'Grootshuizen', '3A', '2023-12-29 14:12:33', NULL, '::1', '5 1 2', ' 2', 3, 1, 1, 0, 1, '2024-01-04 22:21:31'),
+(19, 'bcf9dd4fcfba64de280f45662257d2e447efbf0d86c26a69cc506bced8dc5bb7', 'André', 'Grootveld', '3A', '2023-12-30 09:20:50', NULL, '::1', '6 7 1 2 5', ' 2 4 2', 5, 3, 2, 0, 1, '2024-01-04 08:44:37'),
 (20, 'bd0ec3ea756a173776255ab15793f91e62be17c8792f4ab52a27863b0284ee50', 'Pipo', 'De Clown', '2C', '2023-12-30 09:30:06', '2023-12-30 09:30:50', '::1', '6 7 5 1 2', ' 2 4 2 2 4', 5, 5, 4, 1, 1, '2023-12-30 09:30:50'),
-(21, '676590da0e2f3e9d461fd645b4f7d673d9b70fb28dd39b39ee71152f263c5113', 'Tel', 'de Lama', '3C', '2023-12-30 09:34:04', NULL, '::1', '1 6 7 5 2', ' 4', 5, 1, 1, 0, 1, '2023-12-30 09:55:24'),
-(22, '6ad0997b9cc1af855242ab4a58f9fac9d8e6d9bf733a95bc3933306820b9352f', 'Mark', 'de Willenschap-Groothuizen-Wessel', '3C', '2023-12-31 19:59:38', '2023-12-31 20:01:17', '::1', '6 5 2 7 1', ' 2 2 4 4 4', 5, 5, 5, 1, 1, '2023-12-31 20:08:35'),
-(23, 'b8d8d542ae1e93b76fa6c32a81e510b0d11ccabdb178e1ab9e49d3cdbdf2e467', 'Roos', 'Meijer', '2C', '2023-12-31 23:38:44', NULL, '::1', '6 7 2 5 1', '', 5, 0, 0, NULL, 1, '2023-12-31 23:38:44'),
 (24, '61620d9fba67655e6a22edf1d2e485ff5364f9bd0e9a1c27a5ef269148288b6b', 'Anja', 'Visser', '2B', '2024-01-01 13:29:24', NULL, '::1', '12 13 14 11', ' 1 1', 4, 2, 2, NULL, 3, '2024-01-01 13:29:35'),
 (25, 'fc4583cd0f4f39eed1f4badb24009a6b3f6a35fcb610da438346d8704f8ffa68', 'Piet', 'Janssen', '2B', '2024-01-01 13:39:37', NULL, '::1', '14 11 13 12', '', 4, 0, 0, NULL, 3, '2024-01-01 13:39:37'),
-(26, 'c4ca2317e51c70f0db11603f89678878977acbbe492a02b37ea007990f0e0b9e', 'Chris', 'Blauwdruk', '2F', '2024-01-02 14:17:16', NULL, '::1', '49 5 33 50 31 32 6 1 7 10 51 41 30 34 2', ' 2', 15, 1, 1, NULL, 4, '2024-01-02 14:18:40');
+(26, 'c4ca2317e51c70f0db11603f89678878977acbbe492a02b37ea007990f0e0b9e', 'Chris', 'Blauwdruk', '2F', '2024-01-02 14:17:16', NULL, '::1', '49 5 33 50 31 32 6 1 7 10 51 41 30 34 2', ' 2', 15, 1, 1, NULL, 4, '2024-01-02 14:18:40'),
+(27, '759b52713586edf199e1b5318249fa2ff2c793b1eeb83afd84bb7afbdc3a42e6', 'Anne', 'Drijver', '2F', '2024-01-02 16:39:07', NULL, '::1', '5 41 10 2 30 32 49 51 33 6 34 7 1 50 31', '', 15, 0, 0, NULL, 4, '2024-01-02 16:39:07'),
+(28, '0fc9e0287becec3d5a9b3971e9cf28d24614316105e9841479ae8e8e7a172a90', 'Edo', 'de Jager', '1A', '2024-01-03 10:31:29', NULL, '::1', '10 30 34 50 51 31 6 33 41 32 2 7 5 49 1', ' 3 4', 15, 2, 2, NULL, 4, '2024-01-03 10:32:10'),
+(29, '8b43ca7cd76bc224b7b3de6b14ef9db3120f774652f863e3ec751c5933a9752c', 'Gio', 'Charmelle', '2F', '2024-01-03 14:12:58', '2024-01-03 14:13:02', '::1', '34', ' 1', 1, 1, 1, 1, 3, '2024-01-03 14:13:02'),
+(30, 'ddfff4f36d0a4c117ca315ddfe6163d7100d95dbaff07ccca04a272b0e90da7f', 'Mark', 'de Lieve', '2D', '2024-01-03 16:33:08', NULL, '::1', '105 111', ' 2 1', 25, 2, 1, NULL, 27, '2024-01-03 16:33:19'),
+(31, '3c94569d207ff636edf039e5d37ec2c6136505c8cbadb31aeaeb553eadee1b1d', 'Anja', 'De Kwaaie', '2D', '2024-01-03 16:35:44', '2024-01-03 16:36:50', '::1', '101 112', ' 1 3', 2, 2, 1, 1, 27, '2024-01-03 16:36:50'),
+(32, 'db8a6627b452f0789ccf4dc5ebf8f183a3e6709ac6d0f1ff8e51385f91c905a3', 'Anne', 'de Ruiter', '2A', '2024-01-03 19:03:51', '2024-01-03 19:10:22', '::1', '137 136 135 130', ' 1 1 2 4', 4, 4, 2, 1, 28, '2024-01-03 19:10:22'),
+(33, 'ac739708c4f68fc7412f3baf9df2d90ebd9d0482df12b108bc86d7377eb1111a', 'Moon', 'Pool', '2A', '2024-01-04 08:34:56', NULL, '::1', '128 153 124 120 121 152 163 140 122 156', '', 10, 0, 0, NULL, 28, '2024-01-04 08:34:56'),
+(35, '908c4b7318ee61f17b4a90ef77a2cb9fa65918da232f58ca0e1910b282e196d1', 'Karel', 'Nedervoel', '1A', '2024-01-04 22:44:23', '2024-01-04 22:44:44', '::1', '2 6 5', ' 4 2 2', 3, 3, 3, 1, 1, '2024-01-04 22:44:44');
 
 -- --------------------------------------------------------
 
@@ -300,37 +285,37 @@ ALTER TABLE `tbl_user`
 -- AUTO_INCREMENT for table `log`
 --
 ALTER TABLE `log`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=25;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=46;
 
 --
 -- AUTO_INCREMENT for table `question`
 --
 ALTER TABLE `question`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=52;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=207;
 
 --
 -- AUTO_INCREMENT for table `quiz`
 --
 ALTER TABLE `quiz`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=22;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=32;
 
 --
 -- AUTO_INCREMENT for table `quizquestion`
 --
 ALTER TABLE `quizquestion`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=112;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=356;
 
 --
 -- AUTO_INCREMENT for table `submission`
 --
 ALTER TABLE `submission`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=27;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=36;
 
 --
 -- AUTO_INCREMENT for table `tbl_user`
 --
 ALTER TABLE `tbl_user`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=6;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=8;
 COMMIT;
 
 /*!40101 SET CHARACTER_SET_CLIENT=@OLD_CHARACTER_SET_CLIENT */;

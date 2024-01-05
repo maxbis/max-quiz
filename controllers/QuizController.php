@@ -68,7 +68,8 @@ class QuizController extends Controller
         ]);
     }
 
-    private function updateQuestionNumbers() {
+    private function updateQuestionNumbers()
+    {
         $sql = "UPDATE quiz
                     SET no_questions = (
                     SELECT COUNT(*)
@@ -109,8 +110,8 @@ class QuizController extends Controller
         $model = new Quiz();
 
         if ($this->request->isPost) {
-            if ( $model->load($this->request->post()) ) {
-                if ( $model->active == 1 ) {
+            if ($model->load($this->request->post())) {
+                if ($model->active == 1) {
                     Quiz::updateAll(['active' => 0], ['!=', 'id', $model->id]);
                 }
                 if ($model->save()) {
@@ -130,7 +131,7 @@ class QuizController extends Controller
     {
         $model = $this->findModel($id);
 
-        if ( $this->request->isPost && $model->load($this->request->post()) ) {
+        if ($this->request->isPost && $model->load($this->request->post())) {
             // if ( $model->active == 1 ) {
             //     Quiz::updateAll(['active' => 0], ['!=', 'id', $model->id]);
             // }
@@ -145,7 +146,7 @@ class QuizController extends Controller
     }
 
 
-    public function actionDelete($id, $show=1)
+    public function actionDelete($id, $show = 1)
     {
         $sql = "delete from quizquestion where quiz_id=$id";
         Yii::$app->db->createCommand($sql)->execute();
@@ -171,7 +172,7 @@ class QuizController extends Controller
         throw new NotFoundHttpException('The requested page does not exist.');
     }
 
-    public function actionView($id, $search=null)
+    public function actionView($id, $search = null)
     {
         $query = Question::find();
         if ($search !== null) {
@@ -182,7 +183,7 @@ class QuizController extends Controller
         $quizQuestions = QuizQuestion::find()
             ->select('question_id')
             ->where(['quiz_id' => $id])
-            ->andWhere(['active' => 1 ])
+            ->andWhere(['active' => 1])
             ->all();
         $questionIds = ArrayHelper::getColumn($quizQuestions, 'question_id');
 
@@ -193,16 +194,17 @@ class QuizController extends Controller
         ]);
     }
 
-    public function actionCopy($id) {
+    public function actionCopy($id)
+    {
         $sql = "insert into quiz ( name, password ) select concat('copy of ',name), concat('copy_',password) from quiz where id = $id";
         Yii::$app->db->createCommand($sql)->execute();
         $sql = "select max(id) id from quiz;";
         $newId = Yii::$app->db->createCommand($sql)->queryOne()['id'];
-        
+
         $sql = "select question_id from quizquestion where quiz_id = $id and active=1";
         $questionIds = Yii::$app->db->createCommand($sql)->queryAll();
 
-        foreach($questionIds as $thisQuestionId) {
+        foreach ($questionIds as $thisQuestionId) {
             $sql = "insert into quizquestion (quiz_id, question_id, active) values ($newId, ${thisQuestionId['question_id']}, 1)";
             Yii::$app->db->createCommand($sql)->execute();
         }

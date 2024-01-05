@@ -353,8 +353,8 @@ class QuestionController extends Controller
         $question = null;
 
         if (isset($questionData['id'])) {
-            $question = Question::findOne( $questionData['id'] );
-        } 
+            $question = Question::findOne($questionData['id']);
+        }
         if ($question === null) { // nothing to update
             $questionText = rtrim($questionData['question'], "\r\n");
             $existingQuestion = Question::find()->where(['like', 'question', $questionText . '%', false])->one();
@@ -372,12 +372,12 @@ class QuestionController extends Controller
         $question->a5 = $questionData['a5'] ?? null;
         $question->a6 = $questionData['a6'] ?? null;
         $question->correct = $questionData['correct'] ?? 0;
-        if ( $label <> "" ) {
+        if ($label <> "") {
             $question->label = $label;
         } else {
             $question->label =  $questionData['label'] ?? 'Imported';
         }
-        
+
         if ($question->save()) {
             $succes++;
             if ($quiz_id) {
@@ -399,7 +399,7 @@ class QuestionController extends Controller
         $request = Yii::$app->request;
         $quiz_id = $request->get('quiz_id');
 
-        if ( $quiz_id=="" ) {
+        if ($quiz_id == "") {
             $sql = "SELECT max(id) id FROM quiz WHERE active = 1";
             $quiz_id = Yii::$app->db->createCommand($sql)->queryOne()['id'];
             if ($quiz_id == "") {
@@ -459,5 +459,16 @@ class QuestionController extends Controller
         Yii::$app->db->createCommand($sql)->execute();
 
         return $this->redirect(['/quiz']);
+    }
+
+    public function actionDeleteMultiple()
+    {
+        $ids = Yii::$app->request->post('selection');
+        if (!empty($ids)) {
+            Question::deleteAll(['id' => $ids]);
+            Yii::$app->session->setFlash('success', 'The selected items have been deleted.');
+        }
+
+        return $this->redirect(['index-raw']);
     }
 }

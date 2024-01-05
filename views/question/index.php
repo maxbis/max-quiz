@@ -296,7 +296,13 @@ $this->registerJs($script);
             [
                 'attribute' => 'question',
                 'value' => function ($model) {
-                    return mb_substr($model->question, 0, 100) . (mb_strlen($model->question) > 100 ? '...' : '');
+                    $pattern = '/<pre>(.*?)<\/pre>(.*)/s';
+                    if (preg_match($pattern, $model->question, $matches)) {
+                        $questionText = '...' . $matches[1] . $matches[2];
+                    } else {
+                        $questionText = $model->question;
+                    }
+                    return mb_substr($questionText, 0, 100) . (mb_strlen($questionText) > 100 ? '...' : '');
                 },
             ],
             [
