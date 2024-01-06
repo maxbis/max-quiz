@@ -253,7 +253,7 @@ class SiteController extends Controller
             ->one();
 
         if(! isset($submission['id'])) {
-            return $this->render('error', [ 'message' => 'No submission found' ] );
+            return $this->render('error', [ 'message' => 'No submission found for active quiz (quiz inactive?)' ] );
         }
 
         $questionIds = explode(" ", $submission['question_order']);
