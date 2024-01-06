@@ -384,7 +384,7 @@ class QuestionController extends Controller
         $succes = 0;
         $question = null;
 
-        // if mode is update and id give, retriece existing question
+        // if mode is update and id give, retrieve existing question
         if ($mode == 'update' && isset($questionData['id'])) {
             $question = Question::findOne($questionData['id']);
         }

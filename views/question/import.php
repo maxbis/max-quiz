@@ -22,24 +22,9 @@ $quiz_id = Yii::$app->request->get('quiz_id', null);
     }
 </style>
 
+<div style="margin-top:20px;">
 <div class="card" style="width: 60rem;padding:30px;box-shadow: 0 2px 5px rgba(0,0,0,0.2);background-color:#fdfdfd;">
     <h4>Bulk Import</h4>
-    <p> Use this syntax for bulk-import.
-    <pre>
-QQ
-Question...
-AA
-Answer Option 
-AC
-Correct Answer Option
-AA
-Answer Option 
-AA
-Answer Option
-LL
-label
-</pre>
-    </p>
     <p>
         Paste questions:
     </p>
@@ -71,4 +56,27 @@ label
             <button type="submit" class="btn btn-outline-success quiz-button">Import</button>
         </form>
     </div>
+</div>
+
+<div style="margin-top:100px;color:#a0a0a0">
+<p> Use this syntax for bulk-import.
+    <pre>
+QQ
+Question...
+AA
+Answer Option 
+AC
+Correct Answer Option
+AA
+Answer Option 
+AA
+Answer Option
+LL
+label
+QQ
+Next Question....
+....
+</pre>
+</p>
+</div>
 </div>

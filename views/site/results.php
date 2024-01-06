@@ -15,6 +15,7 @@ use yii\helpers\Html;
         .main {
             margin-top: 40px;
             margin-left: 60px;
+            font-size: 21px;
         }
 
         .question-container {
@@ -25,7 +26,7 @@ use yii\helpers\Html;
             box-shadow: 3px 3px 5px #888888;
             margin-bottom: 40px;
             font-family: monospace;
-            width: 60%;
+            max-width: 600px;
         }
 
         pre {
@@ -44,10 +45,9 @@ use yii\helpers\Html;
             background-color: salmon;
         }
 
-        @media (max-width: 601px) {
+        @media (max-width: 801px) {
             .question-container {
                 width: 90%;
-                font-size: smaller;
             }
 
             .main {
@@ -55,9 +55,7 @@ use yii\helpers\Html;
                 margin-left: 6px;
             }
         }
-    </style>
 
-    <style>
         .myButton {
             display: inline-block;
             outline: none;
@@ -84,9 +82,9 @@ use yii\helpers\Html;
             display: flex;
             justify-content: center;
             align-items: center;
-            width: 60%;
-            margin-top: 80px;
+            margin-top: 120px;
             margin-bottom: 40px;
+            max-width: 600px;
         }
     </style>
 
@@ -139,7 +137,7 @@ use yii\helpers\Html;
         ?>
 
         <p style="color: darkblue;font-weight: bold;">Summary for <?= $submission['first_name'] . " " . $submission['last_name'] ?></p>
-        <div class="question-container" style="width:60%">
+        <div class="question-container">
             <table>
                 <tr>
                     <td>
@@ -167,6 +165,7 @@ use yii\helpers\Html;
                 </tr>
             </table>
         </div>
+
         <div class="centered">
             <?= Html::a('Clear', ['/submission/create', 'token' => $submission['token']], ['class' => 'myButton', 'title' => 'Start new quiz']); ?>
         </div>
