@@ -182,6 +182,10 @@ use yii\grid\GridView;
                 'attribute' => 'question_order',
                 'enableSorting' => false,
                 'filter' => false,
+                'headerOptions' => ['style' => 'width:200px;'],
+                'value' => function ($model) {
+                    return mb_substr($model->question_order, 0, 15) . (mb_strlen($model->question_order) > 15 ? '...' : '');
+                }
             ],
             [
                 'label' => 'Question',
@@ -202,6 +206,10 @@ use yii\grid\GridView;
                 'attribute' => 'answer_order',
                 'enableSorting' => false,
                 'filter' => false,
+                'headerOptions' => ['style' => 'width:200px;'],
+                'value' => function ($model) {
+                    return mb_substr($model->answer_order, 0, 15) . (mb_strlen($model->answer_order) > 15 ? '...' : '');
+                }
             ],
 
         ],
