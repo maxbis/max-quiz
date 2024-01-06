@@ -187,12 +187,38 @@ class QuestionController extends Controller
     {
         $model = $this->findModel($id);
 
-        if ($this->request->isPost && $model->load($this->request->post()) && $model->save()) {
+        $sql = "select q.id, q.name, qq.active from quiz q
+            left join quizquestion qq on qq.quiz_id = q.id 
+            and qq.active = 1 and qq.question_id=$id";
+        $questionLinks = Yii::$app->db->createCommand($sql)->queryAll();
+
+        if ($this->request->isPost && $model->load($this->request->post())) {
+            $questionLinks = Yii::$app->request->post('questionLinks', []);
+            $updateSql = "";
+            foreach ($questionLinks as $quiz_id => $active) {
+                $active = ($active == 0) ? 0 : 1; // $active can be 'on' beecause of checkbox, see (update)form
+                $sql = "select count(*) count from quizquestion where question_id=$id and quiz_id=$quiz_id";
+                $count = Yii::$app->db->createCommand($sql)->queryOne()['count'];
+                if ( $count == 0 ) {
+                    $updateSql .= "insert into quizquestion (question_id, quiz_id, active) values ($id, $quiz_id, $active);\n";
+                } else {
+                    $updateSql .= "update quizquestion set active =$active where question_id=$id and quiz_id=$quiz_id;\n";
+                }
+                Yii::$app->db->createCommand($updateSql)->execute();
+            }
+            // _dd($updateSql);
+            if ( $model->save() ) {
+                Yii::$app->session->setFlash('success', ' Question updated');
+            } else {
+                Yii::$app->session->setFlash('error', ' Question not updated');
+            }
+
             return $this->redirect(['/question/view', 'id' => $id]);
         }
 
         return $this->render('update', [
             'model' => $model,
+            'questionLinks' => $questionLinks,
         ]);
     }
 
@@ -496,7 +522,7 @@ class QuestionController extends Controller
             }
         }
 
-        
+
         return $this->render('multipleUpdate', ['models' => $models]);
     }
 }

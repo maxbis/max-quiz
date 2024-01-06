@@ -131,7 +131,7 @@ $this->params['breadcrumbs'][] = $this->title;
         echo Html::submitButton('Delete Selected', [
             'class' => 'btn btn-outline-danger quiz-button',
             'id' => 'delete-selected-button',
-            'confirm' => 'Are you sure you want to delete the selected items?',
+            'onclick' => 'return confirm("Are you sure you want to delete the selected items?");',
             'method' => 'post',
         ]);
         ?>

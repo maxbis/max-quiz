@@ -37,22 +37,25 @@ $noAnswers = count($answers);
         }
 
         .answer {
-            padding: 6px;
+            padding: 15px;
             border: 2px solid #ddd;
             background-color: #fbfbfd;
             margin: 40px;
             cursor: pointer;
-            text-align: middle;
+            text-align: left;
             min-height: 4em;
             font-family: monospace;
             user-select: none;
             display: flex;
-            align-items: center; /* Vertical centering */
+            align-items: center;
+            /* Vertical centering */
             justify-content: center;
         }
+
         .answer:not(.selected):hover {
             background-color: #bbd7fc;
         }
+
         .answer:active {
             background-color: #007bff;
         }
@@ -95,17 +98,20 @@ $noAnswers = count($answers);
             .question-block {
                 white-space: normal;
                 min-height: 4em;
-                font-size:smaller;
+                font-size: smaller;
             }
+
             .answer {
                 margin: 10px;
                 min-height: 3em;
             }
+
             .question-title {
                 margin-top: 20px;
                 margin-bottom: 5px;
                 font-size: smaller;
             }
+
             .banner-container {
                 padding: 4px;
             }
@@ -157,6 +163,13 @@ $noAnswers = count($answers);
 
         .btn {
             margin-right: 20px;
+        }
+
+        .quiz-button {
+            font-size: 12px;
+            padding: 2px 5px;
+            min-width: 55px;
+            margin: 5px;
         }
     </style>
     <script>
@@ -221,21 +234,19 @@ $noAnswers = count($answers);
                         <input type="hidden" name="<?= $csrfTokenName ?>" value="<?= $csrfToken ?>">
                         <?php if ($submission['id'] != 0) { ?>
                             <button type="submit" id="submitButton" class="btn btn-light" title="Click eerst op een antwoord" disabled>Volgende vraag >></button>
-
                         <?php } else {
                             $url = Yii::$app->urlManager->createUrl(['/question/update', 'id' => $question['id']]);
                             echo Html::a('Edit', $url, [
                                 'id' => 'submitButton-org', 'title' => 'Edit Question',
-                                'class' => 'btn btn-light',
+                                'class' => 'btn btn-outline-secondary quiz-button',
                             ]);
                             $url = Yii::$app->urlManager->createUrl(['/question/copy', 'id' => $question['id']]);
                             echo Html::a('Copy', $url, [
                                 'id' => 'submitButton-org', 'title' => 'Copy Question',
-                                'class' => 'btn btn-light',
+                                'class' => 'btn btn-outline-secondary quiz-button',
                             ]);
-                            $url = Yii::$app->urlManager->createUrl(['/question']);
-                            echo Html::a('Back', $url, ['id' => 'submitButton', 'title' => 'Back', 'class' => 'btn btn-light']);
                         } ?>
+    
                     </form>
                 </div>
             </div>

@@ -42,18 +42,6 @@ use yii\widgets\ActiveForm;
                             <?= $form->field($model, "[$index]question")->textarea(['rows' => 10, 'style' => 'font-family: monospace;width:600px;', 'maxlength' => true]) ?>
                         </div>
                         <div class="row justify-content-start">
-                            <div class="col">
-                                <?= $form->field($model, 'label')->textInput([
-                                    'rows' => 2,
-                                    'style' => 'width: 450px;',
-                                    'maxlength' => true
-                                ]) ?>
-                            </div>
-                             <div class="col">
-                                <?= $form->field($model, 'correct')->textInput([
-                                    'style' => 'width: 60px;',
-                                ])->label('Correct') ?>
-                            </div>
                         </div>
                     </div>
                     <div class="col" style="margin-left:30px;">
@@ -75,15 +63,27 @@ use yii\widgets\ActiveForm;
                         <?php } ?>
                     </div>
                 </div>
-                <div class="row">
+                <div class="row ustify-content-between">
+                    <div class="col">
+                        <?= $form->field($model, 'label')->textInput([
+                            'rows' => 2,
+                            'style' => 'width: 450px;',
+                            'maxlength' => true
+                        ]) ?>
+                    </div>
+                    <div class="col">
+                        <?= $form->field($model, 'correct')->textInput([
+                            'style' => 'width: 60px;',
+                        ])->label('Correct') ?>
+                    </div>
                     <?php
                         $b1 = Html::a(
-                                'View/copy',
-                                ['view', 'id' => $model['id']],
-                                ['class' => 'btn btn-outline-warning quiz-button', 'title' => 'View/Copy']
-                            );
+                            'View/copy',
+                            ['view', 'id' => $model['id']],
+                            ['class' => 'btn btn-outline-warning quiz-button', 'title' => 'View/Copy']
+                        );
                     ?>
-                    <div style="display: flex; justify-content: flex-end; align-items: left;"><?= $b1 ?></div>
+                    <div class="col" style="display: flex; justify-content: flex-end; align-items: flex-end;"><?= $b1 ?></div>
                 </div>
             </div>
         <?php endforeach; ?>

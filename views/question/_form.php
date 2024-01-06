@@ -100,7 +100,24 @@ use yii\widgets\ActiveForm;
                 ]) ?>
             </div>
         </div>
-        
+
+        <?php if ( isset($questionLinks) ) { ?>
+        <div class="checkbox-group" style="display: flex;">
+            <?php
+            echo '<div class="checkbox" style="margin-right: 10px;">Linked to: </div>';
+            foreach ($questionLinks as $link) {
+                echo '<div class="checkbox" style="margin-left: 20px;">';
+                echo Html::hiddenInput('questionLinks[' . $link['id'] . ']', 0);
+                echo Html::checkbox('questionLinks[' . $link['id'] . ']', $link['active'], [
+                    'label' => Html::encode($link['name']),
+                    'value' => $link['active'],
+                ]);
+                echo '</div>';
+            }
+            ?>
+        </div>
+        <?php } ?>
+
         <hr>
         <div class="form-group">
             <?= Html::submitButton('Save', ['class' => 'btn btn-success quiz-button']) ?>
