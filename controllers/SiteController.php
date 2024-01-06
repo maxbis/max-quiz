@@ -253,9 +253,9 @@ class SiteController extends Controller
             ->andWhere(['>', 'quiz.review', 0])
             ->one();
 
-        if(! isset($submission['id'])) {
-            return $this->render('error', [ 'message' => 'No submission found' ] );
-        }
+        // if(! isset($submission['id'])) {
+        //     return $this->render('error', [ 'message' => 'No submission found' ] );
+        // }
 
         $questionIds = explode(" ", $submission['question_order']);
         $questions = Question::find()->where(['id' => $questionIds])->asArray()->all();
