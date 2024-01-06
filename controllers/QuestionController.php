@@ -206,7 +206,6 @@ class QuestionController extends Controller
                 }
                 Yii::$app->db->createCommand($updateSql)->execute();
             }
-            // _dd($updateSql);
             if ( $model->save() ) {
                 Yii::$app->session->setFlash('success', ' Question updated');
             } else {

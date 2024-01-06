@@ -14,8 +14,6 @@ use yii\helpers\Html;
     <style>
         .main {
             margin-top: 40px;
-            margin-left: 60px;
-            font-size: 21px;
         }
 
         .question-container {
@@ -52,7 +50,6 @@ use yii\helpers\Html;
 
             .main {
                 margin-top: 20px;
-                margin-left: 6px;
             }
         }
 
@@ -91,7 +88,7 @@ use yii\helpers\Html;
 </head>
 
 <body>
-    <div class="main">
+    <div class="main container">
         <h1>Results for <?= $submission['first_name'] . " " . $submission['last_name'] ?></h1>
         <hr style="width:60%">
         <?php

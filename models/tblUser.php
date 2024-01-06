@@ -13,7 +13,7 @@ use Yii;
  * @property string|null $authKey
  * @property string|null $role
  */
-class tblUser extends \yii\db\ActiveRecord
+class TblUser extends \yii\db\ActiveRecord
 {
     /**
      * {@inheritdoc}

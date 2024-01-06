@@ -185,7 +185,7 @@ $noAnswers = count($answers);
 
 <body class="background-image">
 
-    <div class="container-fluid banner-container text-white text-center ppy-3">
+    <div class="container-fluid banner-container text-white text-center py-3">
         <div class="banner-content">
             <h1><?= $title ?></h1>
             <p>vraag <?= $submission['no_answered'] + 1 ?> van <?= $submission['no_questions'] ?></p>
