@@ -87,7 +87,7 @@ use yii\helpers\Html;
             var iframeElement = document.createElement("iframe");
 
             // Set the source URL for the iframe
-            iframeElement.src = url; 
+            iframeElement.src = url;
 
             // Set attributes for the iframe (optional)
             iframeElement.width = "500"; // Set the width
@@ -140,7 +140,7 @@ use yii\helpers\Html;
                     </label>
                 <?php endif; ?>
             </form>
-            <div id="iframeContainer"></div>
+  
             <?php
             $url = Yii::$app->urlManager->createUrl(['/question/update', 'id' => $question['id']]);
             $b1 = Html::a('Edit', $url, [

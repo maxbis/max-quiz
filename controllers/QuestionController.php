@@ -169,7 +169,7 @@ class QuestionController extends Controller
 
         if ($newModel->save()) {
             Yii::$app->session->setFlash('success', 'Question copied successfully.');
-            return $this->redirect(['view', 'id' => $newModel->primaryKey]);
+            return $this->redirect(['update', 'id' => $newModel->primaryKey]);
         } else {
             Yii::$app->session->setFlash('error', 'There was an error copying the question.');
             return $this->redirect(['view', 'id' => $id]);

@@ -1,4 +1,5 @@
 <?php
+
 use yii\helpers\Html;
 use yii\widgets\ActiveForm;
 
@@ -9,8 +10,8 @@ use yii\widgets\ActiveForm;
         display: flex;
     }
 
-    .row {
-        margin-left: 20px;
+    .col {
+        margin-left: 0px;
     }
 
     .question-title {
@@ -18,6 +19,13 @@ use yii\widgets\ActiveForm;
         margin-bottom: 20px;
         text-align: left;
         color: darkblue;
+    }
+
+    .quiz-button {
+        font-size: 12px;
+        padding: 2px 5px;
+        min-width: 55px;
+        margin: 5px;
     }
 </style>
 
@@ -30,22 +38,26 @@ use yii\widgets\ActiveForm;
             <span class="question-title">Question <?= ++$teller ?></span>
             <div class="card" style="padding:30px;margin-bottom:40px;box-shadow: 0 2px 5px rgba(0,0,0,0.2);background-color:#fdfdfd;">
                 <div class="container">
-                    <div class="row">
-                        <?= $form->field($model, "[$index]question")->textarea(['rows' => 10, 'style' => 'font-family: monospace;width:600px;', 'maxlength' => true]) ?>
-                        <div class="col">
-                            <?= $form->field($model, 'label')->textInput([
-                                'rows' => 2,
-                                'style' => 'width: 450px;',
-                                'maxlength' => true
-                            ]) ?>
+                    <div class="col">
+                        <div class="">
+                            <?= $form->field($model, "[$index]question")->textarea(['rows' => 10, 'style' => 'font-family: monospace;width:600px;', 'maxlength' => true]) ?>
                         </div>
-                        <div class="col">
-                            <?= $form->field($model, 'correct')->textInput([
-                                'style' => 'width: 60px;',
-                            ]) ?>
+                        <div class="row justify-content-start">
+                            <div class="col">
+                                <?= $form->field($model, 'label')->textInput([
+                                    'rows' => 2,
+                                    'style' => 'width: 450px;',
+                                    'maxlength' => true
+                                ]) ?>
+                            </div>
+                             <div class="col">
+                                <?= $form->field($model, 'correct')->textInput([
+                                    'style' => 'width: 60px;',
+                                ])->label('Correct') ?>
+                            </div>
                         </div>
                     </div>
-                    <div class="row">
+                    <div class="col" style="margin-left:30px;">
                         <?php for ($i = 1; $i <= 6; $i += 2) {  ?>
                             <div class="row justify-content-start">
                                 <div class="col">
@@ -61,9 +73,14 @@ use yii\widgets\ActiveForm;
                                     ]) ?>
                                 </div>
                             </div>
-                        <?php } ?>
-
-
+                        <?php }
+                       $b1 = Html::a(
+                            'View/copy',
+                            ['view', 'id' => $model['id']],
+                            ['class' => 'btn btn-outline-warning quiz-button', 'title' => 'View/Copy']
+                        );
+                        ?>
+                        <div style="display: flex; justify-content: flex-end; align-items: left;"><?= $b1 ?></div>
                     </div>
                 </div>
             </div>
