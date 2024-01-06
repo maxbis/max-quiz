@@ -250,12 +250,11 @@ class SiteController extends Controller
             ->where(['submission.token' => $token])
             ->joinWith('quiz')
             ->andWhere(['quiz.active' => 1])
-            ->andWhere(['>', 'quiz.review', 0])
             ->one();
 
-        // if(! isset($submission['id'])) {
-        //     return $this->render('error', [ 'message' => 'No submission found' ] );
-        // }
+        if(! isset($submission['id'])) {
+            return $this->render('error', [ 'message' => 'No submission found' ] );
+        }
 
         $questionIds = explode(" ", $submission['question_order']);
         $questions = Question::find()->where(['id' => $questionIds])->asArray()->all();
