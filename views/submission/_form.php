@@ -43,48 +43,81 @@ $this->registerJs($script);
         <hr>
         <div class="row">
             <div class="col">
-                <?= $form->field($model, 'start_time')->textInput(['readonly' => true, 'style' => 'background-color: #f0f0f0;']) ?>
+                <?= $form->field($model, 'token')->textInput(['readonly' => false, 'style' => 'background-color: #ffffff;']) ?>
+
+            </div>
+        </div>
+        <div class="row">
+            <div class="col">
                 <?= $form->field($model, 'quiz_id')->textInput(['readonly' => true, 'style' => 'background-color: #f0f0f0;']) ?>
-                <?= $form->field($model, 'no_questions')->textInput(['readonly' => true, 'style' => 'background-color: #f0f0f0;']) ?>
-                <?= $form->field($model, 'no_answered')->textInput() ?>
-                <?= $form->field($model, 'first_name')->textInput(['maxlength' => true, 'style' => 'background-color: #FFFFE0;']) ?>
-                <?= $form->field($model, 'class')->textInput(['maxlength' => true]) ?>
-
-
+            </div>
+            <div class="col">
+                <?= $form->field($model, 'start_time')->textInput(['readonly' => true, 'style' => 'background-color: #f0f0f0;']) ?>
             </div>
             <div class="col">
                 <?= $form->field($model, 'end_time')->textInput(['readonly' => true, 'style' => 'background-color: #f0f0f0;']) ?>
-                <?= $form->field($model, 'token')->textInput(['readonly' => false, 'style' => 'background-color: #f0f0f0;']) ?>
-                <?= $form->field($model, 'question_order')->textInput(['readonly' => true, 'maxlength' => true]) ?>
+            </div>
+        </div>
+        <div class="row">
+            <div class="col">
+                <?= $form->field($model, 'no_questions')->textInput(['readonly' => true, 'style' => 'background-color: #f0f0f0;']) ?>
+            </div>
+            <div class="col">
+                <?= $form->field($model, 'no_answered')->textInput() ?>
+            </div>
+            <div class="col">
                 <?= $form->field($model, 'no_correct')->textInput() ?>
-                <?= $form->field($model, 'last_name')->textInput(['maxlength' => true, 'style' => 'background-color: #FFFFE0;']) ?>
-
+            </div>
+            <div class="col">
                 <?= $form->field($model, 'finished')->dropDownList(
                     [1 => 'Finshed', 0 => 'In Progress'], // Options: value => display text
                     ['prompt' => 'Select Status', 'style' => 'width: 200px;'] // Optional: prompt message
                 )->label('Status') ?>
-
             </div>
         </div>
-        <hr>
-        <div style="background-color:yellow;">Be carefull updating!</div>
-        <div class="form-group">
-            <?= Html::submitButton('Save', ['class' => 'btn btn-success quiz-button']) ?>
-            <?php
-            $url = Url::to(['/submission/index', 'quiz_id' => $model->quiz['id']]);
-            echo Html::a('Back', [$url], ['class' => 'btn btn-primary quiz-button']);
-            echo Html::a('Delete', ['delete', 'id' => $model->id], [
-                'class' => 'btn btn-danger quiz-button',
-                'data' => [
-                    'confirm' => 'Are you sure you want to delete this item?',
-                    'method' => 'post',
-                ],
-            ]) ?>
+        <div class="row">
+            <div class="col">
+                <?= $form->field($model, 'question_order')->textInput(['readonly' => true, 'maxlength' => true]) ?>
+            </div>
         </div>
+        <div class="row">
+            <div class="col">
+                <?= $form->field($model, 'answer_order')->textInput(['readonly' => true, 'maxlength' => true]) ?>
+            </div>
+        </div>
+        <div class="row">
+            <div class="col">
+                <?= $form->field($model, 'first_name')->textInput(['maxlength' => true, 'style' => 'background-color: #FFFFE0;']) ?>
+            </div>
+            <div class="col">
+                <?= $form->field($model, 'last_name')->textInput(['maxlength' => true, 'style' => 'background-color: #FFFFE0;']) ?>
+            </div>
+            <div class="col">
+                <?= $form->field($model, 'class')->textInput(['maxlength' => true, 'style' => 'background-color: #FFFFE0;']) ?>
+            </div>
 
-        <?php ActiveForm::end(); ?>
 
-
-
+        </div>
     </div>
+    <hr>
+    <div style="background-color:yellow;">Be carefull updating!</div>
+    <div class="form-group">
+        <?= Html::submitButton('Save', ['class' => 'btn btn-success quiz-button']) ?>
+        <?php
+        $url = Url::to(['/submission/index', 'quiz_id' => $model->quiz['id']]);
+        echo Html::a('Back', [$url], ['class' => 'btn btn-primary quiz-button']);
+        echo Html::a('Delete', ['delete', 'id' => $model->id], [
+            'class' => 'btn btn-danger quiz-button',
+            'data' => [
+                'confirm' => 'Are you sure you want to delete this item?',
+                'method' => 'post',
+            ],
+        ]) ?>
+    </div>
+
+    <?php ActiveForm::end(); ?>
+
+
+
+</div>
 </div>
