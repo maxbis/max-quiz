@@ -225,7 +225,7 @@ $this->registerJs($script);
     </div>
 </div>
 
-<div class="quiz-card" style="max-width:600px;border: 1px solid #ddd; padding: 15px; margin-bottom: 20px; border-radius: 5px; box-shadow: 0 2px 5px rgba(0,0,0,0.2);">
+<div class="quiz-card" style="max-width:700px;border: 1px solid #ddd; padding: 15px; margin-bottom: 20px; border-radius: 5px; box-shadow: 0 2px 5px rgba(0,0,0,0.2);">
     <div class="container">
         <div class="row">
             <div class="col-md-7">
@@ -249,6 +249,13 @@ $this->registerJs($script);
                 echo Html::a('View', $url, ['title' => 'View Questions', 'class' => 'btn btn-outline-success quiz-button',]);
                 ?>
                 <?= Html::a('Copy', ['quiz/copy',   'id' => $quiz['id']], ['class' => 'btn btn-outline-danger quiz-button'],); ?>
+                <?php
+                $url = Yii::$app->urlManager->createUrl(['/submission', 'quiz_id' => $quiz['id']]);
+                echo Html::a('Results', $url, [
+                     'title' => 'Show Results/Progress',
+                     'class' => 'btn btn-outline-dark quiz-button',
+                 ]);
+                 ?>
 
             </div>
         </div>

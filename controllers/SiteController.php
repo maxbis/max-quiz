@@ -253,10 +253,8 @@ class SiteController extends Controller
             ->andWhere(['>', 'quiz.review', 0])
             ->one();
 
-        $this->layout = false;
-
-        if ($submission === null) {
-            throw new \yii\web\NotFoundHttpException('The requested results is not available to view.');
+        if(! isset($submission['id'])) {
+            return $this->render('error', [ 'message' => 'No submission found' ] );
         }
 
         $questionIds = explode(" ", $submission['question_order']);
@@ -265,7 +263,8 @@ class SiteController extends Controller
         foreach ($questions as $question) {
             $questionsById[$question['id']] = $question;
         }
-        
+
+        $this->layout = false;
         return $this->render('results', [
             'questionsById' => $questionsById,
             'submission' => $submission,

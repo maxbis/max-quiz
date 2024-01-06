@@ -126,11 +126,21 @@ use yii\grid\GridView;
                     }
                     return ['style' => "background-color: $backgroundColor;"];
                 },
+                // 'value' => function ($model) {
+                //     $fullName = $model->first_name.' '.$model->last_name;
+                //     return mb_substr($fullName, 0, 26) . (mb_strlen($fullName) > 26 ? '...' : '');
+                // },
+                'format' => 'raw',
                 'value' => function ($model) {
-                    $fullName = $model->first_name.' '.$model->last_name;
-                    return mb_substr($fullName, 0, 26) . (mb_strlen($fullName) > 26 ? '...' : '');
+                    $fullName = $model->first_name . ' ' . $model->last_name;
+                    $displayedName = mb_substr($fullName, 0, 26) . (mb_strlen($fullName) > 26 ? '...' : '');
+            
+                    // Create the URL
+                    $url = Url::to(['/site/results', 'token' => $model->token]);
+            
+                    // Return the hyperlink
+                    return Html::a($displayedName, $url);
                 },
-                
             ],
             [
                 'attribute' => 'class',

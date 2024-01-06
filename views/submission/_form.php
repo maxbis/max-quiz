@@ -31,9 +31,16 @@ $this->registerJs($script);
     <div class="quiz-form">
         <h4>Update submission for <?= $model->quiz['name'] ?></h4>
         <p></p>
-        <hr>
-        <?php $form = ActiveForm::begin(); ?>
 
+        <?= Html::a('Open quiz', ['/submission/restart', 'token' => $model->token], ['class' => 'btn btn-outline-primary quiz-button']); ?>
+        <?php
+        echo Html::button('Link to quiz', ['class' => 'btn btn-outline-secondary quiz-button', 'id' => 'copy-button']);
+        $urlToCopy = Url::to(['/submission/restart', 'token' => $model->token], true);
+        echo Html::textInput('hidden-url', $urlToCopy, ['id' => 'hidden-url', 'readonly' => true, 'style' => 'position: absolute; left: -9999px;']);
+        ?>
+        <?= Html::a('Results', ['/site/results', 'token' => $model->token], ['class' => 'btn btn-outline-warning quiz-button']); ?>
+        <?php $form = ActiveForm::begin(); ?>
+        <hr>
         <div class="row">
             <div class="col">
                 <?= $form->field($model, 'start_time')->textInput(['readonly' => true, 'style' => 'background-color: #f0f0f0;']) ?>
@@ -48,7 +55,7 @@ $this->registerJs($script);
             <div class="col">
                 <?= $form->field($model, 'end_time')->textInput(['readonly' => true, 'style' => 'background-color: #f0f0f0;']) ?>
                 <?= $form->field($model, 'token')->textInput(['readonly' => false, 'style' => 'background-color: #f0f0f0;']) ?>
-                <?= $form->field($model, 'question_order')->textInput(['readonly' => true, 'maxlength' => true ]) ?>
+                <?= $form->field($model, 'question_order')->textInput(['readonly' => true, 'maxlength' => true]) ?>
                 <?= $form->field($model, 'no_correct')->textInput() ?>
                 <?= $form->field($model, 'last_name')->textInput(['maxlength' => true, 'style' => 'background-color: #FFFFE0;']) ?>
 
@@ -59,7 +66,8 @@ $this->registerJs($script);
 
             </div>
         </div>
-
+        <hr>
+        <div style="background-color:yellow;">Be carefull updating!</div>
         <div class="form-group">
             <?= Html::submitButton('Save', ['class' => 'btn btn-success quiz-button']) ?>
             <?php
@@ -76,15 +84,7 @@ $this->registerJs($script);
 
         <?php ActiveForm::end(); ?>
 
-        <hr>
 
-        <?= Html::a('Open quiz', ['/submission/restart', 'token' => $model->token], ['class' => 'btn btn-outline-primary quiz-button']); ?>
-        <?php
-        echo Html::button('Link to quiz', ['class' => 'btn btn-outline-secondary quiz-button', 'id' => 'copy-button']);
-        $urlToCopy = Url::to(['/submission/restart', 'token' => $model->token], true);
-        echo Html::textInput('hidden-url', $urlToCopy, ['id' => 'hidden-url', 'readonly' => true, 'style' => 'position: absolute; left: -9999px;']);
-        ?>
-        <?= Html::a('Results', ['/site/results', 'token' => $model->token], ['class' => 'btn btn-outline-warning quiz-button']); ?>
 
     </div>
 </div>

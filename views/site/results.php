@@ -115,8 +115,7 @@ use yii\helpers\Html;
                 echo "<br>";
                 // echo $answerArray[$i];
                 // echo $questionsById[$thisQuestionId]['correct'];
-
-                if (isset($answerArray[$i])) {
+                if ( isset($answerArray[$i]) && $answerArray[$i] ) {
                     if ($answerArray[$i] == $questionsById[$thisQuestionId]['correct']) {
                         echo "<p class=\"correct\">Correct answer given: ";
                         echo $questionsById[$thisQuestionId]['a' . $answerArray[$i]];
@@ -127,7 +126,7 @@ use yii\helpers\Html;
                         echo "</p>";
                     }
                 } else {
-                    echo "<p>Question not answered</p>";
+                    echo "<p>Question not yet answered</p>";
                 }
             } else {
                 echo "Question does not exists anymore...";

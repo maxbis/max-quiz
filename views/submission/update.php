@@ -6,9 +6,7 @@ use yii\helpers\Html;
 /** @var app\models\Submission $model */
 
 $this->title = 'Update Submission: ' . $model->id;
-$this->params['breadcrumbs'][] = ['label' => 'Submissions', 'url' => ['index']];
-$this->params['breadcrumbs'][] = ['label' => $model->id, 'url' => ['view', 'id' => $model->id]];
-$this->params['breadcrumbs'][] = 'Update';
+
 ?>
 <div class="submission-update">
 
