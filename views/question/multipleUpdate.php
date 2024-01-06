@@ -15,8 +15,7 @@ use yii\widgets\ActiveForm;
     }
 
     .question-title {
-        margin-top: 0px;
-        margin-bottom: 20px;
+        margin-bottom: 5px;
         text-align: left;
         color: darkblue;
     }
@@ -35,9 +34,9 @@ use yii\widgets\ActiveForm;
         $teller = 0; ?>
 
         <?php foreach ($models as $index => $model) : ?>
-            <span class="question-title">Question <?= ++$teller ?></span>
+            <div class="question-title">Question <?= ++$teller ?></div>
             <div class="card" style="padding:30px;margin-bottom:40px;box-shadow: 0 2px 5px rgba(0,0,0,0.2);background-color:#fdfdfd;">
-                <div class="container">
+                <div class="row">
                     <div class="col">
                         <div class="">
                             <?= $form->field($model, "[$index]question")->textarea(['rows' => 10, 'style' => 'font-family: monospace;width:600px;', 'maxlength' => true]) ?>
@@ -73,15 +72,18 @@ use yii\widgets\ActiveForm;
                                     ]) ?>
                                 </div>
                             </div>
-                        <?php }
-                       $b1 = Html::a(
-                            'View/copy',
-                            ['view', 'id' => $model['id']],
-                            ['class' => 'btn btn-outline-warning quiz-button', 'title' => 'View/Copy']
-                        );
-                        ?>
-                        <div style="display: flex; justify-content: flex-end; align-items: left;"><?= $b1 ?></div>
+                        <?php } ?>
                     </div>
+                </div>
+                <div class="row">
+                    <?php
+                        $b1 = Html::a(
+                                'View/copy',
+                                ['view', 'id' => $model['id']],
+                                ['class' => 'btn btn-outline-warning quiz-button', 'title' => 'View/Copy']
+                            );
+                    ?>
+                    <div style="display: flex; justify-content: flex-end; align-items: left;"><?= $b1 ?></div>
                 </div>
             </div>
         <?php endforeach; ?>
