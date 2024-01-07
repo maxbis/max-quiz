@@ -57,16 +57,16 @@ class QuizController extends Controller
      *
      * @return string
      */
-    public function actionIndex2()
-    {
-        $searchModel = new QuizSearch();
-        $dataProvider = $searchModel->search($this->request->queryParams);
+    // public function actionIndex2()
+    // {
+    //     $searchModel = new QuizSearch();
+    //     $dataProvider = $searchModel->search($this->request->queryParams);
 
-        return $this->render('index', [
-            'searchModel' => $searchModel,
-            'dataProvider' => $dataProvider,
-        ]);
-    }
+    //     return $this->render('index', [
+    //         'searchModel' => $searchModel,
+    //         'dataProvider' => $dataProvider,
+    //     ]);
+    // }
 
     private function updateQuestionNumbers()
     {

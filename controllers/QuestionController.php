@@ -199,14 +199,17 @@ class QuestionController extends Controller
                 $active = ($active == 0) ? 0 : 1; // $active can be 'on' beecause of checkbox, see (update)form
                 $sql = "select count(*) count from quizquestion where question_id=$id and quiz_id=$quiz_id";
                 $count = Yii::$app->db->createCommand($sql)->queryOne()['count'];
-                if ( $count == 0 ) {
+                if ( $count == 0 && $active == 1 ) { // only insert if relation record does not exists and the question becomes active for this quiz
                     $updateSql .= "insert into quizquestion (question_id, quiz_id, active) values ($id, $quiz_id, $active);\n";
-                } else {
+                } elseif ( $count == 1 ) { // if relation record exist, always update
                     $updateSql .= "update quizquestion set active =$active where question_id=$id and quiz_id=$quiz_id;\n";
                 }
-                Yii::$app->db->createCommand($updateSql)->execute();
             }
-            if ( $model->save() ) {
+            // _d($count);_d($sql);
+            // _dd($updateSql);
+            Yii::$app->db->createCommand($updateSql)->execute();
+
+            if ($model->save()) {
                 Yii::$app->session->setFlash('success', ' Question updated');
             } else {
                 Yii::$app->session->setFlash('error', ' Question not updated');

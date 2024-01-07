@@ -6,13 +6,11 @@ use yii\helpers\Html;
 /** @var app\models\Question $model */
 
 $this->title = 'Create Question';
-$this->params['breadcrumbs'][] = ['label' => 'Questions', 'url' => ['index']];
-$this->params['breadcrumbs'][] = $this->title;
 ?>
 <div class="question-create">
 
-    <h4><?= Html::encode($this->title) ?></h4>
-
+    <p style='color:#909090;font-size:16px;'><?= $this->title ?></p>
+    
     <?= $this->render('_form', [
         'model' => $model,
     ]) ?>

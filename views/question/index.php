@@ -54,7 +54,7 @@ echo "<p style='color:#909090;font-size:16px;'>".$this->title.'</p>';
     .quiz-button {
         font-size: 12px;
         padding: 2px 5px;
-        min-width: 55px;
+        min-width: 75px;
         margin: 5px;
     }
 
@@ -240,7 +240,7 @@ $this->registerJs($script);
 <div class="quiz-card" style="max-width:700px;border: 1px solid #ddd; padding: 15px; margin-bottom: 20px; border-radius: 5px; box-shadow: 0 2px 5px rgba(0,0,0,0.2);">
     <div class="container">
         <div class="row">
-            <div class="col-md-7">
+            <div class="col-md-5">
                 <?php
                 $statusClass = $quiz['active'] == 1 ? 'dot-green' : 'dot-red';
                 $statusHelp = $quiz['active'] == 1 ? 'active' : 'inactive';
@@ -254,16 +254,16 @@ $this->registerJs($script);
                     questions: <span id="countDisplay"><?= count($questionIds); ?></span>
                 </p>
             </div>
-            <div class="col-md-5 d-flex align-items-end">
-                <?= Html::a('Edit', ['quiz/update', 'id' => $quiz['id']], ['class' => 'btn btn-outline-primary quiz-button'],) ?>
+            <div class="col-md-7 d-flex align-items-end">
+                <?= Html::a('✏️ Edit', ['quiz/update', 'id' => $quiz['id']], ['class' => 'btn btn-outline-primary quiz-button'],) ?>
                 <?php
                 $url = Yii::$app->urlManager->createUrl(['/question/list', 'quiz_id' => $quiz['id']]);
-                echo Html::a('View', $url, ['title' => 'View Questions', 'class' => 'btn btn-outline-success quiz-button',]);
+                echo Html::a('👁️ View', $url, ['title' => 'View Questions', 'class' => 'btn btn-outline-success quiz-button',]);
                 ?>
-                <?= Html::a('Copy', ['quiz/copy',   'id' => $quiz['id']], ['class' => 'btn btn-outline-danger quiz-button'],); ?>
+                <?= Html::a('📋 Copy', ['quiz/copy',   'id' => $quiz['id']], ['class' => 'btn btn-outline-danger quiz-button'],); ?>
                 <?php
                 $url = Yii::$app->urlManager->createUrl(['/submission', 'quiz_id' => $quiz['id']]);
-                echo Html::a('Results', $url, [
+                echo Html::a('📊 Results', $url, [
                     'title' => 'Show Results/Progress',
                     'class' => 'btn btn-outline-dark quiz-button',
                 ]);
@@ -360,31 +360,31 @@ $this->registerJs($script);
     <p>
         <hr>
         <?php
-        echo Html::a('New', ['create', 'quiz_id' => $quiz['id']], ['class' => 'btn btn-outline-success quiz-button', 'title' => 'Create new question']);
+        echo Html::a('➕ New', ['create', 'quiz_id' => $quiz['id']], ['class' => 'btn btn-outline-success quiz-button', 'title' => 'Create new question']);
         ?>
         <span style="margin-left:50px;"> </span>
 
         <?php
-        echo Html::button('Link All', [
+        echo Html::button('🔗 Link All', [
             'class' => 'btn btn-outline-secondary quiz-button',
             'onclick' => 'checkAllCheckboxes(true);',
         ]);
-        echo Html::button('Unlink All', [
+        echo Html::button('🔗 Unlink All', [
             'class' => 'btn btn-outline-secondary quiz-button',
             'onclick' => 'checkAllCheckboxes(false);',
         ]);
         ?>
         <span style="margin-left:50px;"> </span>
         <?php
-        echo Html::a('import', ['import', 'quiz_id' => $quiz['id']], ['class' => 'btn btn-outline-secondary quiz-button', 'title' => '']);
-        echo Html::a('export', ['export', 'quiz_id' => $quiz['id']], ['class' => 'btn btn-outline-secondary quiz-button', 'title' => '']);
-        echo Html::a('Multi Edit', ['multiple-update', 'quiz_id' => $quiz['id']], ['class' => 'btn btn-outline-secondary quiz-button', 'title' => '']);
+        echo Html::a('📥 import', ['import', 'quiz_id' => $quiz['id']], ['class' => 'btn btn-outline-secondary quiz-button', 'title' => '']);
+        echo Html::a('📤 export', ['export', 'quiz_id' => $quiz['id']], ['class' => 'btn btn-outline-secondary quiz-button', 'title' => '']);
+        echo Html::a('✏️ Multi Edit', ['multiple-update', 'quiz_id' => $quiz['id']], ['class' => 'btn btn-outline-secondary quiz-button', 'title' => '']);
         ?>
         <span style="margin-left:50px;"> </span>
         <?php
         if ($show == 1) {
             echo Html::a(
-                'Delete All',
+                '❌ Delete All',
                 ['bulk-delete', 'quiz_id' => $quiz['id']],
                 [
                     'class' => 'btn btn-outline-danger quiz-button',
