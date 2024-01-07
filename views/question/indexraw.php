@@ -68,11 +68,13 @@ $this->params['breadcrumbs'][] = $this->title;
             //     'class' => CheckboxColumn::class
             // ],
             [
-                'class' => 'yii\grid\SerialColumn'
+                'class' => 'yii\grid\SerialColumn',
+                'headerOptions' => ['style' => 'width:50px;'],
             ],
             [
                 'label' => '#r',
                 'attribute' => 'quizQuestionsCount',
+                'headerOptions' => ['style' => 'width:40px;'],
                 'headerOptions' => ['title' => 'Number of times used in quizes'],
                 'value' => function ($model) {
                     return $model->getQuizquestions()->count();
@@ -99,12 +101,12 @@ $this->params['breadcrumbs'][] = $this->title;
             [
                 'attribute' => 'label',
                 'label' => 'Label',
-                'headerOptions' => ['style' => 'width:200px;'],
+                'headerOptions' => ['style' => 'width:180px;'],
             ],
             [
                 'attribute' => 'id',
                 'label' => 'id',
-                'headerOptions' => ['style' => 'width:30px;'],
+                'headerOptions' => ['style' => 'width:80px;'],
                 'contentOptions' => function ($model) {
                     return [
                         'class' => 'multiline-tooltip',
@@ -115,6 +117,7 @@ $this->params['breadcrumbs'][] = $this->title;
             ],
             [
                 'class' => ActionColumn::className(),
+                'headerOptions' => ['style' => 'width:80px;'],
                 'urlCreator' => function ($action, Question $model, $key, $index, $column) {
                     return Url::toRoute([$action, 'id' => $model->id]);
                 }
