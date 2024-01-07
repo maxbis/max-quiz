@@ -12,6 +12,8 @@ use yii\filters\AccessControl;
 use Yii;
 use yii\web\Cookie;
 
+use app\models\Quiz;
+
 /**
  * SubmissionController implements the CRUD actions for Submission model.
  */
@@ -61,9 +63,18 @@ class SubmissionController extends Controller
         $searchModel = new SubmissionSearch();
         $dataProvider = $searchModel->search($this->request->queryParams, $quiz_id);
 
+        $quizName = 'All Quizes';
+        if ($quiz_id !== null) {
+            $quiz = Quiz::findOne($quiz_id);
+            if ($quiz !== null) {
+                $quizName = $quiz->name;
+            } 
+        }
+
         return $this->render('index', [
             'searchModel' => $searchModel,
             'dataProvider' => $dataProvider,
+            'quizName' => $quizName,
         ]);
     }
 

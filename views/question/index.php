@@ -10,8 +10,9 @@ use yii\grid\GridView;
 /** @var app\models\QuestionSearch $searchModel */
 /** @var yii\data\ActiveDataProvider $dataProvider */
 
-$this->title = 'Questions';
+$this->title = 'Quiz Details';
 // $this->params['breadcrumbs'][] = $this->title;
+echo "<p style='color:#909090;font-size:16px;'>".$this->title.'</p>';
 ?>
 
 <style>

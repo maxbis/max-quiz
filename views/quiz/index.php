@@ -9,7 +9,8 @@ use yii\web\JsExpression;
 /* @var $dataProvider yii\data\ActiveDataProvider */
 
 $this->title = 'Quiz List';
-$this->params['breadcrumbs'][] = $this->title;
+// $this->params['breadcrumbs'][] = $this->title;
+echo "<p style='color:#909090;font-size:16px;'>".$this->title.'</p>';
 
 $updateNameUrl = '/quiz/a';
 $updatePasswordUrl = '/quiz/a';
@@ -57,8 +58,8 @@ $this->registerJs($js);
 
 <style>
     .quiz-button-small {
-        font-size: 10px;
-        padding: 2px 5px;
+        font-size: 12px;
+        padding: 0px 2px;
         min-width: 55px;
         margin-left: 5px;
         margin-right: 5px;
@@ -134,24 +135,24 @@ $this->registerJs($js);
                 'buttons' => [
                     'quizButton' => function ($url, $model) {
                         $url = Yii::$app->urlManager->createUrl(['/question/list', 'quiz_id' => $model->id]);
-                        $b1 = Html::a('View', $url, [
+                        $b1 = Html::a('👁️ View', $url, [
                             'title' => 'View Questions',
                             'class' => 'btn btn-outline-success quiz-button-small',
                         ]);
                         $url = Yii::$app->urlManager->createUrl(['/quiz/update', 'id' => $model->id]);
-                        $b2 = Html::a('Edit', $url, [
+                        $b2 = Html::a('✏️ Edit', $url, [
                             'title' => 'Edit Quiz',
                             'class' => 'btn btn-outline-primary quiz-button-small',
                         ]);
                         $url = Yii::$app->urlManager->createUrl(['/quiz/delete', 'id' => $model->id]);
-                        $b3 = Html::a('Delete', $url, [
+                        $b3 = Html::a('❌ Delete', $url, [
                             'title' => 'Delete Quiz',
                             'class' => 'btn btn-outline-danger quiz-button-small',
                             'data-confirm' => 'Are you sure you want to delete this quiz?',
                             'data-method' => 'post',
                         ]);
                         $url = Yii::$app->urlManager->createUrl(['/submission', 'quiz_id' => $model->id]);
-                        $b4 = Html::a('Results', $url, [
+                        $b4 = Html::a('📊 Results', $url, [
                             'title' => 'Show Results/Progress',
                             'class' => 'btn btn-outline-dark quiz-button-small',
                         ]);
@@ -164,5 +165,5 @@ $this->registerJs($js);
 </div>
 
 <p>
-    <?= Html::a('New Quiz', ['create'], ['title' => 'Create New Quiz', 'class' => 'btn btn-outline-success quiz-button']) ?>
+    <?= Html::a('➕ New Quiz', ['create'], ['title' => 'Create New Quiz', 'class' => 'btn btn-outline-success quiz-button']) ?>
 </p>

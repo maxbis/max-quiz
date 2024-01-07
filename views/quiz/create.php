@@ -6,12 +6,9 @@ use yii\helpers\Html;
 /** @var app\models\Quiz $model */
 
 $this->title = 'Create Quiz';
-$this->params['breadcrumbs'][] = ['label' => 'Quizzes', 'url' => ['index']];
-$this->params['breadcrumbs'][] = $this->title;
 ?>
 <div class="quiz-create">
-
-    <h1><?= Html::encode($this->title) ?></h1>
+    <p style='color:#909090;font-size:16px;'><?= $this->title ?></p>
 
     <?= $this->render('_form', [
         'model' => $model,
