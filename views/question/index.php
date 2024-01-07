@@ -217,6 +217,17 @@ JS;
 $this->registerJs($script);
 ?>
 
+<?php
+    $show = Yii::$app->request->get('show', 1);
+    $QuestionLabelText = 'Active Quiz Questions';
+    if($show == 0) {
+        $QuestionLabelText = 'Inactive Questions';
+    }
+    elseif($show == -1) {
+        $QuestionLabelText = 'All Questions';
+    }
+?>
+
 <!-- This is the busy overlay, show as more than one quesstion is updated via AJAX -->
 <div class="modal-overlay" id="modalOverlay">
     <div class="modal-dialog">
@@ -252,10 +263,10 @@ $this->registerJs($script);
                 <?php
                 $url = Yii::$app->urlManager->createUrl(['/submission', 'quiz_id' => $quiz['id']]);
                 echo Html::a('Results', $url, [
-                     'title' => 'Show Results/Progress',
-                     'class' => 'btn btn-outline-dark quiz-button',
-                 ]);
-                 ?>
+                    'title' => 'Show Results/Progress',
+                    'class' => 'btn btn-outline-dark quiz-button',
+                ]);
+                ?>
 
             </div>
         </div>
@@ -302,6 +313,7 @@ $this->registerJs($script);
             ],
             [
                 'attribute' => 'question',
+                'label' => $QuestionLabelText,
                 'value' => function ($model) {
                     $pattern = '/<pre>(.*?)<\/pre>(.*)/s';
                     if (preg_match($pattern, $model->question, $matches)) {
@@ -363,9 +375,9 @@ $this->registerJs($script);
         ?>
         <span style="margin-left:50px;"> </span>
         <?php
-        echo Html::a('import', [ 'import', 'quiz_id' => $quiz['id'] ], ['class' => 'btn btn-outline-secondary quiz-button', 'title' => '']);
-        echo Html::a('export', [ 'export', 'quiz_id' => $quiz['id'] ], ['class' => 'btn btn-outline-secondary quiz-button', 'title' => '']);
-        echo Html::a('Multi Edit', [ 'multiple-update', 'quiz_id' => $quiz['id'] ], ['class' => 'btn btn-outline-secondary quiz-button', 'title' => '']);
+        echo Html::a('import', ['import', 'quiz_id' => $quiz['id']], ['class' => 'btn btn-outline-secondary quiz-button', 'title' => '']);
+        echo Html::a('export', ['export', 'quiz_id' => $quiz['id']], ['class' => 'btn btn-outline-secondary quiz-button', 'title' => '']);
+        echo Html::a('Multi Edit', ['multiple-update', 'quiz_id' => $quiz['id']], ['class' => 'btn btn-outline-secondary quiz-button', 'title' => '']);
         ?>
         <span style="margin-left:50px;"> </span>
         <?php
@@ -380,6 +392,6 @@ $this->registerJs($script);
                 ]
             );
         }
-        ?>        
+        ?>
     </p>
 </div>
