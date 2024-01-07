@@ -42,14 +42,14 @@ class QuestionSearch extends Question
     {
         $query = Question::find();
 
-        if ( $quiz_id ) {
-            $query->joinWith(['quizquestion' => function ($query) use ($quiz_id, $active) {
-                $query->onCondition(['quizquestion.quiz_id' => $quiz_id]);
-            }]);
-            if ( $active == 1 || $active == 0 ) {
-                $query->andWhere(['quizquestion.active' => $active]);
-            }
-        }
+        // if ( $quiz_id ) {
+        //     $query->joinWith(['quizquestion' => function ($query) use ($quiz_id, $active) {
+        //         $query->onCondition(['quizquestion.quiz_id' => $quiz_id]);
+        //     }]);
+        //     if ( $active == 1 || $active == 0 ) {
+        //         $query->andWhere(['quizquestion.active' => $active]);
+        //     }
+        // }
 
         // add conditions that should always apply here
 
@@ -80,12 +80,6 @@ class QuestionSearch extends Question
         ]);
 
         $query->andFilterWhere(['like', 'question', $this->question])
-            ->andFilterWhere(['like', 'a1', $this->a1])
-            ->andFilterWhere(['like', 'a2', $this->a2])
-            ->andFilterWhere(['like', 'a3', $this->a3])
-            ->andFilterWhere(['like', 'a4', $this->a4])
-            ->andFilterWhere(['like', 'a5', $this->a5])
-            ->andFilterWhere(['like', 'a6', $this->a6])
             ->andFilterWhere(['like', 'label', $this->label]);
 
         return $dataProvider;

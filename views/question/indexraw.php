@@ -50,23 +50,23 @@ $this->params['breadcrumbs'][] = $this->title;
 
 <div class="question-index">
 
-    <?php // echo $this->render('_search', ['model' => $searchModel]); 
+    <?php  // echo $this->render('_search', ['model' => $searchModel]); 
     ?>
 
     <?php
 
-    $form = ActiveForm::begin([
-        'action' => Url::to(['/question/delete-multiple']),
-        'options' => ['id' => 'gridview-delete-form'],
-    ]);
+    // $form = ActiveForm::begin([
+    //     'action' => Url::to(['/question/delete-multiple']),
+    //     'options' => ['id' => 'gridview-delete-form'],
+    // ]);
 
     echo GridView::widget([
         'dataProvider' => $dataProvider,
         'filterModel' => $searchModel,
         'columns' => [
-            [
-                'class' => CheckboxColumn::class
-            ],
+            // [
+            //     'class' => CheckboxColumn::class
+            // ],
             [
                 'class' => 'yii\grid\SerialColumn'
             ],
@@ -128,16 +128,16 @@ $this->params['breadcrumbs'][] = $this->title;
     <p>
         <hr>
         <?php
-        echo Html::submitButton('Delete Selected', [
-            'class' => 'btn btn-outline-danger quiz-button',
-            'id' => 'delete-selected-button',
-            'onclick' => 'return confirm("Are you sure you want to delete the selected items?");',
-            'method' => 'post',
-        ]);
+        // echo Html::submitButton('Delete Selected', [
+        //     'class' => 'btn btn-outline-danger quiz-button',
+        //     'id' => 'delete-selected-button',
+        //     'onclick' => 'return confirm("Are you sure you want to delete the selected items?");',
+        //     'method' => 'post',
+        // ]);
         ?>
     </p>
 </div>
 
 <?php
-ActiveForm::end();
+// ActiveForm::end();
 ?>
