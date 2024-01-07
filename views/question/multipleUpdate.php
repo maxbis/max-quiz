@@ -65,14 +65,14 @@ use yii\widgets\ActiveForm;
                 </div>
                 <div class="row ustify-content-between">
                     <div class="col">
-                        <?= $form->field($model, 'label')->textInput([
+                        <?= $form->field($model, "[$index]label")->textInput([
                             'rows' => 2,
                             'style' => 'width: 450px;',
                             'maxlength' => true
                         ]) ?>
                     </div>
                     <div class="col">
-                        <?= $form->field($model, 'correct')->textInput([
+                        <?= $form->field($model, "[$index]correct")->textInput([
                             'style' => 'width: 60px;',
                         ])->label('Correct') ?>
                     </div>
