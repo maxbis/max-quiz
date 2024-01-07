@@ -42,14 +42,14 @@ class QuestionSearch extends Question
     {
         $query = Question::find();
 
-        // if ( $quiz_id ) {
-        //     $query->joinWith(['quizquestion' => function ($query) use ($quiz_id, $active) {
-        //         $query->onCondition(['quizquestion.quiz_id' => $quiz_id]);
-        //     }]);
-        //     if ( $active == 1 || $active == 0 ) {
-        //         $query->andWhere(['quizquestion.active' => $active]);
-        //     }
-        // }
+        if ( $quiz_id ) {
+            $query->joinWith(['quizquestion' => function ($query) use ($quiz_id, $active) {
+                $query->onCondition(['quizquestion.quiz_id' => $quiz_id]);
+            }]);
+            if ( $active == 1 || $active == 0 ) {
+                $query->andWhere(['quizquestion.active' => $active]);
+            }
+        }
 
         // add conditions that should always apply here
 
