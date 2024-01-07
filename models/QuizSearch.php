@@ -44,8 +44,19 @@ class QuizSearch extends Quiz
 
         // add conditions that should always apply here
 
+        // $dataProvider = new ActiveDataProvider([
+        //     'query' => $query,
+        // ]);
         $dataProvider = new ActiveDataProvider([
             'query' => $query,
+            'pagination' => [
+                'pageSize' => 20,
+            ],
+            'sort' => [
+                'defaultOrder' => [
+                    'name' => SORT_ASC, // Sort by id in descending order
+                ],
+            ],
         ]);
 
         $this->load($params);
