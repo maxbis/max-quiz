@@ -377,7 +377,7 @@ class QuestionController extends Controller
         }
         Yii::$app->session->setFlash('success', ' Question(s) imported: ' . $no_succes);
 
-        return $this->redirect(['/question/index']);
+        return $this->redirect(['/quiz/index']);
     }
 
 
