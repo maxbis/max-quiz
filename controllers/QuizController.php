@@ -151,7 +151,7 @@ class QuizController extends Controller
         $sql = "delete from quizquestion where quiz_id=$id";
         Yii::$app->db->createCommand($sql)->execute();
 
-        $sql = "delete from submissions where quiz_id=$id";
+        $sql = "delete from submission where quiz_id=$id";
         Yii::$app->db->createCommand($sql)->execute();
 
         $this->findModel($id)->delete();
