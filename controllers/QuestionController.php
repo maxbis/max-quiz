@@ -204,7 +204,7 @@ class QuestionController extends Controller
                 } elseif ( $count == 1 ) { // if relation record exist, always update
                     $updateSql .= "update quizquestion set active =$active where question_id=$id and quiz_id=$quiz_id;\n";
                 }
-                _d([$quiz_id, $active, $count]);_d($sql);
+                _d([$quiz_id, $active, $count]);
                 _d($updateSql);
             }
             _d($count);_d($sql);
