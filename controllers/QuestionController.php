@@ -205,8 +205,8 @@ class QuestionController extends Controller
                     $updateSql .= "update quizquestion set active =$active where question_id=$id and quiz_id=$quiz_id;\n";
                 }
             }
-            // _d($count);_d($sql);
-            // _dd($updateSql);
+            _d($count);_d($sql);
+            _dd($updateSql);
             Yii::$app->db->createCommand($updateSql)->execute();
 
             if ($model->save()) {
