@@ -205,7 +205,7 @@ class QuestionController extends Controller
                     $updateSql .= "update quizquestion set active =$active where question_id=$id and quiz_id=$quiz_id;\n";
                 }
                 _d($count);_d($sql);
-                _dd($updateSql);
+                _d($updateSql);
             }
             _d($count);_d($sql);
             _dd($updateSql);
