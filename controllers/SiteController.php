@@ -178,6 +178,7 @@ class SiteController extends Controller
         $question = Yii::$app->db->createCommand($sql)->queryOne();
         if (!$question) {
             $message = "Question id " . $submission['thisQuestion'] . "not availabel anymore, cannot coninue this quiz.";
+            $this->layout = false;
             return $this->render('/site/error', ['message' => $message]);
         }
 
@@ -253,6 +254,7 @@ class SiteController extends Controller
             ->one();
 
         if(! isset($submission['id'])) {
+            $this->layout = false;
             return $this->render('error', [ 'message' => 'No submission found for active quiz (quiz inactive?)' ] );
         }
 

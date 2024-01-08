@@ -4,7 +4,8 @@ use yii\helpers\Url;
 use yii\helpers\Html;
 
 $score = round($submission['no_correct'] * 100 / $submission['no_questions'], 0);
-
+date_default_timezone_set('Europe/London');
+$today = date("j F Y");
 ?>
 
 <!DOCTYPE html>
@@ -33,12 +34,12 @@ $score = round($submission['no_correct'] * 100 / $submission['no_questions'], 0)
       display: block;
       position: relative;
       text-align: center;
-      margin-top: 80px;
+      margin-top: 20px;
       margin-bottom: 80px;
     }
 
     .certificate-image {
-      width: 100%;
+      width: 90%;
       height: auto;
     }
 
@@ -55,7 +56,7 @@ $score = round($submission['no_correct'] * 100 / $submission['no_questions'], 0)
     .date {
       position: absolute;
       bottom: 13%;
-      left: 11%;
+      left: 15%;
       font-size: 18px;
       font-family: Arial, sans-serif;
       color: #707070;
@@ -74,7 +75,7 @@ $score = round($submission['no_correct'] * 100 / $submission['no_questions'], 0)
     .signature {
       position: absolute;
       bottom: 13%;
-      left: 73%;
+      left: 70%;
       font-size: 18px;
       font-family: Arial, sans-serif;
       color: #707070;
@@ -181,7 +182,7 @@ $score = round($submission['no_correct'] * 100 / $submission['no_questions'], 0)
       <div class="delayed-content score delayed-content" data-delay="1600">Score
         <b><span class="delayed-content" data-delay="2400"><?= $score ?>%<span></b>
       </div>
-      <div class="delayed-content date" data-delay="800">28 december 2023</div>
+      <div class="delayed-content date" data-delay="800"><?=$today?></div>
       <div class="delayed-content signature" data-delay="1200">PHP L1 (score: <?= $submission['no_correct'] ?>/<?= $submission['no_questions'] ?>)</div>
     </div>
   </div>

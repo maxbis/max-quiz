@@ -50,7 +50,7 @@ class QuizSearch extends Quiz
         $dataProvider = new ActiveDataProvider([
             'query' => $query,
             'pagination' => [
-                'pageSize' => 20,
+                'pageSize' => 80,
             ],
             'sort' => [
                 'defaultOrder' => [

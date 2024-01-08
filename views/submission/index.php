@@ -11,7 +11,37 @@ $this->title = 'Results for ' . $quizName;
 // echo "<p style='color:#909090;font-size:16px;'>".$this->title.'</p>';
 ?>
 
+<style>
+    /* Style for the condensed table */
+    .condensed-table {
+        width: 100%;
+        border-collapse: collapse;
+        /* Ensures that the border is collapsed (no space between them) */
+        border: 1px solid #b0b0b0;font-size: 12px;
+    }
 
+    /* Style for table cells */
+    .condensed-table td,
+    .condensed-table th {
+        padding: 2px;
+        border: 1px solid #e0e0e0;
+    }
+
+    /* Optional: Style for the table header */
+    .condensed-table th {
+        background-color: #f8f8f8;
+        /* Light background for header */
+        text-align: left;
+        white-space: nowrap;
+        vertical-align: bottom;
+        font-size: 12px;
+    }
+
+    /* Optional: Remove the bottom border from the last row */
+    .condensed-table tr:last-child td {
+        border-bottom: none;
+    }
+</style>
 <div class="row">
     <div class="col-md-11">
         <p style='color:#909090;font-size:16px;'><?= $this->title ?></p>
@@ -41,6 +71,7 @@ $this->title = 'Results for ' . $quizName;
         <?= GridView::widget([
             'dataProvider' => $dataProvider,
             'filterModel' => $searchModel,
+            'tableOptions' => ['class' => 'condensed-table'],
             'columns' => [
                 [
                     'label' => 'Code', // You can change the label as needed
@@ -123,6 +154,7 @@ $this->title = 'Results for ' . $quizName;
                 ],
                 [
                     'label' => 'Student',
+                    'attribute' => 'first_name',
                     'headerOptions' => ['style' => 'width:240px;'],
                     'contentOptions' => function ($model, $key, $index, $column) {
                         if (!$model->finished) return ['style' => ""];
