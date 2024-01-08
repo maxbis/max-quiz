@@ -234,18 +234,17 @@ class QuestionController extends Controller
     public function actionDelete($id, $show = null)
     {
 
-        $sql = "delete from quizquestion where question_id=$id";
-        Yii::$app->db->createCommand($sql)->execute();
+        // $sql = "delete from quizquestion where question_id=$id";
+        // Yii::$app->db->createCommand($sql)->execute();
 
         $this->findModel($id)->delete();
 
-        // if question is deleted, delete links
-        // $sql = "delete FROM quizquestion
-        //             WHERE question_id not in  (
-        //             SELECT id
-        //             FROM question
-        //         )";
-        // Yii::$app->db->createCommand($sql)->execute();
+        $sql = "delete FROM quizquestion
+                    WHERE question_id not in  (
+                    SELECT id
+                    FROM question
+                )";
+        Yii::$app->db->createCommand($sql)->execute();
 
         return $this->redirect(['index', 'show' => $show]);
     }
