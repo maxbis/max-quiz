@@ -17,7 +17,8 @@ $this->title = 'Results for ' . $quizName;
         width: 100%;
         border-collapse: collapse;
         /* Ensures that the border is collapsed (no space between them) */
-        border: 1px solid #b0b0b0;font-size: 12px;
+        border: 1px solid #b0b0b0;
+        font-size: 14px;
     }
 
     /* Style for table cells */
@@ -34,7 +35,6 @@ $this->title = 'Results for ' . $quizName;
         text-align: left;
         white-space: nowrap;
         vertical-align: bottom;
-        font-size: 12px;
     }
 
     /* Optional: Remove the bottom border from the last row */

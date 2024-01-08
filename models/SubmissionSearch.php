@@ -52,6 +52,14 @@ class SubmissionSearch extends Submission
 
         $dataProvider = new ActiveDataProvider([
             'query' => $query,
+            'pagination' => [
+                'pageSize' => 60,
+            ],
+            'sort' => [
+                'defaultOrder' => [
+                    'no_answered' => SORT_DESC, // Sort by id in descending order
+                ],
+            ],
         ]);
 
         $this->load($params);
@@ -80,7 +88,7 @@ class SubmissionSearch extends Submission
             ->andFilterWhere(['like', 'class', $this->class])
             ->andFilterWhere(['like', 'question_order', $this->question_order]);
 
-        if  ($quiz_id == null ) {
+        if ($quiz_id == null) {
             $query->andFilterWhere([
                 'quiz.active' => 1,
             ]);
