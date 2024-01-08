@@ -194,7 +194,7 @@ class QuestionController extends Controller
 
         if ($this->request->isPost && $model->load($this->request->post())) {
             $questionLinks = Yii::$app->request->post('questionLinks', []);
-            dd($questionLinks);
+            _dd($questionLinks);
             $updateSql = "";
             foreach ($questionLinks as $quiz_id => $active) {
                 $active = ($active == 0) ? 0 : 1; // $active can be 'on' beecause of checkbox, see (update)form
