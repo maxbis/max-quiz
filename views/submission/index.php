@@ -84,6 +84,10 @@ $params = Yii::$app->request->getQueryParams();
             'tableOptions' => ['class' => 'condensed-table'],
             'columns' => [
                 [
+                    'class' => 'yii\grid\SerialColumn',
+                    'headerOptions' => ['style' => 'width:30px;'],
+                ],
+                [
                     'label' => 'Code', // You can change the label as needed
                     'headerOptions' => ['style' => 'width:40px;'],
                     'format' => 'raw',
@@ -220,7 +224,7 @@ $params = Yii::$app->request->getQueryParams();
                 [
                     'attribute' => 'last_updated',
                     'label' => 'Last Update',
-                    'headerOptions' => ['style' => 'width:120px;'],
+                    'headerOptions' => ['style' => 'width:90px;'],
                     'format' => 'raw',
                     'value' => function ($model) {
                         $formattedDate = Yii::$app->formatter->asDatetime($model->last_updated, 'php:d-m H:i');
