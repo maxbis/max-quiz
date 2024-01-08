@@ -178,13 +178,11 @@ class SiteController extends Controller
         $question = Yii::$app->db->createCommand($sql)->queryOne();
         if (!$question) {
             $message = "Question id " . $submission['thisQuestion'] . "not availabel anymore, cannot coninue this quiz.";
-            $this->layout = false;
             return $this->render('/site/error', ['message' => $message]);
         }
 
         $title = $quiz['name'] . ' [' . strtoupper(substr($submission['token'], -3)) . '] ';
 
-        $this->layout = false;
         return $this->render('question', ['title' => $title, 'question' => $question, 'submission' => $submission]);
     }
 
@@ -250,11 +248,10 @@ class SiteController extends Controller
         $submission = Submission::find()
             ->where(['submission.token' => $token])
             ->joinWith('quiz')
-            ->andWhere(['quiz.active' => 1])
+            // ->andWhere(['quiz.active' => 1])
             ->one();
 
         if(! isset($submission['id'])) {
-            $this->layout = false;
             return $this->render('error', [ 'message' => 'No submission found for active quiz (quiz inactive?)' ] );
         }
 

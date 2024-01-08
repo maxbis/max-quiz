@@ -9,6 +9,7 @@ use yii\grid\GridView;
 
 $this->title = 'Results for ' . $quizName;
 // echo "<p style='color:#909090;font-size:16px;'>".$this->title.'</p>';
+$params = Yii::$app->request->getQueryParams();
 ?>
 
 <style>
@@ -41,13 +42,22 @@ $this->title = 'Results for ' . $quizName;
     .condensed-table tr:last-child td {
         border-bottom: none;
     }
+    .quiz-button {
+        font-size: 10px;
+        padding: 2px 5px;
+        min-width: 55px;
+        margin: 5px;
+    }
 </style>
+
 <div class="row">
     <div class="col-md-11">
         <p style='color:#909090;font-size:16px;'><?= $this->title ?></p>
     </div>
     <div class="col-md-1 d-flex align-items-end">
-        <a href="<?= Url::to(['submission/export']) ?>" class="btn btn-outline-dark">Excel</a>
+        <?php if ( isset($params['quiz_id']) ) { ?>
+        <a href="<?= Url::to(['submission/export', 'quiz_id' => $params['quiz_id'] ]) ?>" class="btn btn-outline-dark quiz-button">Excel</a>
+        <?php } ?>
     </div>
 </div>
 
@@ -155,7 +165,7 @@ $this->title = 'Results for ' . $quizName;
                 [
                     'label' => 'Student',
                     'attribute' => 'first_name',
-                    'headerOptions' => ['style' => 'width:240px;'],
+                    'headerOptions' => ['style' => 'width:180px;'],
                     'contentOptions' => function ($model, $key, $index, $column) {
                         if (!$model->finished) return ['style' => ""];
                         $score = $model->no_questions > 0 ? round(($model->no_correct / $model->no_questions) * 100, 0) : 0;
@@ -210,7 +220,7 @@ $this->title = 'Results for ' . $quizName;
                 [
                     'attribute' => 'last_updated',
                     'label' => 'Last Update',
-                    'headerOptions' => ['style' => 'width:200px;'],
+                    'headerOptions' => ['style' => 'width:120px;'],
                     'format' => 'raw',
                     'value' => function ($model) {
                         $formattedDate = Yii::$app->formatter->asDatetime($model->last_updated, 'php:d-m H:i');
@@ -222,13 +232,25 @@ $this->title = 'Results for ' . $quizName;
                     'attribute' => 'question_order',
                     'enableSorting' => false,
                     'filter' => false,
-                    'headerOptions' => ['style' => 'width:200px;'],
+                    'contentOptions' => function ($model, $key, $index, $column) {
+
+                        $numbersArray = explode(" ", $model->question_order);
+                        foreach ($numbersArray as $key => &$value) {
+                            $value = ($key + 1) . ':' . $value;
+                        }
+                        $result = implode(" ", $numbersArray);
+
+                        return ['title' => $result];
+                    },
+                    'format' => 'raw',
                     'value' => function ($model) {
-                        return mb_substr($model->question_order, 0, 15) . (mb_strlen($model->question_order) > 15 ? '...' : '');
+                        return "<span style='color:#909090'>".
+                                mb_substr($model->question_order, 0, 45) . (mb_strlen($model->question_order) > 45 ? '...' : '')
+                                ."</span>";
                     }
                 ],
                 [
-                    'label' => 'Question',
+                    'label' => 'Now',
                     'format' => 'raw',
                     'value' => function ($model) {
                         $numbers = explode(' ', $model->question_order);
@@ -241,16 +263,16 @@ $this->title = 'Results for ' . $quizName;
                         return '-';
                     },
                 ],
-                [
-                    'label' => 'Answers',
-                    'attribute' => 'answer_order',
-                    'enableSorting' => false,
-                    'filter' => false,
-                    'headerOptions' => ['style' => 'width:200px;'],
-                    'value' => function ($model) {
-                        return mb_substr($model->answer_order, 0, 15) . (mb_strlen($model->answer_order) > 15 ? '...' : '');
-                    }
-                ],
+                // [
+                //     'label' => 'Answers',
+                //     'attribute' => 'answer_order',
+                //     'enableSorting' => false,
+                //     'filter' => false,
+                //     'headerOptions' => ['style' => 'width:200px;'],
+                //     'value' => function ($model) {
+                //         return mb_substr($model->answer_order, 0, 15) . (mb_strlen($model->answer_order) > 15 ? '...' : '');
+                //     }
+                // ],
 
             ],
         ]); ?>

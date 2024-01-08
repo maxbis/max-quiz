@@ -246,7 +246,7 @@ class SubmissionController extends Controller
         ]);
     }
 
-    public function actionExport()
+    public function actionExport($quiz_id)
     {
         $sql = "select q.name, first_name, last_name, class,
                 CASE 
@@ -257,7 +257,7 @@ class SubmissionController extends Controller
                 start_time, end_time, TIMESTAMPDIFF(minute, start_time, end_time) duration
                 from submission s
                 join quiz q on q.id = s.quiz_id
-                where active = 1";
+                where q.id = $quiz_id";
         $submissions = Yii::$app->db->createCommand($sql)->queryAll();
 
         if ($submissions) $this->exportExcel($submissions);

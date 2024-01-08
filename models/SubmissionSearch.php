@@ -57,7 +57,8 @@ class SubmissionSearch extends Submission
             ],
             'sort' => [
                 'defaultOrder' => [
-                    'no_answered' => SORT_DESC, // Sort by id in descending order
+                    'no_answered' => SORT_DESC,
+                    'last_updated' => SORT_DESC,
                 ],
             ],
         ]);
