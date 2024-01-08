@@ -204,11 +204,11 @@ class QuestionController extends Controller
                 } elseif ( $count == 1 ) { // if relation record exist, always update
                     $updateSql .= "update quizquestion set active =$active where question_id=$id and quiz_id=$quiz_id;\n";
                 }
-                _d([$quiz_id, $active, $count]);
-                _d($updateSql);
+                // _d([$quiz_id, $active, $count]);
+                // _d($updateSql);
             }
-            _d($count);_d($sql);
-            _dd($updateSql);
+            // _d($count);_d($sql);
+            // _dd($updateSql);
             Yii::$app->db->createCommand($updateSql)->execute();
 
             if ($model->save()) {
