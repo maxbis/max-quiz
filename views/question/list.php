@@ -126,7 +126,11 @@ function getStats($data)
         <div style="display:flex;margin-bottom:5px;">
             <div style="color: darkblue;font-weight: bold;"><?= "Question " . ($index++) ?></div>
             <div id="stats<?= $question['id'] ?>" style="color: darkblue;display: none;">
-                ,&nbsp;<?= getStats($logItems[$question['id']]); ?>
+                <?php if ( isset($logItems[$question['id']]) ) {
+                    echo ",&nbsp;".getStats($logItems[$question['id']]);
+                } else {
+                    echo "-";
+                } ?>
             </div>
         </div>
         <div class="question-container" style="width:60%">
