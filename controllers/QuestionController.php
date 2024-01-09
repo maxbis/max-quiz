@@ -127,8 +127,8 @@ class QuestionController extends Controller
         $sql = "select * from question where id=" . $id;
         $question = Yii::$app->db->createCommand($sql)->queryOne();
 
-        if (! $question ) {
-            return $this->render('/site/error', [ 'message' => "Question $id does not exist." ] );
+        if (!$question) {
+            return $this->render('/site/error', ['message' => "Question $id does not exist."]);
         }
 
         return $this->render('/site/question', ['title' => 'Question', 'question' => $question, 'submission' => $submission]);
@@ -200,14 +200,14 @@ class QuestionController extends Controller
             $questionLinks = Yii::$app->request->post('questionLinks', []);
             $updateSql = "";
             foreach ($questionLinks as $quiz_id => $active) {
-                if ($active == 'on' ) {
+                if ($active == 'on') {
                     $active = 1;
                 }
                 $sql = "select count(*) count from quizquestion where question_id=$id and quiz_id=$quiz_id";
                 $count = Yii::$app->db->createCommand($sql)->queryOne()['count'];
-                if ( $count == 0 && $active == 1 ) { // only insert if relation record does not exists and the question becomes active for this quiz
+                if ($count == 0 && $active == 1) { // only insert if relation record does not exists and the question becomes active for this quiz
                     $updateSql .= "insert into quizquestion (question_id, quiz_id, active) values ($id, $quiz_id, $active);\n";
-                } elseif ( $count == 1 ) { // if relation record exist, always update
+                } elseif ($count == 1) { // if relation record exist, always update
                     $updateSql .= "update quizquestion set active =$active where question_id=$id and quiz_id=$quiz_id;\n";
                 }
             }
@@ -279,12 +279,25 @@ class QuestionController extends Controller
                 where qq.quiz_id=$quiz_id and qq.active=1";
         $questions = Yii::$app->db->createCommand($sql)->queryAll();
 
+        $sql = "select question_id id, sum(answer_no) answer, sum(correct) correct from log where quiz_id = $quiz_id group by 1";
+        $log = Yii::$app->db->createCommand($sql)->queryAll();
+
+        $logItems = [];
+
+        foreach ($log as $item) {
+            $logItems[$item['id']] = [
+                'answer' => $item['answer'],
+                'correct' => $item['correct']
+            ];
+        }
+
         $sql = "select name from quiz where id=$quiz_id";
         $quiz = Yii::$app->db->createCommand($sql)->queryOne();
 
         return $this->render('list', [
             'questions' => $questions,
             'quiz' => $quiz,
+            'logItems' => $logItems,
         ]);
     }
 

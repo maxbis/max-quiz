@@ -2,6 +2,22 @@
 
 use yii\helpers\Html;
 
+function getStats($data)
+{
+    $answer_no = isset($data['answer']) ? $data['answer'] : 0;
+    $answer_correct = isset($data['correct']) ? $data['correct'] : 0;
+
+    if ($answer_no != 0) {
+        $perc_correct = round($answer_correct / $answer_no * 100);
+        $stats = "$answer_no / $answer_correct ($perc_correct%)";
+    } else {
+        $perc_correct = 0;
+        $stats = "-";
+    }
+    return ($stats);
+}
+
+
 ?>
 <!DOCTYPE html>
 <html>
@@ -61,15 +77,17 @@ use yii\helpers\Html;
             var checkbox = document.getElementById(checkboxId);
             var answerButton = document.getElementById('answer-button' + questionId);
             var backgroundColor = checkbox.style.backgroundColor;
+            var stats = document.getElementById("stats" + questionId);
 
             if (checkbox) {
                 if (backgroundColor && backgroundColor !== 'none') {
                     checkbox.removeAttribute('style');
                     answerButton.textContent = 'Answer';
+                    stats.style.display = 'none';
                 } else {
                     answerButton.textContent = 'Hide';
-                    checkbox.style.border = "2px solid green";
                     checkbox.style.backgroundColor = "lightgreen";
+                    stats.style.display = 'block';
                 }
 
             } else {
@@ -105,7 +123,12 @@ use yii\helpers\Html;
 
     <?php $index = 1;
     foreach ($questions as $question) : ?>
-        <p style="color: darkblue;font-weight: bold;"><?= "Question " . ($index++) ?></p>
+        <div style="display:flex;margin-bottom:5px;">
+            <div style="color: darkblue;font-weight: bold;"><?= "Question " . ($index++) ?></div>
+            <div id="stats<?= $question['id'] ?>" style="color: darkblue;display: none;">
+                ,&nbsp;<?= getStats($logItems[$question['id']]); ?>
+            </div>
+        </div>
         <div class="question-container" style="width:60%">
             <form class="answers">
                 <div class="question" id="question<?= $question['id'] ?>">
@@ -140,7 +163,7 @@ use yii\helpers\Html;
                     </label>
                 <?php endif; ?>
             </form>
-  
+
             <?php
             $url = Yii::$app->urlManager->createUrl(['/question/update', 'id' => $question['id']]);
             $b1 = Html::a('Edit', $url, [
