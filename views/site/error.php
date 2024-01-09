@@ -3,6 +3,7 @@
 /* @var $message string */
 
 use yii\helpers\Html;
+
 $this->title = 'Error';
 
 $this->registerCss("
@@ -24,6 +25,11 @@ $this->registerCss("
     .red-box {
         border: solid 3px #d00000;
         box-shadow: 0px 0px 40px 4px rgba(255, 0, 0, 0.2);
+    }
+    .site-error {
+        display: flex;
+        justify-content: center;
+        align-items: center;
     }
 ");
 ?>

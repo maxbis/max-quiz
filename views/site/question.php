@@ -68,10 +68,10 @@ $noAnswers = count($answers);
         .question-block {
             white-space: pre-wrap;
             font-family: monospace;
-            background-color: #f8f8f8;
+            background-color: #f8f8f7;
             border: 1px solid #ddd;
-            padding: 20px;
-            min-height: 4em;
+            padding-left: 40px;
+            min-height: 6em;
             text-align: left;
             user-select: none;
             overflow-x: hidden;
@@ -194,12 +194,13 @@ $noAnswers = count($answers);
 
     <div class="container text-center">
         <div class="row justify-content-center page-effect">
-            <div class="col-12 question-title">Vraag <?= $submission['no_answered'] + 1 ?></div>
-            <div class="col-12">
-                <div class="question-block">
-<?= $question['question'] ?>
-                </div>
+            <div class="col-12 question-title">Vraag <?= $submission['no_answered'] + 1 ?>
             </div>
+
+            <div class="question-block">
+<?= $question['question'] ?>
+            </div>
+
 
             <div class="col-md-6">
                 <!-- Answers Column 1 -->
@@ -246,7 +247,7 @@ $noAnswers = count($answers);
                                 'class' => 'btn btn-outline-secondary quiz-button',
                             ]);
                         } ?>
-    
+
                     </form>
                 </div>
             </div>

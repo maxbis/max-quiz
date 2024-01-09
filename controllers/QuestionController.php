@@ -127,6 +127,10 @@ class QuestionController extends Controller
         $sql = "select * from question where id=" . $id;
         $question = Yii::$app->db->createCommand($sql)->queryOne();
 
+        if (! $question ) {
+            return $this->render('/site/error', [ 'message' => "Question $id does not exist." ] );
+        }
+
         return $this->render('/site/question', ['title' => 'Question', 'question' => $question, 'submission' => $submission]);
     }
 
