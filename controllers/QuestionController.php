@@ -530,7 +530,9 @@ class QuestionController extends Controller
     public function actionMultipleUpdate($quiz_id)
     {
         // Example: Load multiple models (adjust the query as needed)
-        $models =   Question::find()->joinWith('quizquestions')->where(['quizquestion.quiz_id' => $quiz_id])->all();
+        $models =   Question::find()->joinWith('quizquestions')
+                                ->where(['quizquestion.quiz_id' => $quiz_id, 'quizquestion.active' => 1])
+                                ->all();
 
         if (Yii::$app->request->isPost) {
             if (Question::loadMultiple($models, Yii::$app->request->post()) && Question::validateMultiple($models)) {
