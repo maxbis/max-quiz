@@ -16,7 +16,7 @@ use Yii;
 use app\models\Quizquestion;
 
 /**
- * QuestionController implements the CRUD actions for Question model.
+ * QuestionController implements the CRUD actions for Question model!
  */
 class QuestionController extends Controller
 {
