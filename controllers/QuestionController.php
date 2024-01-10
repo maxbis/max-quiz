@@ -242,6 +242,14 @@ class QuestionController extends Controller
         // $sql = "delete from quizquestion where question_id=$id";
         // Yii::$app->db->createCommand($sql)->execute();
 
+        $sql = "SELECT count(*) count FROM quizquestion where active = 1 and question_id = $id";
+        $result = Yii::$app->db->createCommand($sql)->queryOne();
+
+        if ( $result['count'] > 0 ) {
+            Yii::$app->session->setFlash('error', 'Question cannot be deleted because it is linked to a quiz.');
+            return $this->redirect(['index', 'show' => $show]);
+        }
+
         $this->findModel($id)->delete();
 
         $sql = "delete FROM quizquestion
@@ -251,6 +259,7 @@ class QuestionController extends Controller
                 )";
         Yii::$app->db->createCommand($sql)->execute();
 
+        Yii::$app->session->setFlash('success', 'Question deleted.');
         return $this->redirect(['index', 'show' => $show]);
     }
 
@@ -498,6 +507,7 @@ class QuestionController extends Controller
 
     public function actionBulkDelete($quiz_id)
     {
+        _dd('Not available, only for testing');
         $sql = "delete from question where id in (
                     select q.id from question q
                     join quizquestion qq on qq.question_id = q.id
@@ -505,6 +515,7 @@ class QuestionController extends Controller
                     and qq.quiz_id=$quiz_id
                 )";
         Yii::$app->db->createCommand($sql)->execute();
+
         // delete connections from questions that do not exists anymore
         $sql = "delete from quizquestion
                 where id not in (

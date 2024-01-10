@@ -224,9 +224,21 @@ $params = Yii::$app->request->getQueryParams();
 
                 ],
                 [
+                    'label' => 'Start time',
+                    'attribute' => 'start_time',
+                    'enableSorting' => true,
+                    'filter' => false,
+                    'headerOptions' => ['style' => 'width:100px;'],
+                    'format' => 'raw',
+                    'value' => function ($model) {
+                        $value = Yii::$app->formatter->asDatetime($model->start_time, 'php:d-m H:i') ;
+                        return "<span style='color:#909090'>" . $value . "</span>";
+                    }
+                ],
+                [
                     'attribute' => 'last_updated',
                     'label' => 'Last Update',
-                    'headerOptions' => ['style' => 'width:90px;'],
+                    'headerOptions' => ['style' => 'width:100px;'],
                     'format' => 'raw',
                     'value' => function ($model) {
                         $formattedDate = Yii::$app->formatter->asDatetime($model->last_updated, 'php:d-m H:i');
@@ -255,35 +267,26 @@ $params = Yii::$app->request->getQueryParams();
                 //             . "</span>";
                 //     }
                 // ],
-                [
-                    'label' => 'Start time',
-                    'attribute' => 'start_time',
-                    'enableSorting' => true,
-                    'filter' => false,
-                    'headerOptions' => ['style' => 'width:120px;'],
-                    'format' => 'raw',
-                    'value' => function ($model) {
-                        $value = Yii::$app->formatter->asDatetime($model->start_time, 'php:d-m H:i') ;
-                        return "<span style='color:#909090'>" . $value . "</span>";
-                    }
-                ],
+
                 [
                     'label' => 'Duration',
                     'enableSorting' => false,
                     'attribute' => 'end_time',
                     'filter' => false,
-                    'headerOptions' => ['style' => 'width:120px;'],
+                    'headerOptions' => ['style' => 'width:60px;'],
                     'format' => 'raw',
                     'value' => function ($model) {
                         if (isset($model->end_time)) {
                             $diffInSeconds = strtotime($model->end_time) - strtotime($model->start_time);
-                            $minutes = floor($diffInSeconds / 60);
-                            $seconds = $diffInSeconds % 60;
-                            $value = (str_pad($minutes, 2, '0', STR_PAD_LEFT) . ":" . str_pad($seconds, 2, '0', STR_PAD_LEFT));
+                            $color = "#004000";
                         } else {
-                            $value = '' ;
+                            $diffInSeconds = strtotime($model->last_updated) - strtotime($model->start_time);
+                            $color = "#909090";
                         }
-                        return "<span style='color:#909090'>" . $value . "</span>";
+                        $minutes = floor($diffInSeconds / 60);
+                        $seconds = $diffInSeconds % 60;
+                        $value = (str_pad($minutes, 2, '0', STR_PAD_LEFT) . ":" . str_pad($seconds, 2, '0', STR_PAD_LEFT));
+                        return "<span style='color:".$color."'>" . $value . "</span>";
                     }
                 ],
                 [
@@ -294,7 +297,7 @@ $params = Yii::$app->request->getQueryParams();
                         $index = $model->no_answered;
 
                         if (isset($numbers[$index])) {
-                            return $numbers[$index];
+                            return Html::a($numbers[$index], ['/question/view', 'id' => $numbers[$index]]);
                         }
 
                         return '-';
