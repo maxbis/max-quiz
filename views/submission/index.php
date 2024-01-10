@@ -99,7 +99,9 @@ $params = Yii::$app->request->getQueryParams();
                     },
                 ],
                 [
-                    'attribute' => 'Finished',
+                    'attribute' => 'finished',
+                    'enableSorting' => false,
+                    'filter' => true,
                     'format' => 'raw',
                     'contentOptions' => ['class' => 'active-field'],
                     'header' => 'Ready',
