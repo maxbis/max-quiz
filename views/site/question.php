@@ -29,9 +29,9 @@ $noAnswers = count($answers);
     <title>Question and Answers</title>
 
     <style>
-        .no-background-image {
+        .background-image {
             position: relative;
-            background: linear-gradient(to bottom, rgba(255, 255, 255, 1) 20%, rgba(255, 255, 255, 0.85) 100%),
+            background: linear-gradient(to bottom, rgba(255, 255, 255, 1) 800px, rgba(255, 255, 255, 0.85) 100%),
                 url('<?= Url::to('@web/img/classroom.webp') ?>');
             background-size: cover;
             background-position: center;

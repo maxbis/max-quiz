@@ -7,6 +7,7 @@ use yii\grid\ActionColumn;
 use yii\grid\GridView;
 
 
+
 $this->title = 'Results for ' . $quizName;
 // echo "<p style='color:#909090;font-size:16px;'>".$this->title.'</p>';
 $params = Yii::$app->request->getQueryParams();
@@ -42,6 +43,7 @@ $params = Yii::$app->request->getQueryParams();
     .condensed-table tr:last-child td {
         border-bottom: none;
     }
+
     .quiz-button {
         font-size: 10px;
         padding: 2px 5px;
@@ -55,8 +57,8 @@ $params = Yii::$app->request->getQueryParams();
         <p style='color:#909090;font-size:16px;'><?= $this->title ?></p>
     </div>
     <div class="col-md-1 d-flex align-items-end">
-        <?php if ( isset($params['quiz_id']) ) { ?>
-        <a href="<?= Url::to(['submission/export', 'quiz_id' => $params['quiz_id'] ]) ?>" class="btn btn-outline-dark quiz-button">Excel</a>
+        <?php if (isset($params['quiz_id'])) { ?>
+            <a href="<?= Url::to(['submission/export', 'quiz_id' => $params['quiz_id']]) ?>" class="btn btn-outline-dark quiz-button">Excel</a>
         <?php } ?>
     </div>
 </div>
@@ -231,30 +233,61 @@ $params = Yii::$app->request->getQueryParams();
                         return "<span style='color:#909090'>$formattedDate</span>";
                     },
                 ],
+                // [
+                //     'label' => 'Questions',
+                //     'attribute' => 'question_order',
+                //     'enableSorting' => false,
+                //     'filter' => false,
+                //     'contentOptions' => function ($model, $key, $index, $column) {
+
+                //         $numbersArray = explode(" ", $model->question_order);
+                //         foreach ($numbersArray as $key => &$value) {
+                //             $value = ($key + 1) . ':' . $value;
+                //         }
+                //         $result = implode(" ", $numbersArray);
+
+                //         return ['title' => $result];
+                //     },
+                //     'format' => 'raw',
+                //     'value' => function ($model) {
+                //         return "<span style='color:#909090'>" .
+                //             mb_substr($model->question_order, 0, 45) . (mb_strlen($model->question_order) > 45 ? '...' : '')
+                //             . "</span>";
+                //     }
+                // ],
                 [
-                    'label' => 'Questions',
-                    'attribute' => 'question_order',
-                    'enableSorting' => false,
+                    'label' => 'Start time',
+                    'attribute' => 'start_time',
+                    'enableSorting' => true,
                     'filter' => false,
-                    'contentOptions' => function ($model, $key, $index, $column) {
-
-                        $numbersArray = explode(" ", $model->question_order);
-                        foreach ($numbersArray as $key => &$value) {
-                            $value = ($key + 1) . ':' . $value;
-                        }
-                        $result = implode(" ", $numbersArray);
-
-                        return ['title' => $result];
-                    },
+                    'headerOptions' => ['style' => 'width:120px;'],
                     'format' => 'raw',
                     'value' => function ($model) {
-                        return "<span style='color:#909090'>".
-                                mb_substr($model->question_order, 0, 45) . (mb_strlen($model->question_order) > 45 ? '...' : '')
-                                ."</span>";
+                        $value = Yii::$app->formatter->asDatetime($model->start_time, 'php:d-m H:i') ;
+                        return "<span style='color:#909090'>" . $value . "</span>";
                     }
                 ],
                 [
-                    'label' => 'Now',
+                    'label' => 'Duration',
+                    'enableSorting' => false,
+                    'attribute' => 'end_time',
+                    'filter' => false,
+                    'headerOptions' => ['style' => 'width:120px;'],
+                    'format' => 'raw',
+                    'value' => function ($model) {
+                        if (isset($model->end_time)) {
+                            $diffInSeconds = strtotime($model->end_time) - strtotime($model->start_time);
+                            $minutes = floor($diffInSeconds / 60);
+                            $seconds = $diffInSeconds % 60;
+                            $value = (str_pad($minutes, 2, '0', STR_PAD_LEFT) . ":" . str_pad($seconds, 2, '0', STR_PAD_LEFT));
+                        } else {
+                            $value = '' ;
+                        }
+                        return "<span style='color:#909090'>" . $value . "</span>";
+                    }
+                ],
+                [
+                    'label' => 'Now @ Q',
                     'format' => 'raw',
                     'value' => function ($model) {
                         $numbers = explode(' ', $model->question_order);
