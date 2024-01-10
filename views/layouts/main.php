@@ -33,7 +33,7 @@ $this->registerLinkTag(['rel' => 'icon', 'type' => 'image/x-icon', 'href' => Yii
 
     <header id="header">
         <?php
-        if ( $this->title!='Error' && !Yii::$app->user->isGuest ) {
+        if ( $this->title!='Error' ) {
             NavBar::begin([
                 'brandLabel' => Yii::$app->name,
                 'brandUrl' => Yii::$app->homeUrl,
