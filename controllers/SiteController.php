@@ -183,6 +183,7 @@ class SiteController extends Controller
 
         $title = $quiz['name'] . ' [' . strtoupper(substr($submission['token'], -3)) . '] ';
 
+        $this->layout = false;
         return $this->render('question', ['title' => $title, 'question' => $question, 'submission' => $submission]);
     }
 

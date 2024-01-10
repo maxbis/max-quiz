@@ -23,12 +23,15 @@ $noAnswers = count($answers);
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-EVSTQN3/azprG1Anm3QDgpJLIm9Nao0Yz1ztcQTwFspd3yD65VohhpuuCOmLASjC" crossorigin="anonymous">
+
     <title>Question and Answers</title>
-    <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css" rel="stylesheet">
+
     <style>
-        .background-image {
+        .no-background-image {
             position: relative;
-            background: linear-gradient(to bottom, rgba(255, 255, 255, 1) 80%, rgba(255, 255, 255, 0.75) 100%),
+            background: linear-gradient(to bottom, rgba(255, 255, 255, 1) 20%, rgba(255, 255, 255, 0.85) 100%),
                 url('<?= Url::to('@web/img/classroom.webp') ?>');
             background-size: cover;
             background-position: center;
@@ -47,8 +50,6 @@ $noAnswers = count($answers);
             font-family: monospace;
             user-select: none;
             display: flex;
-            align-items: center;
-            /* Vertical centering */
             justify-content: center;
         }
 
@@ -71,6 +72,7 @@ $noAnswers = count($answers);
             background-color: #f8f8f7;
             border: 1px solid #ddd;
             padding-left: 40px;
+            padding-bottom: 20px;
             min-height: 6em;
             text-align: left;
             user-select: none;
@@ -78,8 +80,8 @@ $noAnswers = count($answers);
         }
 
         .question-title {
-            margin-top: 40px;
-            margin-bottom: 10px;
+            margin-top: 10px;
+            margin-bottom: 6px;
             font-size: larger;
             text-align: left;
             color: darkblue;
@@ -227,32 +229,28 @@ $noAnswers = count($answers);
                     <div class="answer" onclick="selectAnswer(this, '<?= $answers[5] ?>')"><?= $question[$answers[5]] ?></div>
                 <?php } ?>
             </div>
-
-            <div class="col-md-6">
-                <div class="col-12">
-                    <form id="answer" class="mt-4" action="<?= Url::to(['site/answer']) ?>" method="POST">
-                        <input type="hidden" id="selectedAnswer" name="selectedAnswer">
-                        <input type="hidden" name="<?= $csrfTokenName ?>" value="<?= $csrfToken ?>">
-                        <?php if ($submission['id'] != 0) { ?>
-                            <button type="submit" id="submitButton" class="btn btn-light" title="Click eerst op een antwoord" disabled>Volgende vraag >></button>
-                        <?php } else {
-                            $url = Yii::$app->urlManager->createUrl(['/question/update', 'id' => $question['id']]);
-                            echo Html::a('Edit', $url, [
-                                'id' => 'submitButton-org', 'title' => 'Edit Question',
-                                'class' => 'btn btn-outline-secondary quiz-button',
-                            ]);
-                            $url = Yii::$app->urlManager->createUrl(['/question/copy', 'id' => $question['id']]);
-                            echo Html::a('Copy', $url, [
-                                'id' => 'submitButton-org', 'title' => 'Copy Question',
-                                'class' => 'btn btn-outline-secondary quiz-button',
-                            ]);
-                        } ?>
-
-                    </form>
-                </div>
-            </div>
         </div>
+
+
+        <form id="answer" class="mt-4" action="<?= Url::to(['site/answer']) ?>" method="POST">
+            <input type="hidden" id="selectedAnswer" name="selectedAnswer">
+            <input type="hidden" name="<?= $csrfTokenName ?>" value="<?= $csrfToken ?>">
+            <?php if ($submission['id'] != 0) { ?>
+                <button type="submit" id="submitButton" class="btn btn-light" title="Click eerst op een antwoord" disabled>Volgende vraag >></button>
+            <?php } else {
+                $url = Yii::$app->urlManager->createUrl(['/question/update', 'id' => $question['id']]);
+                echo Html::a('Edit', $url, [
+                    'id' => 'submitButton-org', 'title' => 'Edit Question',
+                    'class' => 'btn btn-outline-secondary quiz-button',
+                ]);
+                $url = Yii::$app->urlManager->createUrl(['/question/copy', 'id' => $question['id']]);
+                echo Html::a('Copy', $url, [
+                    'id' => 'submitButton-org', 'title' => 'Copy Question',
+                    'class' => 'btn btn-outline-secondary quiz-button',
+                ]);
+            } ?>
     </div>
+    </form>
 
     <script>
         function selectAnswer(element, answer) {
@@ -274,9 +272,6 @@ $noAnswers = count($answers);
         }
     </script>
 
-    <script src="https://code.jquery.com/jquery-3.3.1.slim.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.7/umd/popper.min.js"></script>
-    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js"></script>
 </body>
 
 </html>
