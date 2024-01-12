@@ -173,7 +173,7 @@ class SubmissionController extends Controller
         ]);
         Yii::$app->response->cookies->add($cookie);
 
-        writeLog($msg = "Quiz Started");
+        writeLog($msg = "Quiz Started for $first_name $last_name $class with token: $token");
 
         // redirect to question page
         return $this->redirect(['site/question']);

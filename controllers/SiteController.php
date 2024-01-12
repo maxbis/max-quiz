@@ -210,14 +210,14 @@ class SiteController extends Controller
         $submission = $this->getSubmission();
         if ( $submission['thisQuestion'] == -99 ) {
             // this should not happen; an answer is posted while the quiz is finished
-            writeLog($msg = "Answer given after quiz was finished");
+            writeLog($msg = "Sequence error, answer given after quiz was finished");
             return $this->redirect(['site/finished']);
         }
 
         // check order
         if ( $no_answered != $submission['no_answered'] ) {
             writeLog("Sequence error: ${submission['id']}, ${submission['quiz_id']}, ${submission['thisQuestion']}");
-            Yii::$app->session->setFlash('error', 'Sequence error: you\'re trying to answer a question twice!');
+            Yii::$app->session->setFlash('error', 'Sequence error: question is already answered!');
             return $this->redirect(['site/question']);
         }
 
