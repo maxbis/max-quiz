@@ -24,7 +24,7 @@ $quiz_id = Yii::$app->request->get('quiz_id', null);
 
 <div style="margin-top:20px;">
 <div class="card" style="width: 60rem;padding:30px;box-shadow: 0 2px 5px rgba(0,0,0,0.2);background-color:#fdfdfd;">
-    <h4>Bulk Import</h4>
+    <h4>Bulk Import for Quiz '<?=$quiz['name'] ?>'</h4>
     <p>
         Paste questions:
     </p>

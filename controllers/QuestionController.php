@@ -311,9 +311,11 @@ class QuestionController extends Controller
         ]);
     }
 
-    public function actionImport($input = "")
-    {
-        return $this->render('import', ['input' => $input]);
+    public function actionImport($quiz_id, $input = "")
+    {      
+        $sql = "select * from quiz where id=$quiz_id";
+        $quiz = Yii::$app->db->createCommand($sql)->queryOne();
+        return $this->render('import', ['input' => $input, 'quiz' => $quiz ]);
     }
 
     private function parseBulkInput($input)
