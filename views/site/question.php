@@ -173,6 +173,18 @@ $noAnswers = count($answers);
             min-width: 55px;
             margin: 5px;
         }
+
+        .alert-error {
+            padding: 35px;
+            margin: 40px;
+            border: 1px solid transparent;
+            border-radius: 4px;
+            color: #333;
+            border-color: #e0e0e0;
+            color: #a94442;
+            background-color: #f2dede;
+            border-color: #ebccd1;
+        }
     </style>
     <script>
         document.addEventListener("DOMContentLoaded", function() {
@@ -194,13 +206,23 @@ $noAnswers = count($answers);
         </div>
     </div>
 
+    <?php if (Yii::$app->session->hasFlash('error')): ?>
+        <div class="alert-error">
+            <?= Yii::$app->session->getFlash('error') ?>
+        </div>
+    <?php endif; ?>
+
     <div class="container text-center">
         <div class="row justify-content-center page-effect">
             <div class="col-12 question-title">Vraag <?= $submission['no_answered'] + 1 ?>
             </div>
 
             <div class="question-block">
-<?= $question['question'] ?>
+<?php if ($quiz['blind']) {
+echo "On paper, look up question with id: <b>" . $question['id'] . "</b><br><br>Then, select the right answer....";
+} else {
+echo $question['question'];
+} ?>
             </div>
 
 
@@ -234,18 +256,19 @@ $noAnswers = count($answers);
 
         <form id="answer" class="mt-4" action="<?= Url::to(['site/answer']) ?>" method="POST">
             <input type="hidden" id="selectedAnswer" name="selectedAnswer">
+            <input type="hidden" id="no_answered" name="no_answered" value="<?= $submission['no_answered']; ?>">
             <input type="hidden" name="<?= $csrfTokenName ?>" value="<?= $csrfToken ?>">
             <?php if ($submission['id'] != 0) { ?>
-                <button type="submit" id="submitButton" class="btn btn-light" title="Click eerst op een antwoord" disabled>Volgende vraag >></button>
+                <button type="button" id="submitButton" class="btn btn-light" title="Click eerst op een antwoord" disabled>Volgende vraag >></button>
             <?php } else {
                 $url = Yii::$app->urlManager->createUrl(['/question/update', 'id' => $question['id']]);
                 echo Html::a('Edit', $url, [
-                    'id' => 'submitButton-org', 'title' => 'Edit Question',
+                    'id' => 'submitButton-org1', 'title' => 'Edit Question',
                     'class' => 'btn btn-outline-secondary quiz-button',
                 ]);
                 $url = Yii::$app->urlManager->createUrl(['/question/copy', 'id' => $question['id']]);
                 echo Html::a('Copy', $url, [
-                    'id' => 'submitButton-org', 'title' => 'Copy Question',
+                    'id' => 'submitButton-org2', 'title' => 'Copy Question',
                     'class' => 'btn btn-outline-secondary quiz-button',
                 ]);
             } ?>
@@ -270,6 +293,14 @@ $noAnswers = count($answers);
             document.getElementById('submitButton').title = "Click voor volgende vraag";
             document.getElementById('submitButton').disabled = false;
         }
+    </script>
+
+    <script>
+        document.getElementById('submitButton').addEventListener('click', function() {
+            this.disabled = true;
+            this.innerText = 'Submitting...';
+            document.getElementById('answer').submit();
+        });
     </script>
 
 </body>

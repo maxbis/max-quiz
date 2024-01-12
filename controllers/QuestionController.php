@@ -15,6 +15,7 @@ use yii\filters\AccessControl;
 use Yii;
 use app\models\Quizquestion;
 
+
 /**
  * QuestionController implements the CRUD actions for Question model!
  */
@@ -245,7 +246,7 @@ class QuestionController extends Controller
         $sql = "SELECT count(*) count FROM quizquestion where active = 1 and question_id = $id";
         $result = Yii::$app->db->createCommand($sql)->queryOne();
 
-        if ( $result['count'] > 0 ) {
+        if ($result['count'] > 0) {
             Yii::$app->session->setFlash('error', 'Question cannot be deleted because it is linked to a quiz.');
             return $this->redirect(['index', 'show' => $show]);
         }
@@ -279,7 +280,7 @@ class QuestionController extends Controller
         throw new NotFoundHttpException('The requested page does not exist.');
     }
 
-    public function actionList($quiz_id)
+    public function actionList($quiz_id, $view = 'list')
     {
         $sql = "select
                 q.id id, question question, a1, a2, a3, a4, a5, a6, correct, label
@@ -303,7 +304,7 @@ class QuestionController extends Controller
         $sql = "select name from quiz where id=$quiz_id";
         $quiz = Yii::$app->db->createCommand($sql)->queryOne();
 
-        return $this->render('list', [
+        return $this->render($view, [
             'questions' => $questions,
             'quiz' => $quiz,
             'logItems' => $logItems,
@@ -542,8 +543,8 @@ class QuestionController extends Controller
     {
         // Example: Load multiple models (adjust the query as needed)
         $models =   Question::find()->joinWith('quizquestions')
-                                ->where(['quizquestion.quiz_id' => $quiz_id, 'quizquestion.active' => 1])
-                                ->all();
+            ->where(['quizquestion.quiz_id' => $quiz_id, 'quizquestion.active' => 1])
+            ->all();
 
         if (Yii::$app->request->isPost) {
             if (Question::loadMultiple($models, Yii::$app->request->post()) && Question::validateMultiple($models)) {
@@ -557,4 +558,5 @@ class QuestionController extends Controller
 
         return $this->render('multipleUpdate', ['models' => $models]);
     }
+
 }

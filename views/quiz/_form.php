@@ -22,29 +22,44 @@ $id = Yii::$app->request->get('id');
 <br>
 
 <div class="quiz-card" style="max-width:600px;border: 1px solid #ddd; padding: 15px; margin-bottom: 20px; border-radius: 5px; box-shadow: 0 2px 5px rgba(0,0,0,0.2);background-color:#fdfdfd;">
-    <div class="quiz-form" style="width:400px;">
+    <div class="quiz-form">
         <?php $form = ActiveForm::begin(); ?>
 
         <?= $form->field($model, 'name')->textInput(['maxlength' => true])->label('Quiz Name') ?>
 
         <?= $form->field($model, 'password')->textInput(['maxlength' => true])->label('Unique code to access quiz') ?>
 
-        <?= $form->field($model, 'active')->dropDownList(
-            [1 => 'Active', 0 => 'Not Active'], // Options: value => display text
-            ['prompt' => 'Select Status', 'style' => 'width: 200px;'] // Optional: prompt message
-        )->label('Status') ?>
+        <div class="row">
+            <div class="col-md-6">
+                <?= $form->field($model, 'active')->dropDownList(
+                    [1 => 'Yes', 0 => 'No'], // Options: value => display text
+                    ['prompt' => 'Can Start', 'style' => 'width: 200px;'] // Optional: prompt message
+                )->label('Active') ?>
+            </div>
+            <div class="col-md-6">
 
+                <?= $form->field($model, 'no_questions')->textInput(['style' => 'width: 200px;'])->label('Max number of questions') ?>
+            </div>
+        </div>
 
-        <?= $form->field($model, 'no_questions')->textInput(['style' => 'width: 200px;'])->label('Max number of questions') ?>
-
-        <?= $form->field($model, 'review')->dropDownList(
+        <div class="row">
+            <div class="col-md-6">
+                <?= $form->field($model, 'review')->dropDownList(
                     [1 => 'Review possible', 0 => 'No Review'], // Options: value => display text
                     ['prompt' => 'Select Status', 'style' => 'width: 200px;'] // Optional: prompt message
-                )->label('Review Quiz after completion') ?>
+                )->label('Review Quiz') ?>
+            </div>
+            <div class="col-md-6">
+                <?= $form->field($model, 'blind')->dropDownList(
+                    [0 => 'On Screen', 1 => 'On Paper'], // Options: value => display text
+                    ['prompt' => 'Show Questions', 'style' => 'width: 200px;'] // Optional: prompt message
+                )->label('Blind quiz') ?>
+            </div>
+        </div>
 
         <div class="form-group">
             <?= Html::submitButton('Save', ['class' => 'btn btn-success quiz-button']) ?>
-            <?= Html::a( 'Cancel', Yii::$app->request->referrer , ['class'=>'btn btn-primary quiz-button']); ?>
+            <?= Html::a('Cancel', Yii::$app->request->referrer, ['class' => 'btn btn-primary quiz-button']); ?>
         </div>
 
         <?php ActiveForm::end(); ?>

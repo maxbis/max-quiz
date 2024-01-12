@@ -133,6 +133,7 @@ function getStats($data)
                 } ?>
             </div>
         </div>
+        
         <div class="question-container" style="width:60%">
             <form class="answers">
                 <div class="question" id="question<?= $question['id'] ?>">

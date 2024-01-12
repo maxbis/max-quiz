@@ -141,10 +141,13 @@ class SiteController extends Controller
         $submission = Yii::$app->db->createCommand($sql)->queryOne();
 
         if ($submission['no_answered'] !=  $submission['no_questions']) {
+            // determine next question number
             $questionOrderArray = explode(' ', $submission['question_order']);
-            // dd($submission);
             $thisQuestion = $questionOrderArray[$submission['no_answered']];
             $submission['thisQuestion'] = $thisQuestion;
+        } else {
+            // quiz is finised, no current question left anymore
+            $submission['thisQuestion'] = -99;
         }
 
         return $submission;
@@ -154,7 +157,7 @@ class SiteController extends Controller
     private function getQuiz($id)
     {
         // check if quiz is still ative, otherwise redirect to final page
-        $sql = "select name from quiz where id = $id";
+        $sql = "select name, blind from quiz where id = $id";
         $quiz = Yii::$app->db->createCommand($sql)->queryOne();
 
         return $quiz;
@@ -184,15 +187,18 @@ class SiteController extends Controller
         $title = $quiz['name'] . ' [' . strtoupper(substr($submission['token'], -3)) . '] ';
 
         $this->layout = false;
-        return $this->render('question', ['title' => $title, 'question' => $question, 'submission' => $submission]);
+        return $this->render('question', [ 'title' => $title, 'question' => $question, 'submission' => $submission, 'quiz' => $quiz ]);
     }
 
     public function actionAnswer()
     {
+        
+        usleep(500000); // wait 0.5 seconds to prevent (re)post-attack
         $request = Yii::$app->request;
 
         if ($request->isPost) {
             $givenAnswer = $request->post('selectedAnswer');
+            $no_answered = $request->post('no_answered');
         } else {
             return $this->redirect(['site/question']);
         }
@@ -202,6 +208,19 @@ class SiteController extends Controller
         }
 
         $submission = $this->getSubmission();
+        if ( $submission['thisQuestion'] == -99 ) {
+            // this should not happen; an answer is posted while the quiz is finished
+            writeLog($msg = "Answer given after quiz was finished");
+            return $this->redirect(['site/finished']);
+        }
+
+        // check order
+        if ( $no_answered != $submission['no_answered'] ) {
+            writeLog("Sequence error: ${submission['id']}, ${submission['quiz_id']}, ${submission['thisQuestion']}");
+            Yii::$app->session->setFlash('error', 'Sequence error: you\'re trying to answer a question twice!');
+            return $this->redirect(['site/question']);
+        }
+
         $sql = "select correct from question where id = ". $submission['thisQuestion'];
         $question = Yii::$app->db->createCommand($sql)->queryOne();
 
@@ -211,8 +230,8 @@ class SiteController extends Controller
             $punt = 0;
         }
 
-        $sql = "insert into log (submission_id, quiz_id, question_id, answer_no, correct)
-                values (${submission['id']}, ${submission['quiz_id']}, ${submission['thisQuestion']}, ${givenAnswer}, ${punt})
+        $sql = "insert into log (submission_id, quiz_id, question_id, answer_no, correct, no_answered)
+                values (${submission['id']}, ${submission['quiz_id']}, ${submission['thisQuestion']}, ${givenAnswer}, ${punt}, ${no_answered} )
                 ";
         $log = Yii::$app->db->createCommand($sql)->execute();
 
