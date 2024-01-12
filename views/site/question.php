@@ -218,7 +218,7 @@ $noAnswers = count($answers);
             </div>
 
             <div class="question-block">
-<?php if ($quiz['blind']) {
+<?php if ( isset($quiz['blind']) && $quiz['blind'] ) { // view is also called from backend when adding a question in which case $quiz is not provided....
 echo "On paper, look up question with id: <b>" . $question['id'] . "</b><br><br>Then, select the right answer....";
 } else {
 echo $question['question'];
