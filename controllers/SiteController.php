@@ -199,11 +199,12 @@ class SiteController extends Controller
         if ($request->isPost) {
             $givenAnswer = $request->post('selectedAnswer');
             $no_answered = $request->post('no_answered');
-        } else {
+        } else { // if no post, show question (again)
             return $this->redirect(['site/question']);
         }
 
-        if ($givenAnswer == "") {
+        if ($givenAnswer == "") { // this should not happen
+            writeLog("Error, the posted selectedAnswer is empty");
             return $this->redirect(['site/question']);
         }
 
@@ -216,6 +217,7 @@ class SiteController extends Controller
 
         // check order
         if ( $no_answered != $submission['no_answered'] ) {
+            // and answer was given on question n while the submission status expects an answer on question n+m
             writeLog("Sequence error: ${submission['id']}, ${submission['quiz_id']}, ${submission['thisQuestion']}");
             Yii::$app->session->setFlash('error', 'Sequence error: question is already answered!');
             return $this->redirect(['site/question']);
@@ -235,6 +237,7 @@ class SiteController extends Controller
                 ";
         $log = Yii::$app->db->createCommand($sql)->execute();
 
+        // update no_answered
         $sql = "update submission
                 set no_correct = no_correct + $punt,
                 no_answered = no_answered + 1,
@@ -242,7 +245,7 @@ class SiteController extends Controller
                 where token = '" . $this->getToken() . "'";
         $question = Yii::$app->db->createCommand($sql)->execute();
 
-        // are we ready?
+        // are we ready? The $submission has the status before the update, therefor we add 1
         if ($submission['no_answered'] + 1 ==  $submission['no_questions']) {
             $sql = "update submission set end_time = NOW(), finished=1 where token = '" . $this->getToken() . "'";
             $question = Yii::$app->db->createCommand($sql)->execute();
