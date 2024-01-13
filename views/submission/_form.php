@@ -42,9 +42,11 @@ $this->registerJs($script);
         <?php $form = ActiveForm::begin(); ?>
         <hr>
         <div class="row">
-            <div class="col">
+            <div class="col-8">
                 <?= $form->field($model, 'token')->textInput(['readonly' => false, 'style' => 'background-color: #ffffff;']) ?>
-
+            </div>
+            <div class="col">
+                <?= $form->field($model, 'ip_address')->textInput(['readonly' => true, 'style' => 'background-color: #ffffff;']) ?>
             </div>
         </div>
         <div class="row">

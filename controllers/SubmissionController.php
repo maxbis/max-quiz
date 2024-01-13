@@ -23,42 +23,42 @@ class SubmissionController extends Controller
      * @inheritDoc
      */
     public function behaviors()
-{
-    return array_merge(
-        parent::behaviors(),
-        [
-            // VerbFilter
-            'verbs' => [
-                'class' => VerbFilter::className(),
-                'actions' => [
-                    'delete' => ['POST'],
-                ],
-            ],
-            // Access Control Filter (ACF)
-            'access' => [
-                'class' => AccessControl::className(),
-                'rules' => [
-                    [
-                        'actions' => ['create', 'start', 'restart'],
-                        'allow' => true,
-                        'roles' => ['?'], // '?' represents guest users
-                    ],
-                    [
-                        'allow' => true,
-                        'roles' => ['@'], // '@' represents authenticated users
+    {
+        return array_merge(
+            parent::behaviors(),
+            [
+                // VerbFilter
+                'verbs' => [
+                    'class' => VerbFilter::className(),
+                    'actions' => [
+                        'delete' => ['POST'],
                     ],
                 ],
-            ],
-        ]
-    );
-}
+                // Access Control Filter (ACF)
+                'access' => [
+                    'class' => AccessControl::className(),
+                    'rules' => [
+                        [
+                            'actions' => ['create', 'start', 'restart'],
+                            'allow' => true,
+                            'roles' => ['?'], // '?' represents guest users
+                        ],
+                        [
+                            'allow' => true,
+                            'roles' => ['@'], // '@' represents authenticated users
+                        ],
+                    ],
+                ],
+            ]
+        );
+    }
 
     /**
      * Lists all Submission models.
      *
      * @return string
      */
-    public function actionIndex($quiz_id=null)
+    public function actionIndex($quiz_id = null)
     {
         $searchModel = new SubmissionSearch();
         $dataProvider = $searchModel->search($this->request->queryParams, $quiz_id);
@@ -68,7 +68,7 @@ class SubmissionController extends Controller
             $quiz = Quiz::findOne($quiz_id);
             if ($quiz !== null) {
                 $quizName = $quiz->name;
-            } 
+            }
         }
 
         return $this->render('index', [
@@ -114,7 +114,8 @@ class SubmissionController extends Controller
         ]);
     }
 
-    function generateRandomToken($length = 32) {
+    function generateRandomToken($length = 32)
+    {
         // Generate a random string of bytes
         $randomBytes = random_bytes($length);
 
@@ -137,9 +138,9 @@ class SubmissionController extends Controller
             return $this->redirect(['/submission/create']);
         }
 
-        $sql = "select * from quiz where password='$password' and active = 1";
+        $sql = "select * from quiz where password='$password' and active = 1"; // password is same as quiz code
         $quiz = Yii::$app->db->createCommand($sql)->queryOne();
-        if ( ! $quiz ) {
+        if (!$quiz) {
             return $this->redirect(Yii::$app->request->referrer);
         }
 
@@ -150,22 +151,22 @@ class SubmissionController extends Controller
         // Get all questions connected, shuffle and create space seprated string
         $sql = "select question_id from quizquestion where quiz_id = $quiz_id and active = 1";
         $result = Yii::$app->db->createCommand($sql)->queryAll();
-        $questionIds = array_column( $result, 'question_id' );
-        
-        shuffle( $questionIds );
-        if ( $quiz['no_questions'] ) {
-            $limitArrayToN = fn (array $array, int $N) => ($N >= count($array)) ? $array : array_slice($array, 0, $N);
+        $questionIds = array_column($result, 'question_id');
+
+        shuffle($questionIds);
+        if ($quiz['no_questions']) { // if quiz had question number limit, take first only
+            $limitArrayToN = fn(array $array, int $N) => ($N >= count($array)) ? $array : array_slice($array, 0, $N);
             $questionIds = $limitArrayToN($questionIds, $quiz['no_questions']);
         }
         $no_questions = count($questionIds);
-        $question_order = implode(" ",$questionIds);
+        $question_order = implode(" ", $questionIds); // serialize questions (questin ids seperated by spaces)
 
         $ip_address = Yii::$app->request->userIP;
 
         $sql = "insert into submission (token, first_name, last_name, class, question_order, no_questions, no_answered, no_correct, quiz_id, ip_address, answer_order)
                 values ('$token', '$first_name', '$last_name', '$class', '$question_order', $no_questions, 0, 0, $quiz_id, '$ip_address', '')";
         $result = Yii::$app->db->createCommand($sql)->execute();
-        
+
         $cookie = new Cookie([
             'name' => 'token',
             'value' => $token,
@@ -177,10 +178,11 @@ class SubmissionController extends Controller
 
         // redirect to question page
         return $this->redirect(['site/question']);
-        
+
     }
 
-    public function actionRestart($token) {
+    public function actionRestart($token)
+    {
         $cookie = new Cookie([
             'name' => 'token',
             'value' => $token,
@@ -235,7 +237,8 @@ class SubmissionController extends Controller
         throw new NotFoundHttpException('The requested page does not exist.');
     }
 
-    public function actionMonitor() {
+    public function actionMonitor()
+    {
         $sql = "select id from quiz where active = 1";
         $quiz = Yii::$app->db->createCommand($sql)->queryOne();
 
@@ -262,10 +265,12 @@ class SubmissionController extends Controller
                 where q.id = $quiz_id";
         $submissions = Yii::$app->db->createCommand($sql)->queryAll();
 
-        if ($submissions) $this->exportExcel($submissions);
+        if ($submissions)
+            $this->exportExcel($submissions);
     }
 
-    private function exportExcel($data) {
+    private function exportExcel($data)
+    {
         header('Content-type: text/csv; charset=utf-8');
         header('Content-Disposition: attachment; filename="canvas-export' . date('YmdHi') . '.csv"');
         // header("Pragma: no-cache");
@@ -276,13 +281,13 @@ class SubmissionController extends Controller
         $seperator = ";"; // NL version, use , for EN
 
         foreach ($data[0] as $key => $value) {
-            echo  "\"". $key ."\"". $seperator;
+            echo "\"" . $key . "\"" . $seperator;
         }
         echo "\n";
         foreach ($data as $line) {
             foreach ($line as $key => $value) {
                 // echo preg_replace('/[\s+,;]/', ' ', $value) . $seperator;
-                echo  "\"". $value ."\"". $seperator;
+                echo "\"" . $value . "\"" . $seperator;
             }
             echo "\n";
         }
