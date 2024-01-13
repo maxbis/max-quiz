@@ -170,8 +170,7 @@ class SiteController extends Controller
         if (!$submission) {
             return $this->redirect(['submission/create']);
         }
-        // are we ready
-        // ToDo add some method to force to stop.
+        // are we (still) ready?
         if ($submission['no_answered'] == $submission['no_questions'] || $submission['finished']) {
             return $this->redirect(['site/finished']);
         }
@@ -193,8 +192,7 @@ class SiteController extends Controller
 
     public function actionAnswer()
     {
-
-        usleep(500000); // wait 0.5 seconds to prevent (re)post-attack
+        usleep(500000); // wait 0.5 seconds to prevent (re)post-DOS-attack
         $request = Yii::$app->request;
 
         if ($request->isPost) {

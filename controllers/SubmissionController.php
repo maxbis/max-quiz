@@ -272,11 +272,11 @@ class SubmissionController extends Controller
     private function exportExcel($data)
     {
         header('Content-type: text/csv; charset=utf-8');
-        header('Content-Disposition: attachment; filename="canvas-export' . date('YmdHi') . '.csv"');
+        header('Content-Disposition: attachment; filename="max-quiz-export' . date('YmdHi') . '.csv"');
         // header("Pragma: no-cache");
         // header("Expires: 0");
         header('Content-Transfer-Encoding: binary');
-        echo "\xEF\xBB\xBF";
+        // echo "\xEF\xBB\xBF";
 
         $seperator = ";"; // NL version, use , for EN
 
