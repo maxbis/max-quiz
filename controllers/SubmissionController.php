@@ -266,31 +266,36 @@ class SubmissionController extends Controller
         $submissions = Yii::$app->db->createCommand($sql)->queryAll();
 
         if ($submissions)
-            $this->exportExcel($submissions);
+            return $this->exportExcel($submissions);
     }
 
     private function exportExcel($data)
     {
         header('Content-type: text/csv; charset=utf-8');
         header('Content-Disposition: attachment; filename="max-quiz-export' . date('YmdHi') . '.csv"');
-        // header("Pragma: no-cache");
-        // header("Expires: 0");
+        header("Pragma: no-cache");
+        header("Expires: 0");
         header('Content-Transfer-Encoding: binary');
         // echo "\xEF\xBB\xBF";
+
+        $output="";  
 
         $seperator = ";"; // NL version, use , for EN
 
         foreach ($data[0] as $key => $value) {
-            echo "\"" . $key . "\"" . $seperator;
+            $output .= "\"" . $key . "\"" . $seperator;
         }
-        echo "\n";
+        $output .= "\n";
+
         foreach ($data as $line) {
             foreach ($line as $key => $value) {
-                // echo preg_replace('/[\s+,;]/', ' ', $value) . $seperator;
-                echo "\"" . $value . "\"" . $seperator;
+                $output .= preg_replace('/[\s+,;]/', ' ', $value) . $seperator;
+                // echo "\"" . $value . "\"" . $seperator;
             }
-            echo "\n";
+            $output .= "\n";
         }
+
+        return $output;
     }
 
 

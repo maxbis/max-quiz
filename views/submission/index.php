@@ -305,6 +305,11 @@ $params = Yii::$app->request->getQueryParams();
                         return '-';
                     },
                 ],
+                [
+                    'attribute' => 'ip_address',
+                    'label' => 'ip',
+                    'headerOptions' => ['style' => 'width:60px;'],
+                ],
                 // [
                 //     'label' => 'Answers',
                 //     'attribute' => 'answer_order',
