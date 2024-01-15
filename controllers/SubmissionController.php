@@ -98,6 +98,7 @@ class SubmissionController extends Controller
      */
     public function actionCreate()
     {
+        
         $model = new Submission();
 
         if ($this->request->isPost) {
@@ -142,6 +143,9 @@ class SubmissionController extends Controller
         $quiz = Yii::$app->db->createCommand($sql)->queryOne();
         if (!$quiz) {
             return $this->redirect(Yii::$app->request->referrer);
+        }
+        if ( $quiz['ip_check'] ) {
+            MyHelpers::CheckIP();
         }
 
         $quiz_name = $quiz['name'];

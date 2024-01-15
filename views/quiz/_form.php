@@ -21,13 +21,20 @@ $id = Yii::$app->request->get('id');
 
 <br>
 
-<div class="quiz-card" style="max-width:600px;border: 1px solid #ddd; padding: 15px; margin-bottom: 20px; border-radius: 5px; box-shadow: 0 2px 5px rgba(0,0,0,0.2);background-color:#fdfdfd;">
+<div class="quiz-card"
+    style="max-width:600px;border: 1px solid #ddd; padding: 15px; margin-bottom: 20px; border-radius: 5px; box-shadow: 0 2px 5px rgba(0,0,0,0.2);background-color:#fdfdfd;">
     <div class="quiz-form">
         <?php $form = ActiveForm::begin(); ?>
 
-        <?= $form->field($model, 'name')->textInput(['maxlength' => true])->label('Quiz Name') ?>
+        <div class="row">
+            <div class="col-md-6">
 
-        <?= $form->field($model, 'password')->textInput(['maxlength' => true])->label('Unique code to access quiz') ?>
+                <?= $form->field($model, 'name')->textInput(['maxlength' => true])->label('Quiz Name') ?>
+            </div>
+            <div class="col-md-6">
+                <?= $form->field($model, 'password')->textInput(['maxlength' => true])->label('Unique code to access quiz') ?>
+            </div>
+        </div>
 
         <div class="row">
             <div class="col-md-6">
@@ -43,17 +50,23 @@ $id = Yii::$app->request->get('id');
         </div>
 
         <div class="row">
-            <div class="col-md-6">
+            <div class="col-md-4">
                 <?= $form->field($model, 'review')->dropDownList(
                     [1 => 'Review possible', 0 => 'No Review'], // Options: value => display text
-                    ['prompt' => 'Select Status', 'style' => 'width: 200px;'] // Optional: prompt message
+                    ['prompt' => 'Select Status', 'style' => 'width: 150px;'] // Optional: prompt message
                 )->label('Review Quiz') ?>
             </div>
-            <div class="col-md-6">
+            <div class="col-md-4">
                 <?= $form->field($model, 'blind')->dropDownList(
                     [0 => 'On Screen', 1 => 'On Paper'], // Options: value => display text
-                    ['prompt' => 'Show Questions', 'style' => 'width: 200px;'] // Optional: prompt message
+                    ['prompt' => 'Show Questions', 'style' => 'width: 150px;'] // Optional: prompt message
                 )->label('Blind quiz') ?>
+            </div>
+            <div class="col-md-4">
+                <?= $form->field($model, 'ip_check')->dropDownList(
+                    [0 => 'Everyone Allowed', 1 => 'IP Restricted'], // Options: value => display text
+                    ['prompt' => 'Access', 'style' => 'width: 150px;'] // Optional: prompt message
+                )->label('IP Check') ?>
             </div>
         </div>
 

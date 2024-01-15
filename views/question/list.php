@@ -1,6 +1,7 @@
 <?php
 
 use yii\helpers\Html;
+use yii\helpers\Url;
 
 function getStats($data)
 {
@@ -119,21 +120,25 @@ function getStats($data)
 </head>
 
 <body>
-    <h1><?= $quiz['name']; ?></h1>
+    <h1>
+        <?= $quiz['name']; ?>
+    </h1>
 
     <?php $index = 1;
-    foreach ($questions as $question) : ?>
+    foreach ($questions as $question): ?>
         <div style="display:flex;margin-bottom:5px;">
-            <div style="color: darkblue;font-weight: bold;"><?= "Question " . ($index++) ?></div>
+            <div style="color: darkblue;font-weight: bold;">
+                <?= "Question " . ($index++) ?>
+            </div>
             <div id="stats<?= $question['id'] ?>" style="color: darkblue;display: none;">
-                <?php if ( isset($logItems[$question['id']]) ) {
-                    echo ",&nbsp;".getStats($logItems[$question['id']]);
+                <?php if (isset($logItems[$question['id']])) {
+                    echo ",&nbsp;" . getStats($logItems[$question['id']]);
                 } else {
                     echo "-";
                 } ?>
             </div>
         </div>
-        
+
         <div class="question-container" style="width:60%">
             <form class="answers">
                 <div class="question" id="question<?= $question['id'] ?>">
@@ -142,29 +147,35 @@ function getStats($data)
                 <hr>
 
                 <label id="answer-<?= $question['id'] ?>-1">
-                    a) <input type="checkbox" name="answer1" value="a1"> <?= $question['a1']; ?>
+                    a) <input type="checkbox" name="answer1" value="a1">
+                    <?= $question['a1']; ?>
                 </label>
                 <label id="answer-<?= $question['id'] ?>-2">
-                    b) <input type="checkbox" name="answer2" value="a2"> <?= $question['a2']; ?>
+                    b) <input type="checkbox" name="answer2" value="a2">
+                    <?= $question['a2']; ?>
                 </label>
-                <?php if (!empty($question['a3'])) : ?>
+                <?php if (!empty($question['a3'])): ?>
                     <label id="answer-<?= $question['id'] ?>-3">
-                        c) <input type="checkbox" name="answer3" value="a3"> <?= $question['a3']; ?>
+                        c) <input type="checkbox" name="answer3" value="a3">
+                        <?= $question['a3']; ?>
                     </label>
                 <?php endif; ?>
-                <?php if (!empty($question['a4'])) : ?>
+                <?php if (!empty($question['a4'])): ?>
                     <label id="answer-<?= $question['id'] ?>-4">
-                        d) <input type="checkbox" name="answer4" value="a4"> <?= $question['a4']; ?>
+                        d) <input type="checkbox" name="answer4" value="a4">
+                        <?= $question['a4']; ?>
                     </label>
                 <?php endif; ?>
-                <?php if (!empty($question['a5'])) : ?>
+                <?php if (!empty($question['a5'])): ?>
                     <label id="answer-<?= $question['id'] ?>-5">
-                        e) <input type="checkbox" name="answer5" value="a5"> <?= $question['a5']; ?>
+                        e) <input type="checkbox" name="answer5" value="a5">
+                        <?= $question['a5']; ?>
                     </label>
                 <?php endif; ?>
-                <?php if (!empty($question['a6'])) : ?>
+                <?php if (!empty($question['a6'])): ?>
                     <label id="answer-<?= $question['id'] ?>-6">
-                        f) <input type="checkbox" name="answer6" value="a6"> <?= $question['a6']; ?>
+                        f) <input type="checkbox" name="answer6" value="a6">
+                        <?= $question['a6']; ?>
                     </label>
                 <?php endif; ?>
             </form>
@@ -186,9 +197,22 @@ function getStats($data)
                 'onclick' => "editQuestion('" . addslashes($url) . "')",
             ]);
             ?>
-            <div style="display: flex; justify-content: flex-end; align-items: left;"><?= $b1 ?><?= $b2 ?></div>
+            <div style="display: flex; justify-content: flex-end; align-items: left;">
+                <?= $b1 ?>
+                <?= $b2 ?>
+            </div>
         </div>
     <?php endforeach; ?>
+    <hr>
+    <?php
+        $currentRoute = Yii::$app->controller->getRoute();
+        $currentParams = Yii::$app->request->getQueryParams();
+        $currentParams['view'] = 'list-blind';
+        $newUrl = Url::to(array_merge([$currentRoute], $currentParams));
+        echo Html::a('Blind', $newUrl, ['class' => 'btn btn-outline-secondary btn-sm']);
+    ?>
+
+
 </body>
 
 </html>
