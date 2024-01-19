@@ -72,4 +72,12 @@ class Submission extends \yii\db\ActiveRecord
     {
         return $this->hasOne(Quiz::className(), ['id' => 'quiz_id']);
     }
+
+    public function getAnsweredScore()
+    {
+        if ($this->no_questions > 0) {
+            return round($this->no_correct*100 / max($this->no_answered,1));
+        }
+        return null; // or return 0, depending on how you want to handle this case
+    }
 }

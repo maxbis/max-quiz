@@ -56,10 +56,46 @@ class SubmissionSearch extends Submission
                 'pageSize' => 60,
             ],
             'sort' => [
-                'defaultOrder' => [
-                    'last_updated' => SORT_DESC,
-                    'no_answered' => SORT_DESC,
+
+                'attributes' => [
+                    'answeredScore' => [
+                        'asc' => ['CASE
+                        WHEN `submission`.`no_answered` > 0 THEN `submission`.`no_correct` * 100 / `submission`.`no_answered`
+                        ELSE 0
+                    END' => SORT_ASC
+                        ],
+                        'desc' => ['CASE
+                        WHEN `submission`.`no_answered` > 0 THEN `submission`.`no_correct` * 100 / `submission`.`no_answered`
+                        ELSE 0
+                    END' => SORT_DESC
+                        ],
+                        'default' => SORT_DESC,
+                    ],
+                    'first_name' => [
+                        'asc' => ['concat(first_name, last_name)' => SORT_ASC],
+                        'desc' => ['concat(first_name, last_name)' => SORT_DESC],
+                        'default' => SORT_ASC,
+                    ],
+                    'last_updated' => [
+                        'asc' => ['CASE
+                            WHEN `last_updated` IS NULL THEN 0 ELSE `last_updated`
+                        END' => SORT_ASC,
+                        ],
+                        'desc' => ['CASE
+                             WHEN `last_updated` IS NULL THEN 0 ELSE `last_updated`
+                        END' => SORT_DESC,
+                        ],
+                    ],
+                    'no_answered' => [
+                        'asc' => ['no_answered' => SORT_ASC],
+                        'desc' => ['no_answered' => SORT_DESC],
+                        'default' => SORT_ASC,
+                    ],
                 ],
+
+                // 'defaultOrder' => [
+                //     'last_updated' => SORT_DESC,
+                // ],
             ],
         ]);
 
@@ -98,4 +134,5 @@ class SubmissionSearch extends Submission
 
         return $dataProvider;
     }
+
 }

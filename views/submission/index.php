@@ -112,7 +112,7 @@ $params = Yii::$app->request->getQueryParams();
                     },
                 ],
                 [
-                    'header' => 'Voortgang',
+                    'label' => 'Voortgang',
                     'attribute' => 'no_answered',
                     'headerOptions' => ['style' => 'width:60px;'],
                     'contentOptions' => function ($model, $key, $index, $column) {
@@ -142,7 +142,8 @@ $params = Yii::$app->request->getQueryParams();
                 //     },
                 // ],
                 [
-                    'header' => 'Score',
+                    'label' => 'Score',
+                    'attribute' => 'answeredScore',
                     'headerOptions' => ['style' => 'width:80px;'],
                     'contentOptions' => function ($model, $key, $index, $column) {
                         if ($model->finished) {
@@ -160,6 +161,7 @@ $params = Yii::$app->request->getQueryParams();
                         }
                         return ['style' => "background-color: $backgroundColor;"];
                     },
+                    'format' => 'raw',
                     'value' => function ($model) {
                         if ($model->finished) {
                             //finished
@@ -310,6 +312,15 @@ $params = Yii::$app->request->getQueryParams();
                     'label' => 'ip',
                     'headerOptions' => ['style' => 'width:60px;'],
                 ],
+
+                // [
+                //     'attribute' => 'answeredScore',
+                //     'label' => 'Score',
+                //     'value' => function ($model) {
+                //         return $model->answeredScore;
+                //     },
+                //     'format' => 'raw', // or 'decimal', depending on how you want to format it
+                // ],
                 // [
                 //     'label' => 'Answers',
                 //     'attribute' => 'answer_order',
