@@ -6,7 +6,7 @@ use yii\helpers\Url;
 use yii\grid\ActionColumn;
 use yii\grid\GridView;
 
-
+use yii\widgets\Pjax;
 
 $this->title = 'Results for ' . $quizName;
 // echo "<p style='color:#909090;font-size:16px;'>".$this->title.'</p>';
@@ -50,16 +50,44 @@ $params = Yii::$app->request->getQueryParams();
         min-width: 55px;
         margin: 5px;
     }
+
+    .delete-button {
+        text-decoration: none;
+        cursor: pointer;
+    }
+
+    .delete-button:hover {
+        background-color: #909090;
+    }
+
+    .grid-view tr:hover {
+        background-color: #e0e0e0;
+    }
+
 </style>
 
 <div class="row">
-    <div class="col-md-11">
-        <p style='color:#909090;font-size:16px;'><?= $this->title ?></p>
+    <div class="col-md-10">
+        <p style='color:#909090;font-size:16px;'>
+            <?= $this->title ?>
+        </p>
     </div>
-    <div class="col-md-1 d-flex align-items-end">
-        <?php if (isset($params['quiz_id'])) { ?>
-            <a href="<?= Url::to(['submission/export', 'quiz_id' => $params['quiz_id']]) ?>" class="btn btn-outline-dark quiz-button">Excel</a>
+    <div class="col-md-2 d-flex align-items-end">
+
+        <?php 
+            $url = Yii::$app->urlManager->createUrl(['/submission/delete-unfinished', 'quiz_id' => $params['quiz_id']]);
+            echo Html::a('❌ Clean', $url, [
+            'title' => 'Delete Old Unfinished',
+            'class' => 'btn btn-outline-dark quiz-button',
+            'data-confirm' => 'All unfinshed submissions that are inactive for more than 2 hours will be deleted, OK?',
+            'data-method' => 'post',
+        ]);
+
+        if (isset($params['quiz_id'])) { ?>
+            <a href="<?= Url::to(['submission/export', 'quiz_id' => $params['quiz_id']]) ?>"
+                class="btn btn-outline-dark quiz-button">Excel</a>
         <?php } ?>
+
     </div>
 </div>
 
@@ -69,7 +97,8 @@ $params = Yii::$app->request->getQueryParams();
 
         <?php // echo $this->render('_search', ['model' => $searchModel]);
         $contentOptionsReady = function ($model, $key, $index, $column) {
-            if (!$model->finished) return ['style' => ""];
+            if (!$model->finished)
+                return ['style' => ""];
             $score = $model->no_questions > 0 ? round(($model->no_correct / $model->no_questions) * 100, 0) : 0;
             if ($model->no_answered) {
                 $backgroundColor = $score < 55 ? 'lightcoral' : 'lightgreen';
@@ -79,6 +108,8 @@ $params = Yii::$app->request->getQueryParams();
             return ['style' => "background-color: $backgroundColor;"];
         };
         ?>
+
+        <?php Pjax::begin(['id' => 'myPjaxGridView', 'timeout' => 10000, 'enablePushState' => false]); ?>
 
         <?= GridView::widget([
             'dataProvider' => $dataProvider,
@@ -177,7 +208,8 @@ $params = Yii::$app->request->getQueryParams();
                     'attribute' => 'first_name',
                     'headerOptions' => ['style' => 'width:180px;'],
                     'contentOptions' => function ($model, $key, $index, $column) {
-                        if (!$model->finished) return ['style' => ""];
+                        if (!$model->finished)
+                            return ['style' => ""];
                         $score = $model->no_questions > 0 ? round(($model->no_correct / $model->no_questions) * 100, 0) : 0;
                         if ($model->no_answered) {
                             $backgroundColor = $score < 55 ? 'lightcoral' : 'lightgreen';
@@ -235,7 +267,7 @@ $params = Yii::$app->request->getQueryParams();
                     'headerOptions' => ['style' => 'width:100px;'],
                     'format' => 'raw',
                     'value' => function ($model) {
-                        $value = Yii::$app->formatter->asDatetime($model->start_time, 'php:d-m H:i') ;
+                        $value = Yii::$app->formatter->asDatetime($model->start_time, 'php:d-m H:i');
                         return "<span style='color:#909090'>" . $value . "</span>";
                     }
                 ],
@@ -255,13 +287,13 @@ $params = Yii::$app->request->getQueryParams();
                 //     'enableSorting' => false,
                 //     'filter' => false,
                 //     'contentOptions' => function ($model, $key, $index, $column) {
-
+        
                 //         $numbersArray = explode(" ", $model->question_order);
                 //         foreach ($numbersArray as $key => &$value) {
                 //             $value = ($key + 1) . ':' . $value;
                 //         }
                 //         $result = implode(" ", $numbersArray);
-
+        
                 //         return ['title' => $result];
                 //     },
                 //     'format' => 'raw',
@@ -271,7 +303,7 @@ $params = Yii::$app->request->getQueryParams();
                 //             . "</span>";
                 //     }
                 // ],
-
+        
                 [
                     'label' => 'Duration',
                     'enableSorting' => false,
@@ -290,7 +322,7 @@ $params = Yii::$app->request->getQueryParams();
                         $minutes = floor($diffInSeconds / 60);
                         $seconds = $diffInSeconds % 60;
                         $value = (str_pad($minutes, 2, '0', STR_PAD_LEFT) . ":" . str_pad($seconds, 2, '0', STR_PAD_LEFT));
-                        return "<span style='color:".$color."'>" . $value . "</span>";
+                        return "<span style='color:" . $color . "'>" . $value . "</span>";
                     }
                 ],
                 [
@@ -331,9 +363,54 @@ $params = Yii::$app->request->getQueryParams();
                 //         return mb_substr($model->answer_order, 0, 15) . (mb_strlen($model->answer_order) > 15 ? '...' : '');
                 //     }
                 // ],
+                // [
+                //     'class' => 'yii\grid\ActionColumn',
+                //     'headerOptions' => ['style' => 'width:20px;'],
+                //     'template' => '{delete}',
+                // ],
+                [
+                    'class' => ActionColumn::class,
+                    'headerOptions' => ['style' => 'width:20px;'],
+                    'template' => '{delete}',
+                    'buttons' => [
+                        'delete' => function ($url, $model, $key) {
+                            return Html::a('&#10060;', false, [
+                                'class' => 'ajax-delete delete-button',
+                                'title' => 'Delete',
+                                'data' => [
+                                    'url' => Url::to(['submission/delete', 'id' => $model->id]),
+                                ],
+                            ]);
+                        },
+                    ],
+                ],
 
             ],
-        ]); ?>
+
+        ]);
+
+        Pjax::end();
+
+        $script = <<<JS
+            $(document).on('click', '.ajax-delete', function (e) {
+                e.preventDefault();
+                var url = $(this).data('url');
+                if(confirm('Are you sure to delete this submission?')) {
+                    $.post(url, function (data) {
+                        console.log('AJAX delete succes');
+                        location.reload(); // Reload the page or use Pjax to refresh the GridView
+                    }).fail(function () {
+                        console.log('AJAX delete error');
+                        alert('Error occurred while deleting.');
+                    });
+                }
+            });
+        JS;
+        $this->registerJs($script);
+
+        ?>
+
+
 
     </div>
 </div>

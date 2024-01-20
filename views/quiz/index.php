@@ -156,7 +156,7 @@ $this->registerJs($js);
                             'title' => 'Show Results/Progress',
                             'class' => 'btn btn-outline-dark quiz-button-small',
                         ]);
-                        return $b2 . ' ' . $b1 . ' ' . $b3. ' ' . $b4;
+                        return $b4 . ' ' . $b2 . ' ' . $b1 . ' ' . $b3;
                     },
                 ],
             ],

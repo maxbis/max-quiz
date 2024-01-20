@@ -13,6 +13,7 @@ use Yii;
 use yii\web\Cookie;
 
 use app\models\Quiz;
+use yii\helpers\ArrayHelper;
 
 /**
  * SubmissionController implements the CRUD actions for Submission model.
@@ -98,7 +99,7 @@ class SubmissionController extends Controller
      */
     public function actionCreate()
     {
-        
+
         $model = new Submission();
 
         if ($this->request->isPost) {
@@ -128,6 +129,7 @@ class SubmissionController extends Controller
 
     public function actionStart() // start a new quiz
     {
+        usleep(500000); // wait 0.5 seconds to prevent (re)post-DOS-attack
         $request = Yii::$app->request;
 
         if ($request->isPost) {
@@ -144,7 +146,7 @@ class SubmissionController extends Controller
         if (!$quiz) {
             return $this->redirect(Yii::$app->request->referrer);
         }
-        if ( $quiz['ip_check'] ) {
+        if ($quiz['ip_check']) {
             MyHelpers::CheckIP();
         }
 
@@ -222,7 +224,22 @@ class SubmissionController extends Controller
     {
         $this->findModel($id)->delete();
 
+        if (Yii::$app->request->isAjax) {
+            Yii::$app->response->format = \yii\web\Response::FORMAT_JSON;
+            return ['success' => true];
+        }
+
         return $this->redirect(['index']);
+    }
+
+    public function actionDeleteUnfinished($quiz_id) {
+        $sql = "DELETE FROM submission
+                WHERE last_updated < NOW() - INTERVAL 2 HOUR
+                and (finished is null or finished = 0)
+                and quiz_id = $quiz_id";
+        Yii::$app->db->createCommand($sql)->execute();
+        
+        return $this->redirect(['/submission', 'quiz_id' => $quiz_id]);
     }
 
     /**
@@ -263,11 +280,55 @@ class SubmissionController extends Controller
                     ELSE ROUND((no_correct / CAST(s.no_questions AS DECIMAL)) * 100, 0)
                 END AS score,
                 s.no_questions, no_answered, no_correct,
-                start_time, end_time, TIMESTAMPDIFF(minute, start_time, end_time) duration
+                start_time, end_time, TIMESTAMPDIFF(minute, start_time, end_time) duration,
+                question_order, answer_order
                 from submission s
                 join quiz q on q.id = s.quiz_id
                 where q.id = $quiz_id";
         $submissions = Yii::$app->db->createCommand($sql)->queryAll();
+
+        $sql = "select q.id, q.correct from question q
+                join quizquestion qq on qq.question_id = q.id and qq.active=1 and qq.quiz_id = $quiz_id";
+        $correctAnswers = Yii::$app->db->createCommand($sql)->queryAll();
+        $correctAnswersIndexed = ArrayHelper::map($correctAnswers, 'id', 'correct');
+        ksort($correctAnswersIndexed);
+
+        // _d($correctAnswersIndexed);
+
+        // merge the two (serialized) list to one ass. array (f.e. 252 253 312 and 1 2 1 will become ['252'=>'1','253'=>'2','312'=>'1'])
+        foreach ($submissions as &$submission) {
+            $resultArray = [];
+            $ids = $this->list2Array($submission['question_order']);
+            $numbers = $this->list2Array($submission['answer_order']);
+            foreach ($ids as $index => $id) {
+                $number = isset($numbers[$index]) ? $numbers[$index] : 0;
+                if (isset($correctAnswersIndexed[$id])) {
+                    if ($correctAnswersIndexed[$id] == $number) {
+                        $resultArray[$id] = [-1, (int) $number, 1];
+                    } else {
+                        $resultArray[$id] = [-1, (int) $number, 0];
+                    }
+                } else {
+                    $resultArray[$id] = [-1, (int) $number, ''];
+                }
+            }
+
+            ksort($resultArray);
+
+            // _d($resultArray);
+
+            $counter = 1; // Initialize the counter
+            foreach ($resultArray as $key => &$subArray) {
+                // array_unshift($subArray, $counter); // Add the counter at the beginning of each sub-array
+                $subArray[0] = $counter;
+                $counter++; // Increment the counter for the next sub-array
+            }
+            unset($subArray); // Break the reference with the last element
+
+            $submission['questions-answers'] = $resultArray;
+        }
+
+        // _dd($submissions);
 
         if ($submissions)
             return $this->exportExcel($submissions);
@@ -280,27 +341,61 @@ class SubmissionController extends Controller
         header("Pragma: no-cache");
         header("Expires: 0");
         header('Content-Transfer-Encoding: binary');
-        // echo "\xEF\xBB\xBF";
+        echo "\xEF\xBB\xBF";
 
-        $output="";  
+        $output = "";
 
         $seperator = ";"; // NL version, use , for EN
 
-        foreach ($data[0] as $key => $value) {
-            $output .= "\"" . $key . "\"" . $seperator;
-        }
+        $output .= 'Cursus' . $seperator;
+        $output .= 'Student' . $seperator;
+        $output .= 'Klas' . $seperator;
+        $output .= 'Score' . $seperator;
+        $output .= 'Aantal Vraegn' . $seperator;
+        $output .= 'Aantal Antwoorden' . $seperator;
+        $output .= 'Aantal Correct' . $seperator;
+        $output .= 'Start Tijd' . $seperator;
+        $output .= 'Eind Tijd' . $seperator;
+        $output .= 'Aantal minuten' . $seperator;
+        // foreach ( $data[0]['questions-answers'] as  $index => $value ) {
+        //     $output .= $index.$seperator.'Goed'.$seperator;
+        // }
         $output .= "\n";
 
         foreach ($data as $line) {
-            foreach ($line as $key => $value) {
-                $output .= preg_replace('/[\s+,;]/', ' ', $value) . $seperator;
-                // echo "\"" . $value . "\"" . $seperator;
+            // foreach ($line as $key => $value) {
+            //     $output .= preg_replace('/[\s+,;]/', ' ', $value) . $seperator;
+            //     // echo "\"" . $value . "\"" . $seperator;
+            // }
+            $output .= $line['name'] . $seperator;
+            $output .= $line['first_name'] . ' ' . $line['last_name'] . $seperator;
+            $output .= $line['class'] . $seperator;
+            $output .= $line['score'] . $seperator;
+            $output .= $line['no_questions'] . $seperator;
+            $output .= $line['no_answered'] . $seperator;
+            $output .= $line['no_correct'] . $seperator;
+            $output .= $line['start_time'] . $seperator;
+            $output .= $line['end_time'] . $seperator;
+            $output .= $line['duration'] . $seperator;
+            foreach ($line['questions-answers'] as $key => $value) {
+                $output .= $value[0] . '-' . $key . $seperator . $value[1] . $seperator . $value[2] . $seperator;
             }
             $output .= "\n";
         }
 
+        // _dd($output);
         return $output;
     }
 
+    // used in export function to convert question_order and answer_order to array
+    // and remove space from front of each item in array (if any)
+    private function list2Array($list)
+    {
+        if (substr($list, 0, 1) === ' ') {
+            $list = ltrim($list, ' ');
+        }
+
+        return explode(" ", $list);
+    }
 
 }

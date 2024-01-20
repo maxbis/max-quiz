@@ -23,7 +23,8 @@ $today = date("j F Y");
 
     .main-block {
       height: 100%;
-      margin: 20px;;
+      margin: 20px;
+      ;
       display: flex;
       justify-content: center;
       align-items: center;
@@ -139,6 +140,9 @@ $today = date("j F Y");
       text-align: center;
       text-decoration: none;
       font-family: 'Lucida Sans', 'Lucida Sans Regular', 'Lucida Grande', 'Lucida Sans Unicode', Geneva, Verdana, sans-serif;
+      margin: 10px;
+      min-width: 80px;
+
     }
 
     .myButton:hover {
@@ -157,17 +161,17 @@ $today = date("j F Y");
 </head>
 
 <script>
-  document.addEventListener("DOMContentLoaded", function() {
+  document.addEventListener("DOMContentLoaded", function () {
     // Function to apply the fade-in effect with a specified transition duration and delay
     function applyFadeInEffect(element, duration, delay) {
-      setTimeout(function() {
+      setTimeout(function () {
         element.style.transition = `opacity ${duration}s ease-in-out`;
         element.style.opacity = "1";
       }, delay);
     }
 
     const delayedElements = document.querySelectorAll(".delayed-content");
-    delayedElements.forEach(function(element) {
+    delayedElements.forEach(function (element) {
       const delay = parseFloat(element.getAttribute("data-delay")); // Read the data-delay attribute
       applyFadeInEffect(element, 1, delay); // Apply the fade-in effect with a default duration of 0.5 seconds
     });
@@ -177,20 +181,35 @@ $today = date("j F Y");
 <body>
   <div class="main-block">
     <div class="certificate-container dynamic-size">
-      <img src="<?= Url::to('@web/img/certificate.jpg') ?>" alt="Certificate of Appreciation" class="delayed-content certificate-image" data-delay="0">
-      <div class="delayed-content name" data-delay="400"><?= $submission['first_name'] . " " . $submission['last_name'] ?></div>
-      <div class="delayed-content score delayed-content" data-delay="1600">Score
-        <b><span class="delayed-content" data-delay="2400"><?= $score ?>%<span></b>
+      <img src="<?= Url::to('@web/img/certificate.jpg') ?>" alt="Certificate of Appreciation"
+        class="delayed-content certificate-image" data-delay="0">
+      <div class="delayed-content name" data-delay="400">
+        <?= $submission['first_name'] . " " . $submission['last_name'] ?>
       </div>
-      <div class="delayed-content date" data-delay="800"><?=$today?></div>
-      <div class="delayed-content signature" data-delay="1200">PHP L1 (score: <?= $submission['no_correct'] ?>/<?= $submission['no_questions'] ?>)</div>
+      <div class="delayed-content score delayed-content" data-delay="1600">Score
+        <b><span class="delayed-content" data-delay="2400">
+            <?= $score ?>%<span></b>
+      </div>
+      <div class="delayed-content date" data-delay="800">
+        <?= $today ?>
+      </div>
+      <div class="delayed-content signature" data-delay="1200">PHP L1 (score:
+        <?= $submission['no_correct'] ?>/
+        <?= $submission['no_questions'] ?>)
+      </div>
     </div>
   </div>
+
   <?php if ($submission['quiz_review']) { ?>
     <div class="centered delayed-content" data-delay="2600">
       <?= Html::a('Results', ['/site/results', 'token' => $submission['token']], ['class' => 'myButton']); ?>
     </div>
   <?php } ?>
+
+  <div class="centered delayed-content" data-delay="2600">
+    <?= Html::a('Clear', ['/submission/create', 'token' => $submission['token']], ['class' => 'myButton', 'title' => 'Start new quiz']); ?>
+  </div>
+
 </body>
 
 </html>
