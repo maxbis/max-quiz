@@ -108,7 +108,11 @@ class QuizController extends Controller
     public function actionCreate()
     {
         $model = new Quiz();
-
+        $model->blind = 1;
+        $model->ip_check = 1;
+        $model->review = 1;
+        $model->active = 0;
+        
         if ($this->request->isPost) {
             if ($model->load($this->request->post())) {
                 if ($model->active == 1) {

@@ -40,7 +40,7 @@ $id = Yii::$app->request->get('id');
             <div class="col-md-6">
                 <?= $form->field($model, 'active')->dropDownList(
                     [1 => 'Yes', 0 => 'No'], // Options: value => display text
-                    ['prompt' => 'Can Start', 'style' => 'width: 200px;'] // Optional: prompt message
+                    ['prompt' => '...', 'style' => 'width: 200px;'] // Optional: prompt message
                 )->label('Active') ?>
             </div>
             <div class="col-md-6">
@@ -53,19 +53,19 @@ $id = Yii::$app->request->get('id');
             <div class="col-md-4">
                 <?= $form->field($model, 'review')->dropDownList(
                     [1 => 'Review possible', 0 => 'No Review'], // Options: value => display text
-                    ['prompt' => 'Select Status', 'style' => 'width: 150px;'] // Optional: prompt message
+                    ['prompt' => '...', 'style' => 'width: 150px;'] // Optional: prompt message
                 )->label('Review Quiz') ?>
             </div>
             <div class="col-md-4">
                 <?= $form->field($model, 'blind')->dropDownList(
                     [0 => 'On Screen', 1 => 'On Paper'], // Options: value => display text
-                    ['prompt' => 'Show Questions', 'style' => 'width: 150px;'] // Optional: prompt message
+                    ['prompt' => '...', 'style' => 'width: 150px;'] // Optional: prompt message
                 )->label('Blind quiz') ?>
             </div>
             <div class="col-md-4">
                 <?= $form->field($model, 'ip_check')->dropDownList(
                     [0 => 'Everyone Allowed', 1 => 'IP Restricted'], // Options: value => display text
-                    ['prompt' => 'Access', 'style' => 'width: 150px;'] // Optional: prompt message
+                    ['prompt' => '...', 'style' => 'width: 150px;'] // Optional: prompt message
                 )->label('IP Check') ?>
             </div>
         </div>
