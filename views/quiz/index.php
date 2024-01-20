@@ -97,8 +97,9 @@ $this->registerJs($js);
                 'attribute' => 'name',
                 'format' => 'raw',
                 'value' => function ($model) {
-                    $url = Yii::$app->urlManager->createUrl(['question/index', 'quiz_id' => $model->id]);
-                    return Html::a($model->name, $url);
+                    $url = Yii::$app->urlManager->createUrl(['/submission', 'quiz_id' => $model->id]);
+                    //$url = Yii::$app->urlManager->createUrl(['question/index', 'quiz_id' => $model->id]);
+                    return Html::a($model->name, $url, ['title' => 'Show Results']);
                 },
             ],
             [ 
@@ -156,7 +157,12 @@ $this->registerJs($js);
                             'title' => 'Show Results/Progress',
                             'class' => 'btn btn-outline-dark quiz-button-small',
                         ]);
-                        return $b4 . ' ' . $b2 . ' ' . $b1 . ' ' . $b3;
+                        $url = Yii::$app->urlManager->createUrl(['question/index', 'quiz_id' => $model->id]);
+                        $b5 = Html::a('❓ Qstions', $url, [
+                            'title' => 'Show Questions',
+                            'class' => 'btn btn-outline-dark quiz-button-small',
+                        ]);
+                        return $b5 . ' ' . $b2 . ' ' . $b1 . ' ' . $b3 . ' ' . $b4;
                     },
                 ],
             ],

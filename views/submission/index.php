@@ -85,7 +85,7 @@ $params = Yii::$app->request->getQueryParams();
 
         if (isset($params['quiz_id'])) { ?>
             <a href="<?= Url::to(['submission/export', 'quiz_id' => $params['quiz_id']]) ?>"
-                class="btn btn-outline-dark quiz-button">Excel</a>
+                class="btn btn-outline-dark quiz-button">📊 Excel</a>
         <?php } ?>
 
     </div>
