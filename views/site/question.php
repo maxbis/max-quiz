@@ -15,6 +15,38 @@ for ($i = 1; $i < 7; $i++) {
 shuffle($answers);
 $noAnswers = count($answers);
 
+// escape HTML tags to dispay properly in browser and 
+// don't convert pre and code becasue these are used for formatting.
+function escapeHtmlExceptTags($html, $allowedTags = ['pre', 'code'])
+{
+    // Escape all HTML characters in the string
+    $escapedHtml = htmlspecialchars($html, ENT_QUOTES, 'UTF-8');
+
+    // For each allowed tag, replace the escaped version back to HTML
+    foreach ($allowedTags as $tag) {
+        $escapedStartTag = '&lt;' . $tag . '&gt;';
+        $escapedEndTag = '&lt;/' . $tag . '&gt;';
+        $escapedHtml = str_replace($escapedStartTag, '<' . $tag . '>', $escapedHtml);
+        $escapedHtml = str_replace($escapedEndTag, '</' . $tag . '>', $escapedHtml);
+    }
+
+    return $escapedHtml;
+}
+
+
+// for proper formatting teh answer, I need to know if long words occur.
+function hasLongWord($string, $maxLength = 30)
+{
+    $words = explode(' ', $string);
+    foreach ($words as $word) {
+        if (strlen($word) > $maxLength) {
+            return true;
+        }
+    }
+    return false;
+}
+
+
 ?>
 
 <!DOCTYPE html>
@@ -24,7 +56,8 @@ $noAnswers = count($answers);
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-EVSTQN3/azprG1Anm3QDgpJLIm9Nao0Yz1ztcQTwFspd3yD65VohhpuuCOmLASjC" crossorigin="anonymous">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/css/bootstrap.min.css" rel="stylesheet"
+        integrity="sha384-EVSTQN3/azprG1Anm3QDgpJLIm9Nao0Yz1ztcQTwFspd3yD65VohhpuuCOmLASjC" crossorigin="anonymous">
 
     <title>Question and Answers</title>
 
@@ -51,6 +84,11 @@ $noAnswers = count($answers);
             user-select: none;
             display: flex;
             justify-content: center;
+        }
+
+        .long-answer {
+            font-size: smaller;
+            min-height: 6em;
         }
 
         .answer:not(.selected):hover {
@@ -187,9 +225,9 @@ $noAnswers = count($answers);
         }
     </style>
     <script>
-        document.addEventListener("DOMContentLoaded", function() {
+        document.addEventListener("DOMContentLoaded", function () {
             // Delay the animation to ensure the page has fully loaded
-            setTimeout(function() {
+            setTimeout(function () {
                 const page = document.querySelector(".page-effect");
                 page.style.transform = "translateX(0)"; // Slide the page in from the right
             }, 100);
@@ -201,8 +239,13 @@ $noAnswers = count($answers);
 
     <div class="container-fluid banner-container text-white text-center py-3">
         <div class="banner-content">
-            <h1><?= $title ?></h1>
-            <p>vraag <?= $submission['no_answered'] + 1 ?> van <?= $submission['no_questions'] ?></p>
+            <h1>
+                <?= $title ?>
+            </h1>
+            <p>vraag
+                <?= $submission['no_answered'] + 1 ?> van
+                <?= $submission['no_questions'] ?>
+            </p>
         </div>
     </div>
 
@@ -214,94 +257,109 @@ $noAnswers = count($answers);
 
     <div class="container text-center">
         <div class="row justify-content-center page-effect">
-            <div class="col-12 question-title">Vraag <?= $submission['no_answered'] + 1 ?>
+            <div class="col-12 question-title">Vraag
+                <?= $submission['no_answered'] + 1 ?>
             </div>
 
             <div class="question-block">
-<?php if ( isset($quiz['blind']) && $quiz['blind'] ) { // view is also called from backend when adding a question in which case $quiz is not provided....
+                <!-- this code needs to be non-idented becasue pre is used for formatting -->
+<?php if (isset($quiz['blind']) && $quiz['blind']) { // view is also called from backend when adding a question in which case $quiz is not provided....
 echo "On paper, look up question with id: <b>" . $question['id'] . "</b><br><br>Then, select the right answer....";
 } else {
-echo $question['question'];
+echo escapeHtmlExceptTags($question['question']);
 } ?>
+                <!-- end of non-identation-->
             </div>
 
-
-            <div class="col-md-6">
-                <!-- Answers Column 1 -->
-                <?php if ($noAnswers >= 1) { ?>
-                    <div class="answer" onclick="selectAnswer(this, '<?= $answers[0] ?>')"><?= $question[$answers[0]] ?></div>
-                <?php } ?>
-                <?php if ($noAnswers >= 3) { ?>
-                    <div class="answer" onclick="selectAnswer(this, '<?= $answers[2] ?>')"><?= $question[$answers[2]] ?></div>
-                <?php } ?>
-                <?php if ($noAnswers >= 5) { ?>
-                    <div class="answer" onclick="selectAnswer(this, '<?= $answers[4] ?>')"><?= $question[$answers[4]] ?></div>
-                <?php } ?>
-            </div>
+           
+            <?php
+                // check if there are long answers and if so add a style
+                $style = "";
+                for ($i=0; $i<=5;$i++) {
+                    if ( $noAnswers > $i && hasLongWord($question[$answers[($i)]]) ) {
+                        $style = "long-answer";
+                    }
+                } 
+            ?>
 
             <div class="col-md-6">
-                <!-- Answers Column 2 -->
-                <?php if ($noAnswers >= 2) { ?>
-                    <div class="answer" onclick="selectAnswer(this, '<?= $answers[1] ?>')"><?= $question[$answers[1]] ?></div>
-                <?php } ?>
-                <?php if ($noAnswers >= 4) { ?>
-                    <div class="answer" onclick="selectAnswer(this, '<?= $answers[3] ?>')"><?= $question[$answers[3]] ?></div>
-                <?php } ?>
-                <?php if ($noAnswers >= 6) { ?>
-                    <div class="answer" onclick="selectAnswer(this, '<?= $answers[5] ?>')"><?= $question[$answers[5]] ?></div>
+                <!-- Answers Column 1, 3, 5 -->
+                <?php for ($i = 1; $i <= 5; $i += 2) { ?>
+                    <?php if ($noAnswers >= $i) { ?>
+                        <div class="answer <?= $style ?>"
+                            onclick="selectAnswer(this, '<?= $answers[($i - 1)] ?>')">
+                            <?= $question[$answers[$i - 1]] ?>
+                        </div>
+                    <?php } ?>
                 <?php } ?>
             </div>
+
+            <div class="col-md-6">
+                <!-- Answers Column 2, 4, 6 -->
+                <?php for ($i = 2; $i <= 6; $i += 2) { ?>
+                    <?php if ($noAnswers >= $i) { ?>
+                        <div class="answer <?= $style?>"
+                            onclick="selectAnswer(this, '<?= $answers[($i - 1)] ?>')">
+                            <?= $question[$answers[$i - 1]] ?>
+                        </div>
+                    <?php } ?>
+                <?php } ?>
+            </div>
+
+
+            <form id="answer" class="mt-4" action="<?= Url::to(['site/answer']) ?>" method="POST">
+                <input type="hidden" id="selectedAnswer" name="selectedAnswer">
+                <input type="hidden" id="no_answered" name="no_answered" value="<?= $submission['no_answered']; ?>">
+                <input type="hidden" name="<?= $csrfTokenName ?>" value="<?= $csrfToken ?>">
+                <?php if ($submission['id'] != 0) { ?>
+                    <button type="button" id="submitButton" class="btn btn-light" title="Click eerst op een antwoord"
+                        disabled>Volgende vraag >></button>
+                <?php } else {
+                    $url = Yii::$app->urlManager->createUrl(['/question/update', 'id' => $question['id']]);
+                    echo Html::a('Edit', $url, [
+                        'id' => 'submitButton-org1',
+                        'title' => 'Edit Question',
+                        'class' => 'btn btn-outline-secondary quiz-button',
+                    ]);
+                    $url = Yii::$app->urlManager->createUrl(['/question/copy', 'id' => $question['id']]);
+                    echo Html::a('Copy', $url, [
+                        'id' => 'submitButton-org2',
+                        'title' => 'Copy Question',
+                        'class' => 'btn btn-outline-secondary quiz-button',
+                    ]);
+                } ?>
+            </form>
         </div>
 
+        <script>
+            function selectAnswer(element, answer) {
+                // Remove 'selected' class from all answers
+                document.querySelectorAll('.answer').forEach(function (el) {
+                    el.classList.remove('selected');
+                });
 
-        <form id="answer" class="mt-4" action="<?= Url::to(['site/answer']) ?>" method="POST">
-            <input type="hidden" id="selectedAnswer" name="selectedAnswer">
-            <input type="hidden" id="no_answered" name="no_answered" value="<?= $submission['no_answered']; ?>">
-            <input type="hidden" name="<?= $csrfTokenName ?>" value="<?= $csrfToken ?>">
-            <?php if ($submission['id'] != 0) { ?>
-                <button type="button" id="submitButton" class="btn btn-light" title="Click eerst op een antwoord" disabled>Volgende vraag >></button>
-            <?php } else {
-                $url = Yii::$app->urlManager->createUrl(['/question/update', 'id' => $question['id']]);
-                echo Html::a('Edit', $url, [
-                    'id' => 'submitButton-org1', 'title' => 'Edit Question',
-                    'class' => 'btn btn-outline-secondary quiz-button',
-                ]);
-                $url = Yii::$app->urlManager->createUrl(['/question/copy', 'id' => $question['id']]);
-                echo Html::a('Copy', $url, [
-                    'id' => 'submitButton-org2', 'title' => 'Copy Question',
-                    'class' => 'btn btn-outline-secondary quiz-button',
-                ]);
-            } ?>
-    </div>
-    </form>
+                // Add 'selected' class to clicked answer
+                element.classList.add('selected');
 
-    <script>
-        function selectAnswer(element, answer) {
-            // Remove 'selected' class from all answers
-            document.querySelectorAll('.answer').forEach(function(el) {
-                el.classList.remove('selected');
+                // Set the value of the hidden input
+                document.getElementById('selectedAnswer').value = answer.substring(1);
+
+                // Enable submit button
+                document.getElementById('submitButton').className = "btn btn-danger";
+                document.getElementById('submitButton').title = "Click voor volgende vraag";
+                document.getElementById('submitButton').disabled = false;
+            }
+        </script>
+
+        <script>
+            document.getElementById('submitButton').addEventListener('click', function () {
+                this.disabled = true;
+                this.innerText = 'Submitting...';
+                document.getElementById('answer').submit();
             });
+        </script>
 
-            // Add 'selected' class to clicked answer
-            element.classList.add('selected');
-
-            // Set the value of the hidden input
-            document.getElementById('selectedAnswer').value = answer.substring(1);
-
-            // Enable submit button
-            document.getElementById('submitButton').className = "btn btn-danger";
-            document.getElementById('submitButton').title = "Click voor volgende vraag";
-            document.getElementById('submitButton').disabled = false;
-        }
-    </script>
-
-    <script>
-        document.getElementById('submitButton').addEventListener('click', function() {
-            this.disabled = true;
-            this.innerText = 'Submitting...';
-            document.getElementById('answer').submit();
-        });
-    </script>
+    </div>
 
 </body>
 
