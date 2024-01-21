@@ -35,7 +35,7 @@ function escapeHtmlExceptTags($html, $allowedTags = ['pre', 'code'])
 
 
 // for proper formatting teh answer, I need to know if long words occur.
-function hasLongAnswer($string, $maxLength = 30)
+function hasLongAnswer($string, $maxLength = 60)
 {
     if ( strlen($string) > 70 ) return true;
 
@@ -77,7 +77,7 @@ function hasLongAnswer($string, $maxLength = 30)
             padding: 15px;
             border: 2px solid #ddd;
             background-color: #fbfbfd;
-            margin: 40px;
+            margin: 30px;
             cursor: pointer;
             text-align: left;
             min-height: 3em;
@@ -89,7 +89,11 @@ function hasLongAnswer($string, $maxLength = 30)
 
         .long-answer {
             font-size: smaller;
-            min-height: 6em;
+            min-height: 7em;
+            margin-left: 0px;
+            margin-right: 0px;
+            padding-top: 10px;
+            padding-bottom: 5px;
         }
 
         .answer:not(.selected):hover {
