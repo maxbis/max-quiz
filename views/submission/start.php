@@ -50,16 +50,50 @@ $csrfToken = Yii::$app->request->getCsrfToken();
             cursor: progress;
         }
 
-        .overlay {
+        .modal-overlay {
             position: fixed;
             top: 0;
             left: 0;
             width: 100%;
             height: 100%;
-            background-color: rgba(0, 0, 0, 0.5);
-            z-index: 2;
-            cursor: progress;
+            background: rgba(0, 0, 0, 0.6);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
             display: none;
+        }
+
+        .modal-dialog {
+            position: fixed;
+            top: 40%;
+            left: 40%;
+            background: #fff;
+            border-radius: 5px;
+            padding: 20px;
+            text-align: center;
+            box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.5);
+        }
+
+        .loader {
+            border: 4px solid #f3f3f3;
+            border-top: 4px solid #3498db;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            animation: spin 2s linear infinite;
+            margin: 0 auto;
+            margin-bottom: 10px;
+        }
+
+        @keyframes spin {
+            0% {
+                transform: rotate(0deg);
+            }
+
+            100% {
+                transform: rotate(360deg);
+            }
         }
     </style>
 
@@ -67,6 +101,14 @@ $csrfToken = Yii::$app->request->getCsrfToken();
 
 <body>
     <div id="overlay" class="overlay"></div>
+
+    <!-- This is the busy overlay, show as more than one quesstion is updated via AJAX -->
+    <div class="modal-overlay" id="modalOverlay">
+        <div class="modal-dialog">
+            <div class="loader"></div>
+            <p>Please wait... </p>
+        </div>
+    </div>
 
     <div class="background-image">
         <div class="container h-100">
@@ -114,12 +156,12 @@ $csrfToken = Yii::$app->request->getCsrfToken();
         document.getElementById('submitButton').addEventListener('click', function () {
             this.disabled = true;
             this.innerText = 'Starting...';
-            document.getElementById('overlay').style.display = 'block';
-            document.body.classList.add('spinner-cursor');
+            document.getElementById('modalOverlay').style.display = 'block';
+            // document.body.classList.add('spinner-cursor');
             // document.getElementById('form').submit();
             setTimeout(function () {
                 document.getElementById('form').submit();
-            }, 500);
+            }, 800);
         });
     </script>
 
