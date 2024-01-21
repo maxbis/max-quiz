@@ -19,7 +19,16 @@ use yii\widgets\ActiveForm;
 
 <div class="question-form">
 
-    <?php $form = ActiveForm::begin(); ?>
+    <?php
+        function shortText($text, $maxLength = 12)
+        {
+            if (strlen($text) > $maxLength) {
+                return substr($text, 0, $maxLength) . '...';
+            }
+            return $text;
+        }
+        $form = ActiveForm::begin();
+    ?>
 
 
     <div class="card" style="width: 60rem;padding:30px;box-shadow: 0 2px 5px rgba(0,0,0,0.2);background-color:#fdfdfd;">
@@ -101,21 +110,23 @@ use yii\widgets\ActiveForm;
             </div>
         </div>
 
-        <?php if ( isset($questionLinks) ) { ?>
-        <div class="checkbox-group" style="display: flex;">
-            <?php
-            echo '<div class="checkbox" style="margin-right: 10px;">Linked to: </div>';
-            foreach ($questionLinks as $link) {
-                echo '<div class="checkbox" style="margin-left: 20px;">';
-                echo Html::hiddenInput('questionLinks[' . $link['id'] . ']', 0);
-                echo Html::checkbox('questionLinks[' . $link['id'] . ']', $link['active'], [
-                    'label' => Html::encode($link['name']),
-                    'value' => $link['active'],
-                ]);
-                echo '</div>';
-            }
-            ?>
-        </div>
+        <hr>
+
+        <?php if (isset($questionLinks)) { ?>
+            <div class="row justify-content-start">
+                <?php
+                foreach ($questionLinks as $link) {
+                    echo '<div class="col-1 checkbox" style="margin-left: 20px;font-size:11px;white-space: nowrap;">';
+                    echo Html::hiddenInput('questionLinks[' . $link['id'] . ']', 0);
+                    echo Html::checkbox('questionLinks[' . $link['id'] . ']', $link['active'], [
+                        'label' => Html::encode(shortText($link['name'])),
+                        'value' => $link['active'],
+                        'title' => $link['name'],
+                    ]);
+                    echo '</div>';
+                }
+                ?>
+            </div>
         <?php } ?>
 
         <hr>

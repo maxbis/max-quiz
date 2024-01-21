@@ -290,9 +290,6 @@ if ($show == 0) {
 
 <div class="question-index">
 
-    <?php // echo $this->render('_search', ['model' => $searchModel]);
-    ?>
-
     <?= GridView::widget([
         'dataProvider' => $dataProvider,
         'filterModel' => $searchModel,

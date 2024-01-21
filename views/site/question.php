@@ -174,7 +174,6 @@ function hasLongAnswer($string, $maxLength = 60)
                 1px 1px 0 #fff;
         }
 
-
         .banner-container::before {
             content: '';
             position: absolute;
@@ -228,7 +227,9 @@ function hasLongAnswer($string, $maxLength = 60)
             background-color: #f2dede;
             border-color: #ebccd1;
         }
+
     </style>
+
     <script>
         document.addEventListener("DOMContentLoaded", function () {
             // Delay the animation to ensure the page has fully loaded
@@ -238,6 +239,7 @@ function hasLongAnswer($string, $maxLength = 60)
             }, 100);
         });
     </script>
+    
 </head>
 
 <body class="background-image">
