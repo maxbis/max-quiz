@@ -97,9 +97,9 @@ $this->registerJs($js);
                 'attribute' => 'name',
                 'format' => 'raw',
                 'value' => function ($model) {
-                    $url = Yii::$app->urlManager->createUrl(['/submission', 'quiz_id' => $model->id]);
-                    //$url = Yii::$app->urlManager->createUrl(['question/index', 'quiz_id' => $model->id]);
-                    return Html::a($model->name, $url, ['title' => 'Show Results']);
+                    // $url = Yii::$app->urlManager->createUrl(['/submission', 'quiz_id' => $model->id]);
+                    $url = Yii::$app->urlManager->createUrl(['question/index', 'quiz_id' => $model->id]);
+                    return Html::a($model->name, $url, ['title' => 'Show Quiz']);
                 },
             ],
             [ 
