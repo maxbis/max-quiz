@@ -66,7 +66,7 @@ $csrfToken = Yii::$app->request->getCsrfToken();
 
         .modal-dialog {
             position: fixed;
-            top: 40%;
+            top: 35%;
             left: 40%;
             background: #fff;
             border-radius: 5px;
@@ -100,9 +100,7 @@ $csrfToken = Yii::$app->request->getCsrfToken();
 </head>
 
 <body>
-    <div id="overlay" class="overlay"></div>
-
-    <!-- This is the busy overlay, show as more than one quesstion is updated via AJAX -->
+    <!-- This is the busy overlay, show when Startig quiz... -->
     <div class="modal-overlay" id="modalOverlay">
         <div class="modal-dialog">
             <div class="loader"></div>
