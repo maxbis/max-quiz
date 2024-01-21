@@ -35,8 +35,10 @@ function escapeHtmlExceptTags($html, $allowedTags = ['pre', 'code'])
 
 
 // for proper formatting teh answer, I need to know if long words occur.
-function hasLongWord($string, $maxLength = 30)
+function hasLongAnswer($string, $maxLength = 40)
 {
+    if ( strlen($string) > 90 ) return true;
+
     $words = explode(' ', $string);
     foreach ($words as $word) {
         if (strlen($word) > $maxLength) {
@@ -276,7 +278,7 @@ echo escapeHtmlExceptTags($question['question']);
                 // check if there are long answers and if so add a style
                 $style = "";
                 for ($i=0; $i<=5;$i++) {
-                    if ( $noAnswers > $i && hasLongWord($question[$answers[($i)]]) ) {
+                    if ( $noAnswers > $i && hasLongAnswer($question[$answers[($i)]]) ) {
                         $style = "long-answer";
                     }
                 } 
