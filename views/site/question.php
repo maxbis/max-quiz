@@ -35,9 +35,9 @@ function escapeHtmlExceptTags($html, $allowedTags = ['pre', 'code'])
 
 
 // for proper formatting teh answer, I need to know if long words occur.
-function hasLongAnswer($string, $maxLength = 40)
+function hasLongAnswer($string, $maxLength = 30)
 {
-    if ( strlen($string) > 90 ) return true;
+    if ( strlen($string) > 70 ) return true;
 
     $words = explode(' ', $string);
     foreach ($words as $word) {
@@ -47,7 +47,6 @@ function hasLongAnswer($string, $maxLength = 40)
     }
     return false;
 }
-
 
 ?>
 
