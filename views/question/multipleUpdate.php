@@ -39,7 +39,7 @@ use yii\widgets\ActiveForm;
                 <div class="row">
                     <div class="col">
                         <div class="">
-                            <?= $form->field($model, "[$index]question")->textarea(['rows' => 10, 'style' => 'font-family: monospace;width:600px;', 'maxlength' => true]) ?>
+                            <?= $form->field($model, "[$index]question")->textarea(['rows' => 10, 'style' => 'font-family: monospace;width:500px;', 'maxlength' => true]) ?>
                         </div>
                         <div class="row justify-content-start">
                         </div>

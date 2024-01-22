@@ -190,6 +190,7 @@ class QuestionController extends Controller
      */
     public function actionUpdate($id)
     {
+
         $model = $this->findModel($id);
 
         $sql = "select q.id, q.name, qq.active from quiz q
@@ -221,8 +222,13 @@ class QuestionController extends Controller
                 Yii::$app->session->setFlash('error', ' Question not updated');
             }
 
-            return $this->redirect(['/question/view', 'id' => $id]);
+            // get return URL from session
+            $returnUrl = Yii::$app->user->returnUrl ?: ['/question/view', 'id' => $id];            
+            return $this->redirect($returnUrl);
         }
+
+        // save refererer in session
+        Yii::$app->user->returnUrl = Yii::$app->request->referrer;
 
         return $this->render('update', [
             'model' => $model,
@@ -289,7 +295,13 @@ class QuestionController extends Controller
                 where qq.quiz_id=$quiz_id and qq.active=1";
         $questions = Yii::$app->db->createCommand($sql)->queryAll();
 
-        $sql = "select question_id id, sum(answer_no) answer, sum(correct) correct from log where quiz_id = $quiz_id group by 1";
+        // $sql = "select question_id id, sum(answer_no) answer, sum(correct) correct from log where quiz_id = $quiz_id group by 1";
+
+        $sql = "select l.question_id id, sum(1) answer, sum(l.correct) correct
+                from log l
+                join submission s on s.id = l.submission_id
+                where l.quiz_id = $quiz_id
+                group by 1";
         $log = Yii::$app->db->createCommand($sql)->queryAll();
 
         $logItems = [];

@@ -37,8 +37,6 @@ function getStats($data)
 
         .question {
             white-space: pre-wrap;
-            /* Preserve spaces and line breaks */
-            margin-left: 20px;
         }
 
         .answers {
@@ -51,6 +49,7 @@ function getStats($data)
 
         label {
             margin: 20px;
+            min-width:180px;
         }
 
         hr {
@@ -71,6 +70,7 @@ function getStats($data)
             margin-left: 10px;
             min-width: 55px;
         }
+    
     </style>
     <script>
         function highlightCheckbox(questionId, answerNo) {
@@ -139,46 +139,54 @@ function getStats($data)
             </div>
         </div>
 
-        <div class="question-container" style="width:60%">
-            <form class="answers">
-                <div class="question" id="question<?= $question['id'] ?>">
+        <div class="question-container row">
+            <div class="col">
+                <form class="answers">
+                    <div class="question" id="question<?= $question['id'] ?>">
 <?= $question['question']; ?>
-                </div>
-                <hr>
+                    </div>
+            </div>
 
+            <div class="col" style="border-left:1px dashed blue;">
                 <label id="answer-<?= $question['id'] ?>-1">
                     a) <input type="checkbox" name="answer1" value="a1">
                     <?= $question['a1']; ?>
                 </label>
+                <br>
                 <label id="answer-<?= $question['id'] ?>-2">
                     b) <input type="checkbox" name="answer2" value="a2">
                     <?= $question['a2']; ?>
                 </label>
+                <br>
                 <?php if (!empty($question['a3'])): ?>
                     <label id="answer-<?= $question['id'] ?>-3">
                         c) <input type="checkbox" name="answer3" value="a3">
                         <?= $question['a3']; ?>
                     </label>
                 <?php endif; ?>
+                <br>
                 <?php if (!empty($question['a4'])): ?>
                     <label id="answer-<?= $question['id'] ?>-4">
                         d) <input type="checkbox" name="answer4" value="a4">
                         <?= $question['a4']; ?>
                     </label>
                 <?php endif; ?>
+                <br>
                 <?php if (!empty($question['a5'])): ?>
                     <label id="answer-<?= $question['id'] ?>-5">
                         e) <input type="checkbox" name="answer5" value="a5">
                         <?= $question['a5']; ?>
                     </label>
                 <?php endif; ?>
+                <br>
                 <?php if (!empty($question['a6'])): ?>
                     <label id="answer-<?= $question['id'] ?>-6">
                         f) <input type="checkbox" name="answer6" value="a6">
                         <?= $question['a6']; ?>
                     </label>
                 <?php endif; ?>
-            </form>
+                </form>
+            </div>
 
             <?php
             $url = Yii::$app->urlManager->createUrl(['/question/update', 'id' => $question['id']]);
@@ -205,11 +213,11 @@ function getStats($data)
     <?php endforeach; ?>
     <hr>
     <?php
-        $currentRoute = Yii::$app->controller->getRoute();
-        $currentParams = Yii::$app->request->getQueryParams();
-        $currentParams['view'] = 'list-blind';
-        $newUrl = Url::to(array_merge([$currentRoute], $currentParams));
-        echo Html::a('Blind', $newUrl, ['class' => 'btn btn-outline-secondary btn-sm']);
+    $currentRoute = Yii::$app->controller->getRoute();
+    $currentParams = Yii::$app->request->getQueryParams();
+    $currentParams['view'] = 'list-blind';
+    $newUrl = Url::to(array_merge([$currentRoute], $currentParams));
+    echo Html::a('Blind', $newUrl, ['class' => 'btn btn-outline-secondary btn-sm']);
     ?>
 
 
