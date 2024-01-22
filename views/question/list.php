@@ -49,7 +49,7 @@ function getStats($data)
 
         label {
             margin: 20px;
-            min-width:180px;
+            min-width: 180px;
         }
 
         hr {
@@ -70,7 +70,12 @@ function getStats($data)
             margin-left: 10px;
             min-width: 55px;
         }
-    
+
+        .stats {
+            color: darkblue;
+            display: none;
+        }
+
     </style>
     <script>
         function highlightCheckbox(questionId, answerNo) {
@@ -130,7 +135,7 @@ function getStats($data)
             <div style="color: darkblue;font-weight: bold;">
                 <?= "Question " . ($index++) ?>
             </div>
-            <div id="stats<?= $question['id'] ?>" style="color: darkblue;display: none;">
+            <div id="stats<?= $question['id'] ?>" class="stats" style="">
                 <?php if (isset($logItems[$question['id']])) {
                     echo ",&nbsp;" . getStats($logItems[$question['id']]);
                 } else {

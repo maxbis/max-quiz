@@ -13,55 +13,54 @@ $this->params['breadcrumbs'][] = $this->title;
 ?>
 
 <style>
+    .answer {
+        padding: 6px;
+        border: 1px solid #ddd;
+        margin: 40px;
+        cursor: pointer;
+        text-align: left;
+        min-height: 4em;
+        font-family: monospace;
+        user-select: none;
+    }
 
-        .answer {
-            padding: 6px;
-            border: 1px solid #ddd;
-            margin: 40px;
-            cursor: pointer;
-            text-align: left;
-            min-height: 4em;
-            font-family: monospace;
-            user-select: none;
-        }
+    .selected {
+        background-color: #007bff;
+        color: white;
+    }
 
-        .selected {
-            background-color: #007bff;
-            color: white;
-        }
+    .question-block {
+        font-family: monospace;
+        /* Monospaced font */
+        background-color: #f8f8f8;
+        /* Paper-like background color */
+        border: 1px solid #ddd;
+        /* Optional: adds a subtle border */
+        padding: 15px;
+        /* Padding around the text */
+        min-height: 9em;
+        /* Minimum height for about five lines of text */
+        text-align: left;
+        /* Align text to the left */
+        user-select: none;
+        overflow-x: hidden;
+    }
 
-        .question-block {
-            font-family: monospace;
-            /* Monospaced font */
-            background-color: #f8f8f8;
-            /* Paper-like background color */
-            border: 1px solid #ddd;
-            /* Optional: adds a subtle border */
-            padding: 15px;
-            /* Padding around the text */
-            min-height: 9em;
-            /* Minimum height for about five lines of text */
-            text-align: left;
-            /* Align text to the left */
-            user-select: none;
-            overflow-x: hidden;
-        }
+    .question-title {
+        margin-top: 80px;
+        font-size: larger;
+        /* Makes the font larger */
+        text-align: left;
+        /* Aligns text to the left */
+    }
 
-        .question-title {
-            margin-top: 80px;
-            font-size: larger;
-            /* Makes the font larger */
-            text-align: left;
-            /* Aligns text to the left */
-        }
-
-        pre {
-            margin-left: 40px;
-            font-size: 16px;
-            font-family: monospace;
-            color: darkblue;
-        }
-    </style>
+    pre {
+        margin-left: 40px;
+        font-size: 16px;
+        font-family: monospace;
+        color: darkblue;
+    }
+</style>
 
 <div class="question-view">
 
