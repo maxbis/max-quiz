@@ -193,9 +193,8 @@ $today = date("j F Y");
       <div class="delayed-content date" data-delay="800">
         <?= $today ?>
       </div>
-      <div class="delayed-content signature" data-delay="1200">PHP L1 (score:
-        <?= $submission['no_correct'] ?>/
-        <?= $submission['no_questions'] ?>)
+      <div class="delayed-content signature" data-delay="1200"><?= $submission['quiz_name'] ?>
+        (<?= $submission['no_correct'] ?>/<?= $submission['no_questions']?>)
       </div>
     </div>
   </div>
