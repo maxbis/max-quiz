@@ -72,18 +72,26 @@ $this->registerJs($js);
         margin-left: 5px;
         margin-right: 5px;
     }
+
 </style>
 
 <div class="quiz-index">
     <?= GridView::widget([
         'dataProvider' => $dataProvider,
+
         'columns' => [
             [
-                'attribute' => 'id',
-                'headerOptions' => ['style' => 'width:40px;'],
-                'contentOptions' => ['class' => 'hidden-id'],
-                'visible' => true, // Hide the ID column
+                'class' => 'yii\grid\SerialColumn', // This adds a serial column to grid
+                'headerOptions' => ['style' => 'width:35px;'],
+                'header' => '',
+
             ],
+            // [
+            //     'attribute' => 'id',
+            //     'headerOptions' => ['style' => 'width:40px;'],
+            //     'contentOptions' => ['class' => 'hidden-id'],
+            //     'visible' => true, // Hide the ID column
+            // ],
             [
                 'attribute' => 'active',
                 'headerOptions' => ['style' => 'width:40px;'],
@@ -119,13 +127,46 @@ $this->registerJs($js);
                 },
             ],
             [
-                'label' => 'Review',
+                'label' => 'rw',
                 'attribute' => 'review',
+                'headerOptions' => ['style' => 'width35px;font-size: 10px;', 'title' => 'Review'],
+                'format' => 'raw',
+                'enableSorting' => false, 
                 'value' => function ($model)  {
                     if ( $model->review )  {
-                        return "Yes";
+                        return "&#10003;";
                     } else {
-                        return "No";
+                        return "-";
+                    }
+                },
+
+            ],
+            [
+                'label' => 'bl',
+                'attribute' => 'blind',
+                'headerOptions' => ['style' => 'width:35px;font-size: 10px;', 'title' => 'Blind'],
+                'format' => 'raw',
+                'enableSorting' => false, 
+                'value' => function ($model)  {
+                    if ( $model->blind )  {
+                        return "&#10003;";
+                    } else {
+                        return "-";
+                    }
+                },
+
+            ],
+            [
+                'label' => 'ip',
+                'headerOptions' => ['style' => 'width:35px;font-size: 10px;', 'title' => 'Ip-restricted'],
+                'attribute' => 'ip_check',
+                'format' => 'raw',
+                'enableSorting' => false, 
+                'value' => function ($model)  {
+                    if ( $model->ip_check )  {
+                        return "&#10003;";
+                    } else {
+                        return "-";
                     }
                 },
 
