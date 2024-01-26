@@ -4,8 +4,36 @@ use yii\helpers\Url;
 use yii\helpers\Html;
 
 $score = round($submission['no_correct'] * 100 / $submission['no_questions'], 0);
+
 date_default_timezone_set('Europe/London');
 $today = date("j F Y");
+
+$start = new DateTime($submission['start_time']);
+$end = new DateTime($submission['end_time']);
+$diff = $start->diff($end);
+$formattedTime = sprintf("%02d:%02d", $diff->i, $diff->s);
+
+function getRatingCategory($rating)
+{
+  if ($rating >= 90 && $rating <= 100) {
+    return "Outstanding";
+  } elseif ($rating >= 80 && $rating < 90) {
+    return "Excellent";
+  } elseif ($rating >= 70 && $rating < 80) {
+    return "Very good";
+  } elseif ($rating >= 55 && $rating < 60) {
+    return "Average";
+  } elseif ($rating >= 50 && $rating < 55) {
+    return "below average";
+  } elseif ($rating >= 45 && $rating < 50) {
+    return "below average";
+  } else {
+    return "poor";
+  }
+}
+
+$rating = round(($submission['no_correct'] - $submission['no_questions'] * 0.2) * 10 / ($submission['no_questions'] * 0.8), 2);
+$ratingString = getRatingCategory(round($rating * 10));
 ?>
 
 <!DOCTYPE html>
@@ -54,15 +82,6 @@ $today = date("j F Y");
       font-size: 60px;
     }
 
-    .date {
-      position: absolute;
-      bottom: 13%;
-      left: 15%;
-      font-size: 18px;
-      font-family: Arial, sans-serif;
-      color: #707070;
-    }
-
     .score {
       position: absolute;
       top: 70%;
@@ -73,11 +92,28 @@ $today = date("j F Y");
       color: #000;
     }
 
-    .signature {
+    .signature-l {
+      border-top: 2px solid darkblue;
+      padding: 5px;
+      min-width: 180px;
       position: absolute;
-      bottom: 13%;
-      left: 70%;
+      text-align: left;
+      top: 88%;
+      left: 10%;
       font-size: 18px;
+      font-family: Arial, sans-serif;
+      color: #707070;
+    }
+
+    .signature-r {
+      border-top: 2px solid darkblue;
+      padding: 5px;
+      min-width: 180px;
+      text-align: right;
+      position: absolute;
+      top: 88%;
+      left: 72%;
+      font-size: 12px;
       font-family: Arial, sans-serif;
       color: #707070;
     }
@@ -108,7 +144,7 @@ $today = date("j F Y");
     }
 
     @media (max-width: 400px) {
-      .name {
+      01 .name {
         font-size: 20px;
       }
 
@@ -181,7 +217,7 @@ $today = date("j F Y");
 <body>
   <div class="main-block">
     <div class="certificate-container dynamic-size">
-      <img src="<?= Url::to('@web/img/certificate.jpg') ?>" alt="Certificate of Appreciation"
+      <img src="<?= Url::to('@web/img/certificate01.jpg') ?>" alt="Certificate of Appreciation"
         class="delayed-content certificate-image" data-delay="0">
       <div class="delayed-content name" data-delay="400">
         <?= $submission['first_name'] . " " . $submission['last_name'] ?>
@@ -190,12 +226,19 @@ $today = date("j F Y");
         <b><span class="delayed-content" data-delay="2400">
             <?= $score ?>%<span></b>
       </div>
-      <div class="delayed-content date" data-delay="800">
+      <div class="delayed-content signature-l" data-delay="800">
         <?= $today ?>
       </div>
-      <div class="delayed-content signature" data-delay="1200"><?= $submission['quiz_name'] ?>
-        (<?= $submission['no_correct'] ?>/<?= $submission['no_questions']?>)
+      <div class="delayed-content signature-r" data-delay="1200">
+        <?= $submission['quiz_name'] ?> (
+        <?= $submission['no_correct'] ?>/
+        <?= $submission['no_questions'] ?> in
+        <?= $formattedTime ?>)
+        <br>
+        <?= $ratingString ?>(
+        <?= $rating ?>)
       </div>
+
     </div>
   </div>
 
