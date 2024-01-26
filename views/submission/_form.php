@@ -73,7 +73,7 @@ $this->registerJs($script);
             <div class="col">
                 <?= $form->field($model, 'finished')->dropDownList(
                     [1 => 'Finshed', 0 => 'In Progress'], // Options: value => display text
-                    ['prompt' => 'Select Status', 'style' => 'width: 200px;'] // Optional: prompt message
+                    ['prompt' => '...', 'style' => 'width: 200px;'] // Optional: prompt message
                 )->label('Status') ?>
             </div>
         </div>
@@ -106,8 +106,8 @@ $this->registerJs($script);
     <div class="form-group">
         <?= Html::submitButton('Save', ['class' => 'btn btn-success quiz-button']) ?>
         <?php
-        $url = Url::to(['/submission/index', 'quiz_id' => $model->quiz['id']]);
-        echo Html::a('Back', [$url], ['class' => 'btn btn-primary quiz-button']);
+        $returnUrl = Yii::$app->user->returnUrl ?: ['/submission/index','quiz_id' => $model->quiz['id'] ];
+        echo Html::a('Back', $returnUrl, ['class' => 'btn btn-primary quiz-button']);
         echo Html::a('Delete', ['delete', 'id' => $model->id], [
             'class' => 'btn btn-danger quiz-button',
             'data' => [

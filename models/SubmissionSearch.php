@@ -91,11 +91,41 @@ class SubmissionSearch extends Submission
                         'desc' => ['no_answered' => SORT_DESC],
                         'default' => SORT_ASC,
                     ],
+                    'token' => [
+                        'asc' => ['token' => SORT_ASC],
+                        'desc' => ['token' => SORT_DESC],
+                        'default' => SORT_ASC,
+                    ],
+                    'finished' => [
+                        'asc' => ['finished' => SORT_ASC],
+                        'desc' => ['finished' => SORT_DESC],
+                        'default' => SORT_ASC,
+                    ],
+                    'class' => [
+                        'asc' => ['class' => SORT_ASC],
+                        'desc' => ['class' => SORT_DESC],
+                        'default' => SORT_ASC,
+                    ],
+                    'no_correct' => [
+                        'asc' => ['no_correct' => SORT_ASC],
+                        'desc' => ['no_correct' => SORT_DESC],
+                        'default' => SORT_ASC,
+                    ],
+                    'start_time' => [
+                        'asc' => ['start_time' => SORT_ASC],
+                        'desc' => ['start_time' => SORT_DESC],
+                        'default' => SORT_ASC,
+                    ],
+                    'duration' => [
+                        'asc' => ['(TIMESTAMPDIFF(SECOND, end_time, start_time ))' => SORT_ASC],
+                        'desc' => ['(TIMESTAMPDIFF(SECOND, end_time, start_time))' => SORT_DESC],
+                        'default' => SORT_ASC,
+                    ],
                 ],
 
-                // 'defaultOrder' => [
-                //     'last_updated' => SORT_DESC,
-                // ],
+                'defaultOrder' => [
+                    'last_updated' => SORT_DESC,
+                ],
             ],
         ]);
 

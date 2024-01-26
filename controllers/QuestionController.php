@@ -128,6 +128,8 @@ class QuestionController extends Controller
         $sql = "select * from question where id=" . $id;
         $question = Yii::$app->db->createCommand($sql)->queryOne();
 
+        Yii::$app->user->returnUrl = Yii::$app->request->referrer;
+
         if (!$question) {
             return $this->render('/site/error', ['message' => "Question $id does not exist."]);
         }

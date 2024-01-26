@@ -159,6 +159,11 @@ class SubmissionController extends Controller
         $result = Yii::$app->db->createCommand($sql)->queryAll();
         $questionIds = array_column($result, 'question_id');
 
+        // if no questions, quiz cannot be started
+        if (count($questionIds) == 0) {
+            return $this->redirect(Yii::$app->request->referrer);
+        }
+
         shuffle($questionIds);
         if ($quiz['no_questions']) { // if quiz had question number limit, take first only
             $limitArrayToN = fn(array $array, int $N) => ($N >= count($array)) ? $array : array_slice($array, 0, $N);
@@ -205,8 +210,12 @@ class SubmissionController extends Controller
         $model = $this->findModel($id);
 
         if ($this->request->isPost && $model->load($this->request->post()) && $model->save()) {
-            return $this->redirect(['update', 'id' => $model->id]);
+            $returnUrl = Yii::$app->user->returnUrl ?: ['update', 'id' => $model->id]; // if not saved go to default      
+            return $this->redirect($returnUrl);
+            // return $this->redirect(['update', 'id' => $model->id]);
         }
+
+        Yii::$app->user->returnUrl = Yii::$app->request->referrer;
 
         return $this->render('update', [
             'model' => $model,
@@ -232,13 +241,14 @@ class SubmissionController extends Controller
         return $this->redirect(['index']);
     }
 
-    public function actionDeleteUnfinished($quiz_id) {
+    public function actionDeleteUnfinished($quiz_id)
+    {
         $sql = "DELETE FROM submission
                 WHERE last_updated < NOW() - INTERVAL 2 HOUR
                 and (finished is null or finished = 0)
                 and quiz_id = $quiz_id";
         Yii::$app->db->createCommand($sql)->execute();
-        
+
         return $this->redirect(['/submission', 'quiz_id' => $quiz_id]);
     }
 

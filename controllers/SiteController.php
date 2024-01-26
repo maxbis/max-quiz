@@ -184,7 +184,10 @@ class SiteController extends Controller
             return $this->render('/site/error', ['message' => $message]);
         }
 
-        $title = $quiz['name'] . ' [' . strtoupper(substr($submission['token'], -3)) . '] ';
+        $title = $quiz['name'] . ' [' .
+            strtoupper(substr($submission['token'], 0, 3)) .'-'.
+            strtoupper(substr($submission['first_name'], 0, 3)).
+            strtoupper(substr($submission['last_name'], 0, 1)) . '] ';
 
         $this->layout = false;
         return $this->render('question', ['title' => $title, 'question' => $question, 'submission' => $submission, 'quiz' => $quiz]);

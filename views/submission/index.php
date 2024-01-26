@@ -63,7 +63,6 @@ $params = Yii::$app->request->getQueryParams();
     .grid-view tr:hover {
         background-color: #e0e0e0;
     }
-
 </style>
 
 <div class="row">
@@ -74,9 +73,9 @@ $params = Yii::$app->request->getQueryParams();
     </div>
     <div class="col-md-2 d-flex align-items-end">
 
-        <?php 
-            $url = Yii::$app->urlManager->createUrl(['/submission/delete-unfinished', 'quiz_id' => $params['quiz_id']]);
-            echo Html::a('❌ Clean', $url, [
+        <?php
+        $url = Yii::$app->urlManager->createUrl(['/submission/delete-unfinished', 'quiz_id' => $params['quiz_id']]);
+        echo Html::a('❌ Clean', $url, [
             'title' => 'Delete Old Unfinished',
             'class' => 'btn btn-outline-dark quiz-button',
             'data-confirm' => 'All unfinshed submissions that are inactive for more than 2 hours will be deleted, OK?',
@@ -122,22 +121,24 @@ $params = Yii::$app->request->getQueryParams();
                 ],
                 [
                     'label' => 'Code', // You can change the label as needed
+                    'attribute' => 'token',
+                    'enableSorting' => true,
                     'headerOptions' => ['style' => 'width:40px;'],
                     'format' => 'raw',
                     'value' => function ($model) {
-                        return Html::a(strtoupper(substr($model->token, -3)), ['submission/update', 'id' => $model->id]);
+                        return Html::a(strtoupper(substr($model->token, 0, 3)), ['submission/update', 'id' => $model->id]);
                         // return $model->no_answered.'/'.$model->no_questions;
                     },
                 ],
                 [
                     'attribute' => 'finished',
-                    'enableSorting' => false,
+                    'enableSorting' => true,
                     'filter' => true,
-                    'format' => 'raw',
-                    'contentOptions' => ['class' => 'active-field'],
-                    'header' => 'Ready',
+                    'label' => 'Ready',
+                    // 'header' => 'Ready',
                     'headerOptions' => ['style' => 'width:40px;'],
                     'contentOptions' => $contentOptionsReady,
+                    'format' => 'raw',
                     'value' => function ($model) {
                         return Html::checkbox('finished', $model->finished, ['value' => $model->id, 'disabled' => true,]);
                     },
@@ -156,22 +157,6 @@ $params = Yii::$app->request->getQueryParams();
                             . "<div style='position: relative;'>$percentage%</div>";
                     },
                 ],
-                // [
-                //     'header' => 'Voortgang',
-                //     'attribute' => 'no_answered',
-                //     'headerOptions' => ['style' => 'width:60px;'],
-                //     'contentOptions' => function ($model, $key, $index, $column) {
-                //         if ( $model->no_answered == $model->no_questions ) {
-                //             $backgroundColor = 'lightgreen';
-                //         } else {
-                //             $backgroundColor = "";
-                //         }
-                //         return ['style' => "background-color: $backgroundColor;"];
-                //     },
-                //     'value' => function ($model) {
-                //         return $model->no_questions > 0 ? round(($model->no_answered / $model->no_questions) * 100, 0) . '%' : '0';
-                //     },
-                // ],
                 [
                     'label' => 'Score',
                     'attribute' => 'answeredScore',
@@ -281,33 +266,10 @@ $params = Yii::$app->request->getQueryParams();
                         return "<span style='color:#909090'>$formattedDate</span>";
                     },
                 ],
-                // [
-                //     'label' => 'Questions',
-                //     'attribute' => 'question_order',
-                //     'enableSorting' => false,
-                //     'filter' => false,
-                //     'contentOptions' => function ($model, $key, $index, $column) {
-        
-                //         $numbersArray = explode(" ", $model->question_order);
-                //         foreach ($numbersArray as $key => &$value) {
-                //             $value = ($key + 1) . ':' . $value;
-                //         }
-                //         $result = implode(" ", $numbersArray);
-        
-                //         return ['title' => $result];
-                //     },
-                //     'format' => 'raw',
-                //     'value' => function ($model) {
-                //         return "<span style='color:#909090'>" .
-                //             mb_substr($model->question_order, 0, 45) . (mb_strlen($model->question_order) > 45 ? '...' : '')
-                //             . "</span>";
-                //     }
-                // ],
-        
                 [
                     'label' => 'Duration',
                     'enableSorting' => false,
-                    'attribute' => 'end_time',
+                    'attribute' => 'duration',
                     'filter' => false,
                     'headerOptions' => ['style' => 'width:60px;'],
                     'format' => 'raw',
@@ -344,30 +306,6 @@ $params = Yii::$app->request->getQueryParams();
                     'label' => 'ip',
                     'headerOptions' => ['style' => 'width:60px;'],
                 ],
-
-                // [
-                //     'attribute' => 'answeredScore',
-                //     'label' => 'Score',
-                //     'value' => function ($model) {
-                //         return $model->answeredScore;
-                //     },
-                //     'format' => 'raw', // or 'decimal', depending on how you want to format it
-                // ],
-                // [
-                //     'label' => 'Answers',
-                //     'attribute' => 'answer_order',
-                //     'enableSorting' => false,
-                //     'filter' => false,
-                //     'headerOptions' => ['style' => 'width:200px;'],
-                //     'value' => function ($model) {
-                //         return mb_substr($model->answer_order, 0, 15) . (mb_strlen($model->answer_order) > 15 ? '...' : '');
-                //     }
-                // ],
-                // [
-                //     'class' => 'yii\grid\ActionColumn',
-                //     'headerOptions' => ['style' => 'width:20px;'],
-                //     'template' => '{delete}',
-                // ],
                 [
                     'class' => ActionColumn::class,
                     'headerOptions' => ['style' => 'width:20px;'],
@@ -379,6 +317,7 @@ $params = Yii::$app->request->getQueryParams();
                                 'title' => 'Delete',
                                 'data' => [
                                     'url' => Url::to(['submission/delete', 'id' => $model->id]),
+                                    'name' => $model->first_name. ' ' . $model->last_name,
                                 ],
                             ]);
                         },
@@ -392,10 +331,12 @@ $params = Yii::$app->request->getQueryParams();
         Pjax::end();
 
         $script = <<<JS
+
             $(document).on('click', '.ajax-delete', function (e) {
                 e.preventDefault();
                 var url = $(this).data('url');
-                if(confirm('Are you sure to delete this submission?')) {
+                var name = $(this).data('name');
+                if(confirm('Are you sure to delete the submission for ' + name + '?')) {
                     $.post(url, function (data) {
                         console.log('AJAX delete succes');
                         location.reload(); // Reload the page or use Pjax to refresh the GridView
@@ -405,7 +346,17 @@ $params = Yii::$app->request->getQueryParams();
                     });
                 }
             });
+
+            var refreshIntervalId = setInterval(function () {
+                $.pjax.reload({ container: '#myPjaxGridView' });
+            }, 30000); // 20000 milliseconds = 20 seconds
+
+            setTimeout(function() {
+                clearInterval(refreshIntervalId);
+            }, 2700000); // 2700000 milliseconds = 45 minutes
+
         JS;
+
         $this->registerJs($script);
 
         ?>

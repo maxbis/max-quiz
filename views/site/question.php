@@ -17,7 +17,7 @@ $noAnswers = count($answers);
 
 // escape HTML tags to dispay properly in browser and 
 // don't convert pre and code becasue these are used for formatting.
-function escapeHtmlExceptTags($html, $allowedTags = ['pre', 'code'])
+function escapeHtmlExceptTags($html, $allowedTags = ['pre', 'code', 'i', 'b'])
 {
     // Escape all HTML characters in the string
     $escapedHtml = htmlspecialchars($html, ENT_QUOTES, 'UTF-8');
@@ -37,7 +37,8 @@ function escapeHtmlExceptTags($html, $allowedTags = ['pre', 'code'])
 // for proper formatting teh answer, I need to know if long words occur.
 function hasLongAnswer($string, $maxLength = 60)
 {
-    if ( strlen($string) > 70 ) return true;
+    if (strlen($string) > 70)
+        return true;
 
     $words = explode(' ', $string);
     foreach ($words as $word) {
@@ -165,7 +166,6 @@ function hasLongAnswer($string, $maxLength = 60)
         .banner-content {
             position: relative;
             z-index: 2;
-            /* Ensures the content is above the pseudo-element */
             color: black;
             text-shadow:
                 -1px -1px 0 #fff,
@@ -184,6 +184,10 @@ function hasLongAnswer($string, $maxLength = 60)
             background: rgba(255, 255, 255, 0.7);
             /* White with 60% opacity */
             z-index: 1;
+        }
+
+        .footer {
+            color: #d0d0d0;
         }
 
         .page-effect {
@@ -227,7 +231,6 @@ function hasLongAnswer($string, $maxLength = 60)
             background-color: #f2dede;
             border-color: #ebccd1;
         }
-
     </style>
 
     <script>
@@ -239,7 +242,7 @@ function hasLongAnswer($string, $maxLength = 60)
             }, 100);
         });
     </script>
-    
+
 </head>
 
 <body class="background-image">
@@ -270,31 +273,30 @@ function hasLongAnswer($string, $maxLength = 60)
 
             <div class="question-block">
                 <!-- this code needs to be non-idented becasue pre is used for formatting -->
-<?php if (isset($quiz['blind']) && $quiz['blind']) { // view is also called from backend when adding a question in which case $quiz is not provided....
-echo "On paper, look up question with id: <b>" . $question['id'] . "</b><br><br>Then, select the right answer....";
-} else {
-echo escapeHtmlExceptTags($question['question']);
-} ?>
+                <?php if (isset($quiz['blind']) && $quiz['blind']) { // view is also called from backend when adding a question in which case $quiz is not provided....
+                        echo "On paper, look up question with id: <b>" . $question['id'] . "</b><br><br>Then, select the right answer....";
+                    } else {
+                        echo escapeHtmlExceptTags($question['question']);
+                    } ?>
                 <!-- end of non-identation-->
             </div>
 
-           
+
             <?php
-                // check if there are long answers and if so add a style
-                $style = "";
-                for ($i=0; $i<=5;$i++) {
-                    if ( $noAnswers > $i && hasLongAnswer($question[$answers[($i)]]) ) {
-                        $style = "long-answer";
-                    }
-                } 
+            // check if there are long answers and if so add a style
+            $style = "";
+            for ($i = 0; $i <= 5; $i++) {
+                if ($noAnswers > $i && hasLongAnswer($question[$answers[($i)]])) {
+                    $style = "long-answer";
+                }
+            }
             ?>
 
             <div class="col-md-6">
                 <!-- Answers Column 1, 3, 5 -->
                 <?php for ($i = 1; $i <= 5; $i += 2) { ?>
                     <?php if ($noAnswers >= $i) { ?>
-                        <div class="answer <?= $style ?>"
-                            onclick="selectAnswer(this, '<?= $answers[($i - 1)] ?>')">
+                        <div class="answer <?= $style ?>" onclick="selectAnswer(this, '<?= $answers[($i - 1)] ?>')">
                             <?= $question[$answers[$i - 1]] ?>
                         </div>
                     <?php } ?>
@@ -305,8 +307,7 @@ echo escapeHtmlExceptTags($question['question']);
                 <!-- Answers Column 2, 4, 6 -->
                 <?php for ($i = 2; $i <= 6; $i += 2) { ?>
                     <?php if ($noAnswers >= $i) { ?>
-                        <div class="answer <?= $style?>"
-                            onclick="selectAnswer(this, '<?= $answers[($i - 1)] ?>')">
+                        <div class="answer <?= $style ?>" onclick="selectAnswer(this, '<?= $answers[($i - 1)] ?>')">
                             <?= $question[$answers[$i - 1]] ?>
                         </div>
                     <?php } ?>
@@ -319,7 +320,7 @@ echo escapeHtmlExceptTags($question['question']);
                 <input type="hidden" id="no_answered" name="no_answered" value="<?= $submission['no_answered']; ?>">
                 <input type="hidden" name="<?= $csrfTokenName ?>" value="<?= $csrfToken ?>">
                 <?php if ($submission['id'] != 0) { ?>
-                    <button type="button" id="submitButton" class="btn btn-light" title="Click eerst op een antwoord"
+                    <button type="button" id="submitButton" class="btn btn-light" style="margin-bottom:10px;" title="Click eerst op een antwoord"
                         disabled>Volgende vraag >></button>
                 <?php } else {
                     $url = Yii::$app->urlManager->createUrl(['/question/update', 'id' => $question['id']]);
@@ -334,8 +335,21 @@ echo escapeHtmlExceptTags($question['question']);
                         'title' => 'Copy Question',
                         'class' => 'btn btn-outline-secondary quiz-button',
                     ]);
+                    $returnUrl = Yii::$app->user->returnUrl ?: ['/quiz'];
+                    echo Html::a('Back', $returnUrl, [
+                        'id' => 'submitButton-org2',
+                        'title' => 'Back',
+                        'class' => 'btn btn-outline-secondary quiz-button',
+                    ]);
                 } ?>
             </form>
+        </div>
+
+        <div class="banner-content footer">
+            <h1>
+                <br>
+                <?= $title ?>
+            </h1>
         </div>
 
         <script>
@@ -356,9 +370,6 @@ echo escapeHtmlExceptTags($question['question']);
                 document.getElementById('submitButton').title = "Click voor volgende vraag";
                 document.getElementById('submitButton').disabled = false;
             }
-        </script>
-
-        <script>
             document.getElementById('submitButton').addEventListener('click', function () {
                 this.disabled = true;
                 this.innerText = 'Submitting...';
