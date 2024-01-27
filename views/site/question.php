@@ -66,7 +66,7 @@ function hasLongAnswer($string, $maxLength = 60)
     <style>
         .background-image {
             position: relative;
-            background: linear-gradient(to bottom, rgba(255, 255, 255, 1) 800px, rgba(255, 255, 255, 0.85) 100%),
+            background: linear-gradient(to bottom, rgba(255, 255, 255, 1) 200px, rgba(255, 255, 255, 0.85) 100%),
                 url('<?= Url::to('@web/img/classroom.webp') ?>');
             background-size: cover;
             background-position: center;
@@ -266,18 +266,18 @@ function hasLongAnswer($string, $maxLength = 60)
     <?php endif; ?>
 
     <div class="container text-center">
-        <div class="row justify-content-center page-effect">
+        <div class="row d-flex justify-content-center align-items-start">
             <div class="col-12 question-title">Vraag
                 <?= $submission['no_answered'] + 1 ?>
             </div>
 
             <div class="question-block">
                 <!-- this code needs to be non-idented becasue pre is used for formatting -->
-                <?php if (isset($quiz['blind']) && $quiz['blind']) { // view is also called from backend when adding a question in which case $quiz is not provided....
-                        echo "On paper, look up question with id: <b>" . $question['id'] . "</b><br><br>Then, select the right answer....";
-                    } else {
-                        echo escapeHtmlExceptTags($question['question']);
-                    } ?>
+<?php if (isset($quiz['blind']) && $quiz['blind']) { // view is also called from backend when adding a question in which case $quiz is not provided....
+echo "On paper, look up question with id: <b>" . $question['id'] . "</b><br><br>Then, select the right answer....";
+} else {
+echo escapeHtmlExceptTags($question['question']);
+} ?>
                 <!-- end of non-identation-->
             </div>
 

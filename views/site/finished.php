@@ -3,16 +3,6 @@
 use yii\helpers\Url;
 use yii\helpers\Html;
 
-$score = round($submission['no_correct'] * 100 / $submission['no_questions'], 0);
-
-date_default_timezone_set('Europe/London');
-$today = date("j F Y");
-
-$start = new DateTime($submission['start_time']);
-$end = new DateTime($submission['end_time']);
-$diff = $start->diff($end);
-$formattedTime = sprintf("%02d:%02d", $diff->i, $diff->s);
-
 function getRatingCategory($rating)
 {
   if ($rating >= 90 && $rating <= 100) {
@@ -32,8 +22,25 @@ function getRatingCategory($rating)
   }
 }
 
-$rating = round(($submission['no_correct'] - $submission['no_questions'] * 0.2) * 10 / ($submission['no_questions'] * 0.8), 2);
-$ratingString = getRatingCategory(round($rating * 10));
+if ($submission['no_questions']) {
+  $score = round($submission['no_correct'] * 100 / $submission['no_questions'], 0);
+  $rating = round(($submission['no_correct'] - $submission['no_questions'] * 0.2) * 10 / ($submission['no_questions'] * 0.8), 2);
+  $ratingString = getRatingCategory(round($rating * 10));
+} else {
+  $score = 0;
+  $rating = 0;
+  $ratingString = "";
+}
+
+
+date_default_timezone_set('Europe/London');
+$today = date("j F Y");
+
+$start = new DateTime($submission['start_time']);
+$end = new DateTime($submission['end_time']);
+$diff = $start->diff($end);
+$formattedTime = sprintf("%02d:%02d", $diff->i, $diff->s);
+
 ?>
 
 <!DOCTYPE html>
