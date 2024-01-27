@@ -100,12 +100,11 @@ $formattedTime = sprintf("%02d:%02d", $diff->i, $diff->s);
     }
 
     .signature-l {
-      border-top: 2px solid darkblue;
       padding: 5px;
       min-width: 180px;
       position: absolute;
       text-align: left;
-      top: 88%;
+      bottom: 6%;
       left: 10%;
       font-size: 18px;
       font-family: Arial, sans-serif;
@@ -113,12 +112,12 @@ $formattedTime = sprintf("%02d:%02d", $diff->i, $diff->s);
     }
 
     .signature-r {
-      border-top: 2px solid darkblue;
+      border-top: 1px solid #707070;
       padding: 5px;
       min-width: 180px;
       text-align: right;
       position: absolute;
-      top: 88%;
+      bottom: 6%;
       left: 72%;
       font-size: 12px;
       font-family: Arial, sans-serif;
@@ -131,7 +130,7 @@ $formattedTime = sprintf("%02d:%02d", $diff->i, $diff->s);
       transition: opacity 3s ease-in-out;
     }
 
-    @media (max-width: 800px) {
+    @media (max-width: 1000px) {
       .main-block {
         margin: 0;
       }
@@ -144,14 +143,20 @@ $formattedTime = sprintf("%02d:%02d", $diff->i, $diff->s);
         font-size: 24px;
       }
 
-      .signature,
-      .date {
+      .signature-l,
+      .signature-r {
+
         font-size: 12px;
+        bottom: 6%;
+      }
+      .signature-r {
+        left:auto;
+        right: 10%;
       }
     }
 
-    @media (max-width: 400px) {
-      01 .name {
+    @media (max-width: 600px) {
+      .name {
         font-size: 20px;
       }
 
@@ -159,9 +164,19 @@ $formattedTime = sprintf("%02d:%02d", $diff->i, $diff->s);
         font-size: 18px;
       }
 
-      .signature,
-      .date {
+      .signature-l,
+      .signature-r {
         font-size: 10px;
+      }
+      .signature-r {
+        border-top: 0px;
+        left: 2%;
+      }
+    }
+    @media (max-width: 400px) {
+      .signature-l,
+      .signature-r {
+        font-size: 8px;
       }
     }
   </style>
