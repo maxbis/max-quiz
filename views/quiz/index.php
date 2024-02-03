@@ -12,8 +12,8 @@ $this->title = 'Quiz List';
 // $this->params['breadcrumbs'][] = $this->title;
 echo "<p style='color:#909090;font-size:16px;'>".$this->title.'</p>';
 
-$updateNameUrl = '/quiz/a';
-$updatePasswordUrl = '/quiz/a';
+// $updateNameUrl = '/quiz/a';
+// $updatePasswordUrl = '/quiz/a';
 
 $csrfToken = Yii::$app->request->getCsrfToken();
 $id = Yii::$app->request->get('id');

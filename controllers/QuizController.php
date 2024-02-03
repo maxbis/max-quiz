@@ -139,8 +139,19 @@ class QuizController extends Controller
             // if ( $model->active == 1 ) {
             //     Quiz::updateAll(['active' => 0], ['!=', 'id', $model->id]);
             // }
-            if ($model->save()) {
-                return $this->redirect(['index', 'id' => $model->id]);
+            try {
+                if ($model->save()) {
+                    return $this->redirect(['index', 'id' => $model->id]);
+                } else {
+                    Yii::$app->session->setFlash('error', 'There was a problem saving your data.');
+                    return $this->render('update', [
+                        'model' => $model,
+                    ]);
+                }
+            } catch (\Throwable $e) {
+                // Catch any exceptions thrown during the save process
+                Yii::error("Error saving model: " . $e->getMessage(), __METHOD__);
+                Yii::$app->session->setFlash('error', explode( "\n", $e->getMessage() )[0]);
             }
         }
 
