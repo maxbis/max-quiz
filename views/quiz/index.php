@@ -10,7 +10,7 @@ use yii\web\JsExpression;
 
 $this->title = 'Quiz List';
 // $this->params['breadcrumbs'][] = $this->title;
-echo "<p style='color:#909090;font-size:16px;'>".$this->title.'</p>';
+echo "<p style='color:#909090;font-size:16px;'>" . $this->title . '</p>';
 
 // $updateNameUrl = '/quiz/a';
 // $updatePasswordUrl = '/quiz/a';
@@ -49,6 +49,16 @@ $('input[name="active"]').on('change', function() {
     updateActiveStatus(quizId, isActive);
 });
 
+$(document).on('click', '.group-header', function() {
+    var header = $(this);
+    header.toggleClass('collapsed');
+    header.nextUntil('.group-header').toggle(); // This will show/hide the rows until the next group header
+});
+
+$(document).ready(function() {
+    $('.group-header.collapsed').nextUntil('.group-header').hide(); // This hides all rows that follow a '.group-header.collapsed' until the next '.group-header'
+});
+
 JS;
 
 // Register the JavaScript code
@@ -73,11 +83,45 @@ $this->registerJs($js);
         margin-right: 5px;
     }
 
+    .group-header .triangle {
+        cursor: pointer;
+        display: inline-block;
+        transition: transform 0.3s ease-in-out;
+    }
+
+    .group-header.collapsed .triangle {
+        transform: rotate(-90deg);
+        /* Pointing right when collapsed */
+    }
+
+    .group-content {
+        display: none;
+        /* Initially hide the content */
+    }
+    .group-title{
+        color: darkblue;
+        font-weight: 600;
+    }
 </style>
 
 <div class="quiz-index">
     <?= GridView::widget([
         'dataProvider' => $dataProvider,
+        // 'beforeRow' => function ($model, $key, $index, $grid) {
+        //         static $lastGroup = null;
+        //         $currentGroup = strstr($model->name, '.', true);
+
+        //         if ($lastGroup !== $currentGroup) {
+        //             $lastGroup = $currentGroup;
+        //             if ( $currentGroup == "" ) {
+        //                 return "<tr class='group-header'><td colspan='9'><div class='group-title'><span class='triangle'>&#9662;</span>no category</div></td></tr>";
+        //             } else {
+        //                 return "<tr class='group-header collapsed'><td colspan='9'><div class='group-title'><span class='triangle'>&#9662;</span>{$currentGroup}</div></td></tr>";
+        //             }
+        //         }
+
+        //         return null;
+        //     },
 
         'columns' => [
             [
@@ -86,59 +130,56 @@ $this->registerJs($js);
                 'header' => '',
 
             ],
-            // [
-            //     'attribute' => 'id',
-            //     'headerOptions' => ['style' => 'width:40px;'],
-            //     'contentOptions' => ['class' => 'hidden-id'],
-            //     'visible' => true, // Hide the ID column
-            // ],
             [
                 'attribute' => 'active',
                 'headerOptions' => ['style' => 'width:40px;'],
                 'format' => 'raw',
                 'contentOptions' => ['class' => 'active-field', 'title' => 'Quiz can be started when checked'],
                 'value' => function ($model) {
-                    return Html::checkbox('active', $model->active, ['value' => $model->id, 'class' => 'active-radio']);
-                },
+                        return Html::checkbox('active', $model->active, ['value' => $model->id, 'class' => 'active-radio']);
+                    },
             ],
             [
                 'attribute' => 'name',
+                'headerOptions' => ['style' => 'width:250px;'],
                 'format' => 'raw',
                 'value' => function ($model) {
-                    // $url = Yii::$app->urlManager->createUrl(['/submission', 'quiz_id' => $model->id]);
-                    $url = Yii::$app->urlManager->createUrl(['question/index', 'quiz_id' => $model->id]);
-                    return Html::a($model->name, $url, ['title' => 'Show Quiz']);
-                },
+                        // $url = Yii::$app->urlManager->createUrl(['/submission', 'quiz_id' => $model->id]);
+                        $url = Yii::$app->urlManager->createUrl(['question/index', 'quiz_id' => $model->id]);
+                        return Html::a($model->name, $url, ['title' => 'Show Quiz']);
+                    },
             ],
-            [ 
+            [
                 'attribute' => 'password',
+                'headerOptions' => ['style' => 'width:180px;'],
                 'format' => 'raw',
                 'value' => function ($model) {
-                    return $model->password;
-                },
+                        return $model->password;
+                    },
             ],
             [
                 'label' => 'Questions',
+                'headerOptions' => ['style' => 'width:140px;'],
                 'value' => function ($model) use ($quizCounts) {
-                    $id = $model->id;
-                    $aantalQuestion = isset($quizCounts[$id]) ? $quizCounts[$id] : 0;
-                    $maxQuestions = isset($model['no_questions'] ) ? $model['no_questions'] : $aantalQuestion ;
-                    return $maxQuestions .' from '. $aantalQuestion;
-                },
+                        $id = $model->id;
+                        $aantalQuestion = isset($quizCounts[$id]) ? $quizCounts[$id] : 0;
+                        $maxQuestions = isset($model['no_questions']) ? $model['no_questions'] : $aantalQuestion;
+                        return $maxQuestions . ' from ' . $aantalQuestion;
+                    },
             ],
             [
                 'label' => 'rw',
                 'attribute' => 'review',
                 'headerOptions' => ['style' => 'width35px;font-size: 10px;', 'title' => 'Review'],
                 'format' => 'raw',
-                'enableSorting' => false, 
-                'value' => function ($model)  {
-                    if ( $model->review )  {
-                        return "&#10003;";
-                    } else {
-                        return "-";
-                    }
-                },
+                'enableSorting' => false,
+                'value' => function ($model) {
+                        if ($model->review) {
+                            return "&#10003;";
+                        } else {
+                            return "-";
+                        }
+                    },
 
             ],
             [
@@ -146,14 +187,14 @@ $this->registerJs($js);
                 'attribute' => 'blind',
                 'headerOptions' => ['style' => 'width:35px;font-size: 10px;', 'title' => 'Blind'],
                 'format' => 'raw',
-                'enableSorting' => false, 
-                'value' => function ($model)  {
-                    if ( $model->blind )  {
-                        return "&#10003;";
-                    } else {
-                        return "-";
-                    }
-                },
+                'enableSorting' => false,
+                'value' => function ($model) {
+                        if ($model->blind) {
+                            return "&#10003;";
+                        } else {
+                            return "-";
+                        }
+                    },
 
             ],
             [
@@ -161,50 +202,51 @@ $this->registerJs($js);
                 'headerOptions' => ['style' => 'width:35px;font-size: 10px;', 'title' => 'Ip-restricted'],
                 'attribute' => 'ip_check',
                 'format' => 'raw',
-                'enableSorting' => false, 
-                'value' => function ($model)  {
-                    if ( $model->ip_check )  {
-                        return "&#10003;";
-                    } else {
-                        return "-";
-                    }
-                },
+                'enableSorting' => false,
+                'value' => function ($model) {
+                        if ($model->ip_check) {
+                            return "&#10003;";
+                        } else {
+                            return "-";
+                        }
+                    },
 
             ],
             [
                 'class' => 'yii\grid\ActionColumn',
+                'headerOptions' => ['style' => 'width:600px;'],
                 'template' => '{quizButton}',
                 'buttons' => [
                     'quizButton' => function ($url, $model) {
-                        $url = Yii::$app->urlManager->createUrl(['/question/list', 'quiz_id' => $model->id]);
-                        $b1 = Html::a('👁️ View', $url, [
-                            'title' => 'View Questions',
-                            'class' => 'btn btn-outline-success quiz-button-small',
-                        ]);
-                        $url = Yii::$app->urlManager->createUrl(['/quiz/update', 'id' => $model->id]);
-                        $b2 = Html::a('✏️ Edit', $url, [
-                            'title' => 'Edit Quiz',
-                            'class' => 'btn btn-outline-primary quiz-button-small',
-                        ]);
-                        $url = Yii::$app->urlManager->createUrl(['/quiz/delete', 'id' => $model->id]);
-                        $b3 = Html::a('❌ Delete', $url, [
-                            'title' => 'Delete Quiz',
-                            'class' => 'btn btn-outline-danger quiz-button-small',
-                            'data-confirm' => 'Are you sure you want to delete this quiz?',
-                            'data-method' => 'post',
-                        ]);
-                        $url = Yii::$app->urlManager->createUrl(['/submission', 'quiz_id' => $model->id]);
-                        $b4 = Html::a('📊 Results', $url, [
-                            'title' => 'Show Results/Progress',
-                            'class' => 'btn btn-outline-dark quiz-button-small',
-                        ]);
-                        $url = Yii::$app->urlManager->createUrl(['question/index', 'quiz_id' => $model->id]);
-                        $b5 = Html::a('❓ Qstions', $url, [
-                            'title' => 'Show Questions',
-                            'class' => 'btn btn-outline-dark quiz-button-small',
-                        ]);
-                        return $b5 . ' ' . $b2 . ' ' . $b1 . ' ' . $b3 . ' ' . $b4;
-                    },
+                            $url = Yii::$app->urlManager->createUrl(['/question/list', 'quiz_id' => $model->id]);
+                            $b1 = Html::a('👁️ View', $url, [
+                                'title' => 'View Questions',
+                                'class' => 'btn btn-outline-success quiz-button-small',
+                            ]);
+                            $url = Yii::$app->urlManager->createUrl(['/quiz/update', 'id' => $model->id]);
+                            $b2 = Html::a('✏️ Edit', $url, [
+                                'title' => 'Edit Quiz',
+                                'class' => 'btn btn-outline-primary quiz-button-small',
+                            ]);
+                            $url = Yii::$app->urlManager->createUrl(['/quiz/delete', 'id' => $model->id]);
+                            $b3 = Html::a('❌ Delete', $url, [
+                                'title' => 'Delete Quiz',
+                                'class' => 'btn btn-outline-danger quiz-button-small',
+                                'data-confirm' => 'Are you sure you want to delete this quiz?',
+                                'data-method' => 'post',
+                            ]);
+                            $url = Yii::$app->urlManager->createUrl(['/submission', 'quiz_id' => $model->id]);
+                            $b4 = Html::a('📊 Results', $url, [
+                                'title' => 'Show Results/Progress',
+                                'class' => 'btn btn-outline-dark quiz-button-small',
+                            ]);
+                            $url = Yii::$app->urlManager->createUrl(['question/index', 'quiz_id' => $model->id]);
+                            $b5 = Html::a('❓ Qstions', $url, [
+                                'title' => 'Show Questions',
+                                'class' => 'btn btn-outline-dark quiz-button-small',
+                            ]);
+                            return $b5 . ' ' . $b2 . ' ' . $b1 . ' ' . $b3 . ' ' . $b4;
+                        },
                 ],
             ],
         ],

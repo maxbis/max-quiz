@@ -132,7 +132,14 @@ use yii\widgets\ActiveForm;
         <hr>
         <div class="form-group">
             <?= Html::submitButton('Save', ['class' => 'btn btn-success quiz-button']) ?>
-            <?= Html::a('Cancel', Yii::$app->request->referrer, ['class' => 'btn btn-primary quiz-button']); ?>
+            <?php
+                if ( Yii::$app->user->returnUrl ) {
+                    $returnUrl = Yii::$app->user->returnUrl;
+                } else {
+                    $returnUrl = Yii::$app->request->referrer;
+                }
+                echo Html::a('Back', $returnUrl, ['class' => 'btn btn-primary quiz-button']);
+            ?>
         </div>
 
         <?php ActiveForm::end(); ?>

@@ -134,7 +134,8 @@ class QuestionController extends Controller
             return $this->render('/site/error', ['message' => "Question $id does not exist."]);
         }
 
-        return $this->render('/site/question', ['title' => 'Question', 'question' => $question, 'submission' => $submission]);
+        $this->layout = false;
+        return $this->render('/site/question', ['title' => 'Quiz [expl-adm]', 'question' => $question, 'submission' => $submission]);
     }
 
     /**
@@ -230,7 +231,7 @@ class QuestionController extends Controller
         }
 
         // save refererer in session
-        Yii::$app->user->returnUrl = Yii::$app->request->referrer;
+        Yii::$app->user->returnUrl = Yii::$app->user->returnUrl ?: Yii::$app->request->referrer;
 
         return $this->render('update', [
             'model' => $model,

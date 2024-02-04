@@ -1,4 +1,6 @@
-Kun je meerdere multiple choice vragen genereren over Landen en reizen ameken? Voor vragen die code snippets bevatten, gebruik <pre></pre> tags voor een juiste opmaak. Elke vraag moet de volgende structuur hebben: een vraag (gemarkeerd met QQ), vier antwoordkeuzes (waarvan één correct, gemarkeerd met AC, en drie onjuiste, gemarkeerd met AA), en een label (LL) dat het onderwerp aangeeft. De vragen kunnen variëren van basis tot gevorderd niveau en mogen code snippets, theoretische concepten of praktische toepassingen omvatten.
+Kun je meerdere multiple choice vragen genereren over Landen en reizen maken?
+Voor vragen die code snippets bevatten, gebruik <pre></pre> tags voor een juiste opmaak. Elke vraag moet de volgende structuur hebben:
+een vraag (gemarkeerd met QQ), vier to zes antwoordkeuzes (waarvan één correct, gemarkeerd met AC, en drie onjuiste, gemarkeerd met AA), en een label (LL) dat het onderwerp aangeeft. De vragen kunnen variëren van basis tot gevorderd niveau en mogen code snippets, theoretische concepten of praktische toepassingen omvatten.
 De markers staan altijd op een regel en de content staat op de volgende regel, bijvoorbeeld:
 QQ
 Vraag 1

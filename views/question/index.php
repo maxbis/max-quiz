@@ -6,13 +6,103 @@ use yii\helpers\Url;
 use yii\grid\ActionColumn;
 use yii\grid\GridView;
 
-/** @var yii\web\View $this */
-/** @var app\models\QuestionSearch $searchModel */
-/** @var yii\data\ActiveDataProvider $dataProvider */
-
 $this->title = 'Quiz Details';
 // $this->params['breadcrumbs'][] = $this->title;
 echo "<p style='color:#909090;font-size:16px;'>" . $this->title . '</p>';
+
+$currentRoute = Yii::$app->controller->getRoute();
+$params = Yii::$app->request->getQueryParams();
+
+# headerStatus is the view-status: all, only-checked, onlyunchecked
+$headerStatus = ['A', 'X', '&#x2713'];
+# When navigating to the next status, determine the next URL
+# the show parameter circles through 1,0,-1
+$nextShow = $show - 1;
+if ($nextShow < -1) $nextShow = 1;
+$params['show'] = $nextShow;
+$clickedOnHeader = Url::toRoute(array_merge([$currentRoute], $params));
+
+$csrfToken = Yii::$app->request->getCsrfToken();
+$apiUrl = Url::toRoute(['/quiz-question/connect']);
+$id = Yii::$app->request->get('id');
+
+$script = <<< JS
+ajaxActive=0;
+$('.status-checkbox').change(function() {
+    var questionId = $(this).attr('question-id'); 
+    var quizId = $(this).attr('quiz-id'); 
+    var active = $(this).is(':checked');
+    var checkbox = $(this);
+
+    ajaxActive++;
+    if ( ajaxActive > 1 ) { // more than one update, show busy indicator
+        $('#modalOverlay').show();
+    }
+    
+    checkbox.css("visibility", "hidden");
+
+    console.log('questionId: ' + questionId);
+    console.log('quizId    : ' + quizId);
+    console.log('active    : ' + active );
+    console.log('apiUrl    : ' + '$apiUrl' );
+
+    $.ajax({
+        url: '$apiUrl',
+        type: 'POST',
+        data: {
+            _csrf: '$csrfToken',
+            quiz_id: quizId,
+            question_id: questionId,
+            active: active ? 1 : 0
+        },
+        success: function(response) {
+            checkbox.css("visibility", "visible");
+            ajaxActive--;
+            if ( ajaxActive == 0) { // hide busy indicator
+                $('#modalOverlay').hide();
+            }
+            $('#countDisplay').text(response.result.count);
+            console.log('Update successful', response);
+        },
+        error: function(error) {
+            ajaxActive--;
+            if ( ajaxActive == 0) { // hide busy indicator
+                $('#modalOverlay').hide();
+            }
+            console.log('Update failed:', error);
+        }
+    });
+});
+JS;
+$this->registerJs($script);
+
+// Yii places the function outside of the scope of the HTML page, therefor we attach it to the window object
+$script = <<< JS
+    window.checkAllCheckboxes = function checkAllCheckboxes(thisValue) {
+        if (confirm("This can not be undone, proceed?")) {
+            $('input[type="checkbox"]').each(function() {
+                $(this).prop('checked', thisValue).trigger('change');
+            });
+        }
+    }
+JS;
+$this->registerJs($script);
+
+$script = <<< JS
+    window.headerCheckbox = function headerCheckbox(show) {
+        console.log('$clickedOnHeader');
+        window.location.href='$clickedOnHeader';
+    }
+JS;
+$this->registerJs($script);
+
+# $show = Yii::$app->request->get('show', 1);
+$QuestionLabelText = 'Active Quiz Questions';
+if ($show == 0) {
+    $QuestionLabelText = 'Inactive Questions';
+} elseif ($show == -1) {
+    $QuestionLabelText = 'All Questions';
+}
 ?>
 
 <style>
@@ -127,109 +217,6 @@ echo "<p style='color:#909090;font-size:16px;'>" . $this->title . '</p>';
     }
 </style>
 
-
-<?php
-$currentRoute = Yii::$app->controller->getRoute();
-$params = Yii::$app->request->getQueryParams();
-
-# headerStatus is the view-status: all, only-checked, onlyunchecked
-$headerStatus = ['A', 'X', '&#x2713'];
-# When navigating to the next status, determine the next URL
-# the show parameter circles through 1,0,-1
-$nextShow = $show - 1;
-if ($nextShow < -1) $nextShow = 1;
-$params['show'] = $nextShow;
-$clickedOnHeader = Url::toRoute(array_merge([$currentRoute], $params));
-
-$csrfToken = Yii::$app->request->getCsrfToken();
-$apiUrl = Url::toRoute(['/quiz-question/connect']);
-$id = Yii::$app->request->get('id');
-
-$script = <<< JS
-ajaxActive=0;
-$('.status-checkbox').change(function() {
-    var questionId = $(this).attr('question-id'); 
-    var quizId = $(this).attr('quiz-id'); 
-    var active = $(this).is(':checked');
-    var checkbox = $(this);
-
-    ajaxActive++;
-    if ( ajaxActive > 1 ) { // more than one update, show busy indicator
-        $('#modalOverlay').show();
-    }
-    
-    checkbox.css("visibility", "hidden");
-
-    console.log('questionId: ' + questionId);
-    console.log('quizId    : ' + quizId);
-    console.log('active    : ' + active );
-    console.log('apiUrl    : ' + '$apiUrl' );
-
-    $.ajax({
-        url: '$apiUrl',
-        type: 'POST',
-        data: {
-            _csrf: '$csrfToken',
-            quiz_id: quizId,
-            question_id: questionId,
-            active: active ? 1 : 0
-        },
-        success: function(response) {
-            checkbox.css("visibility", "visible");
-            ajaxActive--;
-            if ( ajaxActive == 0) { // hide busy indicator
-                $('#modalOverlay').hide();
-            }
-            $('#countDisplay').text(response.result.count);
-            console.log('Update successful', response);
-        },
-        error: function(error) {
-            ajaxActive--;
-            if ( ajaxActive == 0) { // hide busy indicator
-                $('#modalOverlay').hide();
-            }
-            console.log('Update failed:', error);
-        }
-    });
-});
-JS;
-$this->registerJs($script);
-?>
-
-<?php
-// Yii places the function outside of the scope of the HTML page, therefor we attach it to the window object
-$script = <<< JS
-    window.checkAllCheckboxes = function checkAllCheckboxes(thisValue) {
-        if (confirm("This can not be undone, proceed?")) {
-            $('input[type="checkbox"]').each(function() {
-                $(this).prop('checked', thisValue).trigger('change');
-            });
-        }
-    }
-JS;
-$this->registerJs($script);
-
-$script = <<< JS
-    window.headerCheckbox = function headerCheckbox(show) {
-        console.log('$clickedOnHeader');
-        window.location.href='$clickedOnHeader';
-    }
-JS;
-$this->registerJs($script);
-?>
-
-<?php
-$show = Yii::$app->request->get('show', 1);
-$QuestionLabelText = 'Active Quiz Questions';
-if ($show == 0) {
-    $QuestionLabelText = 'Inactive Questions';
-} elseif ($show == -1) {
-    $QuestionLabelText = 'All Questions';
-}
-?>
-
-
-
 <!-- This is the busy overlay, show as more than one quesstion is updated via AJAX -->
 <div class="modal-overlay" id="modalOverlay">
     <div class="modal-dialog">
@@ -293,14 +280,6 @@ if ($show == 0) {
     <?= GridView::widget([
         'dataProvider' => $dataProvider,
         'filterModel' => $searchModel,
-        // 'rowOptions' => function ($model, $key, $index, $grid) use ($questionIds, $show) {
-        //     if ($show) {
-        //         $isChecked = in_array($model->id, $questionIds);
-        //         if (($show == 1 && !$isChecked) || ($show == 2 && $isChecked)) {
-        //             return ['class' => 'xhidden-row'];
-        //         }
-        //     }
-        // },
         'columns' => [
 
             ['class' => 'yii\grid\SerialColumn'],
@@ -356,8 +335,8 @@ if ($show == 0) {
             [
                 'class' => ActionColumn::className(),
                 'headerOptions' => ['style' => 'width:80px;'],
-                'urlCreator' => function ($action, Question $model, $key, $index, $column) use ($show) {
-                    return Url::toRoute([$action, 'id' => $model->id, 'show' => $show]);
+                'urlCreator' => function ($action, Question $model, $key, $index, $column) {
+                    return Url::toRoute([$action, 'id' => $model->id]);
                 }
             ],
         ],

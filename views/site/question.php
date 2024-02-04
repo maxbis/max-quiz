@@ -17,8 +17,13 @@ $noAnswers = count($answers);
 
 // escape HTML tags to dispay properly in browser and 
 // don't convert pre and code becasue these are used for formatting.
-function escapeHtmlExceptTags($html, $allowedTags = ['pre', 'code', 'i', 'b'])
+function escapeHtmlExceptTags($html, $deleteTags = [], $allowedTags = ['pre', 'code', 'i', 'b'] )
 {
+    foreach ($deleteTags as $tag) {
+        $html = str_replace('<' . $tag . '>', '', $html);
+        $html = str_replace('</' . $tag . '>', '', $html);
+    }
+
     // Escape all HTML characters in the string
     $escapedHtml = htmlspecialchars($html, ENT_QUOTES, 'UTF-8');
 
@@ -297,7 +302,7 @@ echo escapeHtmlExceptTags($question['question']);
                 <?php for ($i = 1; $i <= 5; $i += 2) { ?>
                     <?php if ($noAnswers >= $i) { ?>
                         <div class="answer <?= $style ?>" onclick="selectAnswer(this, '<?= $answers[($i - 1)] ?>')">
-                            <?= $question[$answers[$i - 1]] ?>
+                            <?= escapeHtmlExceptTags( $question[$answers[$i - 1]] , ['pre']) ?>
                         </div>
                     <?php } ?>
                 <?php } ?>
@@ -308,7 +313,7 @@ echo escapeHtmlExceptTags($question['question']);
                 <?php for ($i = 2; $i <= 6; $i += 2) { ?>
                     <?php if ($noAnswers >= $i) { ?>
                         <div class="answer <?= $style ?>" onclick="selectAnswer(this, '<?= $answers[($i - 1)] ?>')">
-                            <?= $question[$answers[$i - 1]] ?>
+                        <?= escapeHtmlExceptTags( $question[$answers[$i - 1]] , ['pre']) ?>
                         </div>
                     <?php } ?>
                 <?php } ?>
