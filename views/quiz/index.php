@@ -56,7 +56,7 @@ $(document).on('click', '.group-header', function() {
 });
 
 $(document).ready(function() {
-    $('.group-header.collapsed').nextUntil('.group-header').hide(); // This hides all rows that follow a '.group-header.collapsed' until the next '.group-header'
+    $('.group-header').nextUntil('.group-header').hide(); // This hides all rows that follow a '.group-header.collapsed' until the next '.group-header'
 });
 
 JS;

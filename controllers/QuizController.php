@@ -97,10 +97,14 @@ class QuizController extends Controller
         $searchModel = new QuizSearch();
         $dataProvider = $searchModel->search($this->request->queryParams);
 
-        return $this->render('index', [
+        $sql = "select * from quiz order by name";
+        $quizes = Yii::$app->db->createCommand($sql)->queryAll();
+
+        return $this->render('index2', [
             'searchModel' => $searchModel,
             'dataProvider' => $dataProvider,
             'quizCounts' => $quizCounts,
+            'quizes' => $quizes,
         ]);
     }
 
