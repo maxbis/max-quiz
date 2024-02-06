@@ -223,13 +223,13 @@ $this->registerJs($js);
                             echo "{$maxQuestions} from {$aantalQuestion}";
                             ?>
                         </td>
-                        <td class="grey-column" _style='background-color:#f8f8f8;'>
+                        <td class="grey-column">
                             <?= $quiz['review'] ? "&#10003;" : "-" ?>
                         </td>
-                        <td class="grey-column" _style='background-color:#f4f4f4;'>
+                        <td class="grey-column">
                             <?= $quiz['blind'] ? "&#10003;" : "-" ?>
                         </td>
-                        <td class="grey-column" _style='background-color:#f4f4f4;'>
+                        <td class="grey-column">
                             <?= $quiz['ip_check'] ? "&#10003;" : "-" ?>
                         </td>
                         <td>
