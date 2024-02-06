@@ -9,11 +9,7 @@ use yii\web\JsExpression;
 /* @var $dataProvider yii\data\ActiveDataProvider */
 
 $this->title = 'Quiz List';
-// $this->params['breadcrumbs'][] = $this->title;
 echo "<p style='color:#909090;font-size:16px;'>" . $this->title . '</p>';
-
-// $updateNameUrl = '/quiz/a';
-// $updatePasswordUrl = '/quiz/a';
 
 $csrfToken = Yii::$app->request->getCsrfToken();
 $id = Yii::$app->request->get('id');
@@ -86,6 +82,7 @@ $(document).ready(function() {
             }
         }
     });
+    $('.main-table').fadeIn('fast');
 });
 
 JS;
@@ -96,6 +93,10 @@ $this->registerJs($js);
 ?>
 
 <style>
+    .main-table {
+        display: none;
+    }
+
     .quiz-button-small {
         font-size: 12px;
         color: #a0a0a0;
@@ -179,19 +180,20 @@ $this->registerJs($js);
     }
 </style>
 
-<div class="quiz-index">
-    <table class="">
-        <tbody>
-            <?php
-            $lastGroup = null;
-            $index = 1;
+<body>
+    <div class="quiz-index">
+        <table class="main-table">
+            <tbody>
+                <?php
+                $lastGroup = null;
+                $index = 1;
 
-            foreach ($quizes as $quiz):
-                $currentGroup = strstr($quiz['name'], '.', true);
-                if ($lastGroup !== $currentGroup):
-                    $lastGroup = $currentGroup;
-                    $groupTitle = $currentGroup ?: 'No Category';
-                    echo "<tr class='group-header collapsed' style='background-color:#f0f0f9;color:darkblue;font-weight:350;font-style:italic;'>
+                foreach ($quizes as $quiz):
+                    $currentGroup = strstr($quiz['name'], '.', true);
+                    if ($lastGroup !== $currentGroup):
+                        $lastGroup = $currentGroup;
+                        $groupTitle = $currentGroup ?: 'No Category';
+                        echo "<tr class='group-header collapsed' style='background-color:#f0f0f9;color:darkblue;font-weight:350;font-style:italic;'>
                                 <td colspan=3 style='width:250px;'><div class='group-title'><span class='triangle'>&#9662;</span>&nbsp;{$groupTitle}</div></td>
                                 <td style='width:200px;color:lightgrey'>Password</td>
                                 <td style='width:120px;color:lightgrey'>Questions</td>
@@ -200,55 +202,56 @@ $this->registerJs($js);
                                 <td title='IP Check' style='width:35px;color:lightgrey'>IP</td>
                                 <td style='width:600px;color:lightgrey'>Actions</td>
                             </tr>";
-                endif;
-                ?>
-                <tr>
-                    <td style="color:#e0e0e0;width:15px;">•</td>
-                    <td style='width:15px;'>
-                        <?= Html::checkbox('active', $quiz['active'], ['value' => $quiz['id'], 'class' => 'active-radio']) ?>
-                    </td>
-                    <td>
-                        <?= Html::a($quiz['name'], Yii::$app->urlManager->createUrl(['question/index', 'quiz_id' => $quiz['id']]), ['title' => 'Show Quiz']) ?>
-                    </td>
-                    <td class="highlight-column" _style='background-color:#f8f8f8;color:#d0d0e0;'>
-                        <?= $quiz['password'] ?>
-                    </td>
-                    <td>
-                        <?php
-                        $id = $quiz['id'];
-                        $aantalQuestion = $quizCounts[$id] ?? 0;
-                        $maxQuestions = $model['no_questions'] ?? $aantalQuestion;
-                        echo "{$maxQuestions} from {$aantalQuestion}";
-                        ?>
-                    </td>
-                    <td class="grey-column" _style='background-color:#f8f8f8;'>
-                        <?= $quiz['review'] ? "&#10003;" : "-" ?>
-                    </td>
-                    <td class="grey-column" _style='background-color:#f4f4f4;'>
-                        <?= $quiz['blind'] ? "&#10003;" : "-" ?>
-                    </td>
-                    <td class="grey-column" _style='background-color:#f4f4f4;'>
-                        <?= $quiz['ip_check'] ? "&#10003;" : "-" ?>
-                    </td>
-                    <td>
-                        <?= Html::a('✏️ Edit', ['/quiz/update', 'id' => $quiz['id']], ['class' => 'btn quiz-button-small', 'title' => 'Edit Quiz']) ?>
-                        <?= Html::a('👁️ View', ['/question/list', 'quiz_id' => $quiz['id']], ['class' => 'btn quiz-button-small', 'title' => 'View Questions']) ?>
-                        <?= Html::a('❌ Delete', ['/quiz/delete', 'id' => $quiz['id']], [
-                            'class' => 'btn quiz-button-small',
-                            'title' => 'Delete Quiz',
-                            'data-confirm' => 'Are you sure you want to delete this quiz?',
-                            'data-method' => 'post',
-                        ]) ?>
-                        <?= Html::a('❓ Questions', ['question/index', 'quiz_id' => $quiz['id']], ['class' => 'btn quiz-button-small', 'title' => 'Show Questions']) ?>
-                        <?= Html::a('📊 Results', ['/submission', 'quiz_id' => $quiz['id']], ['class' => 'btn quiz-button-small', 'title' => 'Show Results/Progress']) ?>
-                    </td>
-                </tr>
-            <?php endforeach; ?>
-        </tbody>
-    </table>
-</div>
+                    endif;
+                    ?>
+                    <tr>
+                        <td style="color:#e0e0e0;width:15px;">•</td>
+                        <td style='width:15px;'>
+                            <?= Html::checkbox('active', $quiz['active'], ['value' => $quiz['id'], 'class' => 'active-radio']) ?>
+                        </td>
+                        <td>
+                            <?= Html::a($quiz['name'], Yii::$app->urlManager->createUrl(['question/index', 'quiz_id' => $quiz['id']]), ['title' => 'Show Quiz']) ?>
+                        </td>
+                        <td class="highlight-column" _style='background-color:#f8f8f8;color:#d0d0e0;'>
+                            <?= $quiz['password'] ?>
+                        </td>
+                        <td>
+                            <?php
+                            $id = $quiz['id'];
+                            $aantalQuestion = $quizCounts[$id] ?? 0;
+                            $maxQuestions = $model['no_questions'] ?? $aantalQuestion;
+                            echo "{$maxQuestions} from {$aantalQuestion}";
+                            ?>
+                        </td>
+                        <td class="grey-column" _style='background-color:#f8f8f8;'>
+                            <?= $quiz['review'] ? "&#10003;" : "-" ?>
+                        </td>
+                        <td class="grey-column" _style='background-color:#f4f4f4;'>
+                            <?= $quiz['blind'] ? "&#10003;" : "-" ?>
+                        </td>
+                        <td class="grey-column" _style='background-color:#f4f4f4;'>
+                            <?= $quiz['ip_check'] ? "&#10003;" : "-" ?>
+                        </td>
+                        <td>
+                            <?= Html::a('✏️ Edit', ['/quiz/update', 'id' => $quiz['id']], ['class' => 'btn quiz-button-small', 'title' => 'Edit Quiz']) ?>
+                            <?= Html::a('👁️ View', ['/question/list', 'quiz_id' => $quiz['id']], ['class' => 'btn quiz-button-small', 'title' => 'View Questions']) ?>
+                            <?= Html::a('❌ Delete', ['/quiz/delete', 'id' => $quiz['id']], [
+                                'class' => 'btn quiz-button-small',
+                                'title' => 'Delete Quiz',
+                                'data-confirm' => 'Are you sure you want to delete this quiz?',
+                                'data-method' => 'post',
+                            ]) ?>
+                            <?= Html::a('❓ Questions', ['question/index', 'quiz_id' => $quiz['id']], ['class' => 'btn quiz-button-small', 'title' => 'Show Questions']) ?>
+                            <?= Html::a('📊 Results', ['/submission', 'quiz_id' => $quiz['id']], ['class' => 'btn quiz-button-small', 'title' => 'Show Results/Progress']) ?>
+                        </td>
+                    </tr>
+                <?php endforeach; ?>
+            </tbody>
+        </table>
+    </div>
 
 
-<p style='margin-top:30px;'>
-    <?= Html::a('➕ New Quiz', ['create'], ['title' => 'Create New Quiz', 'class' => 'btn btn-outline-success quiz-button']) ?>
-</p>
+    <p style='margin-top:30px;'>
+        <?= Html::a('➕ New Quiz', ['create'], ['title' => 'Create New Quiz', 'class' => 'btn btn-outline-success quiz-button']) ?>
+    </p>
+</body>
