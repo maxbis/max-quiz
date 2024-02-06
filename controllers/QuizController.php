@@ -97,12 +97,11 @@ class QuizController extends Controller
         $searchModel = new QuizSearch();
         $dataProvider = $searchModel->search($this->request->queryParams);
 
-        $sql = "select * from quiz order by name";
+        // sort on names containing a . first and second on name
+        $sql = "select * from quiz order by CASE WHEN name LIKE '%.%' THEN 1 ELSE 2 END, name";
         $quizes = Yii::$app->db->createCommand($sql)->queryAll();
 
         return $this->render('index2', [
-            'searchModel' => $searchModel,
-            'dataProvider' => $dataProvider,
             'quizCounts' => $quizCounts,
             'quizes' => $quizes,
         ]);
