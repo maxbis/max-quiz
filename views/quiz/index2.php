@@ -57,6 +57,12 @@ $(document).on('click', '.group-header', function() {
     var headerIndex = $('.group-header').index(header);
     var isCollapsed = header.hasClass('collapsed');
     localStorage.setItem('groupHeader_' + headerIndex, isCollapsed);
+    console.log('groupHeader_' + headerIndex, isCollapsed);
+    if ( isCollapsed ) {
+        header.find('td').css('color', 'lightgrey');
+    } else {
+        header.find('td').css('color', 'darkblue');
+    }
 });
 
 // $(document).ready(function() {
@@ -64,7 +70,6 @@ $(document).on('click', '.group-header', function() {
 // });
 $(document).ready(function() {
     // Collapse all by default
-    //$('.group-header').not('.collapsed').addClass('collapsed').nextUntil('.group-header').hide();
     $('.group-header.collapsed').nextUntil('.group-header').hide();
 
     // Check localStorage and apply saved states
@@ -74,8 +79,10 @@ $(document).ready(function() {
         if (isCollapsed !== null) {
             if (isCollapsed === 'true') {
                 $(this).addClass('collapsed').nextUntil('.group-header').hide();
+                $(this).find('td').css('color', 'lightgrey');
             } else {
                 $(this).removeClass('collapsed').nextUntil('.group-header').show();
+                $(this).find('td').css('color', 'darkblue');
             }
         }
     });
@@ -120,6 +127,11 @@ $this->registerJs($js);
     .group-header.collapsed .triangle {
         transform: rotate(-90deg);
         /* Pointing right when collapsed */
+    }
+
+    .group-header td {
+        transition: color 0.5s ease;
+        /* Transition effect for color change */
     }
 
     .group-content {
@@ -181,11 +193,12 @@ $this->registerJs($js);
                     $groupTitle = $currentGroup ?: 'No Category';
                     echo "<tr class='group-header collapsed' style='background-color:#f0f0f9;color:darkblue;font-weight:350;font-style:italic;'>
                                 <td colspan=3 style='width:250px;'><div class='group-title'><span class='triangle'>&#9662;</span>&nbsp;{$groupTitle}</div></td>
-                                <td style='width:200px;'>Password</td><td style='width:120px;'>Questions</td>
-                                <td title='Review Quiz' style='width:35px;'>RW</td>
-                                <td title='Blind Quiz' style='width:35px;'>BL</td>
-                                <td title='IP Check' style='width:35px;'>IP</td>
-                                <td style='width:600px;'>Actions</td>
+                                <td style='width:200px;color:lightgrey'>Password</td>
+                                <td style='width:120px;color:lightgrey'>Questions</td>
+                                <td title='Review Quiz' style='width:35px;color:lightgrey'>RW</td>
+                                <td title='Blind Quiz' style='width:35px;color:lightgrey'>BL</td>
+                                <td title='IP Check' style='width:35px;color:lightgrey'>IP</td>
+                                <td style='width:600px;color:lightgrey'>Actions</td>
                             </tr>";
                 endif;
                 ?>
