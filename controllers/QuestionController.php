@@ -95,6 +95,9 @@ class QuestionController extends Controller
         $sql = "SELECT * FROM quiz WHERE id = $quiz_id";
         $quiz = Yii::$app->db->createCommand($sql)->queryOne();
 
+        Yii::$app->session->set('selectedQuestionIds', $questionIds);
+        // Yii::$app->user->returnUrl = Yii::$app->request->referrer;
+
         return $this->render('index', [
             'searchModel' => $searchModel,
             'dataProvider' => $dataProvider,

@@ -36,6 +36,18 @@ function hasLongAnswer($string, $maxLength = 60)
     return false;
 }
 
+$selectedRecords = Yii::$app->session->get('selectedQuestionIds', []);
+if ($selectedRecords == null) {
+    $prevRecordId = null;
+    $nextRecordId = null;
+} else {
+    $currentRecordId = $question['id'];
+    $currentPosition = array_search($currentRecordId, $selectedRecords);
+    $prevRecordId = $currentPosition > 0 ? $selectedRecords[$currentPosition - 1] : null;
+    $nextRecordId = $currentPosition < count($selectedRecords) - 1 ? $selectedRecords[$currentPosition + 1] : null;
+}
+
+
 ?>
 
 <!DOCTYPE html>
@@ -310,6 +322,14 @@ echo escapeHtmlExceptTags($question['question']);
                     <button type="button" id="submitButton" class="btn btn-light" style="margin-bottom:10px;" title="Click eerst op een antwoord"
                         disabled>Volgende vraag >></button>
                 <?php } else {
+                    if ($nextRecordId !== null) {
+                        $url = Yii::$app->urlManager->createUrl(['/question/view', 'id' => $nextRecordId]);
+                        echo Html::a('<<', $url, [
+                            'id' => 'submitButton-org1',
+                            'title' => 'Prev Question',
+                            'class' => 'btn btn-outline-secondary quiz-button',
+                        ]);
+                    }
                     $url = Yii::$app->urlManager->createUrl(['/question/update', 'id' => $question['id']]);
                     echo Html::a('Edit', $url, [
                         'id' => 'submitButton-org1',
@@ -323,11 +343,20 @@ echo escapeHtmlExceptTags($question['question']);
                         'class' => 'btn btn-outline-secondary quiz-button',
                     ]);
                     $returnUrl = Yii::$app->user->returnUrl ?: ['/quiz'];
-                    echo Html::a('Back', $returnUrl, [
+                    echo Html::a('Back-werkt-niet', $returnUrl, [
                         'id' => 'submitButton-org2',
                         'title' => 'Back',
                         'class' => 'btn btn-outline-secondary quiz-button',
                     ]);
+                    if ($prevRecordId !== null) {
+                        $url = Yii::$app->urlManager->createUrl(['/question/view', 'id' => $prevRecordId]);
+                        echo Html::a('>>', $url, [
+                            'id' => 'submitButton-org1',
+                            'title' => 'Next Question',
+                            'class' => 'btn btn-outline-secondary quiz-button',
+                        ]);
+                    }
+
                 } ?>
             </form>
         </div>
