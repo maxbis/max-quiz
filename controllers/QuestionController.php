@@ -131,7 +131,10 @@ class QuestionController extends Controller
         $sql = "select * from question where id=" . $id;
         $question = Yii::$app->db->createCommand($sql)->queryOne();
 
-        Yii::$app->user->returnUrl = Yii::$app->request->referrer;
+        $returnUrl = Yii::$app->request->referrer;
+        if (strpos($returnUrl, 'index') !== false) { // if the referrer is the view itself, back should not refer to the prev view  
+            Yii::$app->session->set('viewReturnUrl', $returnUrl);
+        }
 
         if (!$question) {
             return $this->render('/site/error', ['message' => "Question $id does not exist."]);

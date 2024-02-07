@@ -37,6 +37,8 @@ function hasLongAnswer($string, $maxLength = 60)
 }
 
 $selectedRecords = Yii::$app->session->get('selectedQuestionIds', []);
+$returnUrl = Yii::$app->session->get('viewReturnUrl', '');
+
 if ($selectedRecords == null) {
     $prevRecordId = null;
     $nextRecordId = null;
@@ -342,8 +344,7 @@ echo escapeHtmlExceptTags($question['question']);
                         'title' => 'Copy Question',
                         'class' => 'btn btn-outline-secondary quiz-button',
                     ]);
-                    $returnUrl = Yii::$app->user->returnUrl ?: ['/quiz'];
-                    echo Html::a('Back-werkt-niet', $returnUrl, [
+                    echo Html::a('Back', $returnUrl, [
                         'id' => 'submitButton-org2',
                         'title' => 'Back',
                         'class' => 'btn btn-outline-secondary quiz-button',
