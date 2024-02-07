@@ -193,7 +193,6 @@ class QuestionController extends Controller
      */
     public function actionUpdate($id)
     {
-
         $model = $this->findModel($id);
 
         $sql = "select q.id, q.name, qq.active from quiz q
@@ -216,7 +215,7 @@ class QuestionController extends Controller
                     $updateSql .= "update quizquestion set active =$active where question_id=$id and quiz_id=$quiz_id;\n";
                 }
             }
-            // _dd($updateSql);
+
             Yii::$app->db->createCommand($updateSql)->execute();
 
             if ($model->save()) {
@@ -231,7 +230,8 @@ class QuestionController extends Controller
         }
 
         // save refererer in session
-        Yii::$app->user->returnUrl = Yii::$app->user->returnUrl ?: Yii::$app->request->referrer;
+        Yii::$app->user->returnUrl = Yii::$app->request->referrer;
+        // dd(Yii::$app->user->returnUrl);
 
         return $this->render('update', [
             'model' => $model,
@@ -568,11 +568,13 @@ class QuestionController extends Controller
                 foreach ($models as $model) {
                     $model->save(false); // Save without validation as it's already done
                 }
-                return $this->redirect(['question/index', 'quiz_id' => $quiz_id]);
+                
+                $returnUrl = Yii::$app->user->returnUrl ?: ['/question/index', 'quiz_id' => $quiz_id];            
+                return $this->redirect($returnUrl);
             }
         }
 
-
+        Yii::$app->user->returnUrl = Yii::$app->request->referrer;
         return $this->render('multipleUpdate', ['models' => $models]);
     }
 

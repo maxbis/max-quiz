@@ -61,9 +61,6 @@ $(document).on('click', '.group-header', function() {
     }
 });
 
-// $(document).ready(function() {
-//     $('.group-header.collapsed').nextUntil('.group-header').hide(); // This hides all rows that follow a '.group-header.collapsed' until the next '.group-header'
-// });
 $(document).ready(function() {
     // Collapse all by default
     $('.group-header.collapsed').nextUntil('.group-header').hide();
@@ -87,8 +84,7 @@ $(document).ready(function() {
 
 JS;
 
-// Register the JavaScript code
-$this->registerJs($js);
+$this->registerJs($js); // Register the JavaScript code
 
 ?>
 

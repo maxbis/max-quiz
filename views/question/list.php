@@ -2,6 +2,7 @@
 
 use yii\helpers\Html;
 use yii\helpers\Url;
+use yii\web\View;
 
 function getStats($data)
 {
@@ -18,6 +19,7 @@ function getStats($data)
     return ($stats);
 }
 
+require_once Yii::getAlias('@app/views/include/functions.php');
 
 ?>
 <!DOCTYPE html>
@@ -101,12 +103,6 @@ function getStats($data)
             }
         }
 
-        function escapeHtml(str) {
-            var div = document.createElement('div');
-            div.appendChild(document.createTextNode(str));
-            return div.innerHTML;
-        }
-
         function editQuestion(url) {
             var iframeElement = document.createElement("iframe");
 
@@ -122,6 +118,7 @@ function getStats($data)
             iframeContainer.appendChild(iframeElement);
         }
     </script>
+
 </head>
 
 <body>
@@ -148,7 +145,7 @@ function getStats($data)
             <div class="col">
                 <form class="answers">
                     <div class="question" id="question<?= $question['id'] ?>">
-<?= $question['question']; ?>
+<?= escapeHtmlExceptTags($question['question']); ?>
                     </div>
             </div>
 
