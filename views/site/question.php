@@ -21,7 +21,7 @@ $noAnswers = count($answers);
 require_once Yii::getAlias('@app/views/include/functions.php');
 
 
-// for proper formatting teh answer, I need to know if long words occur.
+// for proper formatting the answer, I need to know if long words occur.
 function hasLongAnswer($string, $maxLength = 60)
 {
     if (strlen($string) > 70)
@@ -42,13 +42,14 @@ $returnUrl = Yii::$app->session->get('viewReturnUrl', '');
 if ($selectedRecords == null) {
     $prevRecordId = null;
     $nextRecordId = null;
+    $vraagNr = [1, 0];
 } else {
     $currentRecordId = $question['id'];
     $currentPosition = array_search($currentRecordId, $selectedRecords);
     $prevRecordId = $currentPosition > 0 ? $selectedRecords[$currentPosition - 1] : null;
     $nextRecordId = $currentPosition < count($selectedRecords) - 1 ? $selectedRecords[$currentPosition + 1] : null;
+    $vraagNr = [count($selectedRecords), $currentPosition];
 }
-
 
 ?>
 
@@ -254,8 +255,18 @@ if ($selectedRecords == null) {
                 <?= $title ?>
             </h1>
             <p>vraag
-                <?= $submission['no_answered'] + 1 ?> van
-                <?= $submission['no_questions'] ?>
+            <?php
+                if ($submission['id'] != 0) { 
+                    echo $submission['no_answered'] + 1;
+                    echo " van ";
+                    echo $submission['no_questions'];
+                } else {
+                    echo $vraagNr[0] - $vraagNr[1];
+                    echo " van ";
+                    echo $vraagNr[0];
+
+                }
+            ?>
             </p>
         </div>
     </div>
@@ -269,7 +280,13 @@ if ($selectedRecords == null) {
     <div class="container text-center">
         <div class="row d-flex justify-content-center align-items-start">
             <div class="col-12 question-title">Vraag
-                <?= $submission['no_answered'] + 1 ?>
+                <?php
+                    if ($submission['id'] != 0) { 
+                        echo $submission['no_answered'] + 1;
+                    } else {
+                        echo $vraagNr[0] - $vraagNr[1]; 
+                    }
+                ?>
             </div>
 
             <div class="question-block">

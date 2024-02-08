@@ -263,7 +263,7 @@ class QuestionController extends Controller
 
         if ($result['count'] > 0) {
             Yii::$app->session->setFlash('error', 'Question cannot be deleted because it is linked to a quiz.');
-            return $this->redirect(['index', 'show' => $show]);
+            return $this->redirect(Yii::$app->request->referrer);
         }
 
         $this->findModel($id)->delete();
@@ -276,7 +276,7 @@ class QuestionController extends Controller
         Yii::$app->db->createCommand($sql)->execute();
 
         Yii::$app->session->setFlash('success', 'Question deleted.');
-        return $this->redirect(['index', 'show' => $show]);
+        return $this->redirect(Yii::$app->request->referrer);
     }
 
     /**
