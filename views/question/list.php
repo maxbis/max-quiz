@@ -77,6 +77,15 @@ require_once Yii::getAlias('@app/views/include/functions.php');
             color: darkblue;
             display: none;
         }
+
+        @keyframes breathe {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(2); }
+        }
+
+        .breathing {
+            animation: breathe 1s ease-in-out infinite;
+        }
     </style>
     <script>
         function highlightCheckbox(questionId, answerNo) {
@@ -119,6 +128,18 @@ require_once Yii::getAlias('@app/views/include/functions.php');
 
         document.addEventListener('DOMContentLoaded', function () {
             window.scrollBy(0, -120);
+
+            var hash = window.location.hash; // Get the anchor from the URL
+            if (hash) {
+                var targetDiv = document.querySelector(hash);
+                if (targetDiv) {
+                    targetDiv.classList.add('breathing');
+                    targetDiv.innerHTML = targetDiv.innerHTML + 'last edited';
+                    setTimeout(() => {
+                        targetDiv.classList.remove('breathing');
+                    }, 1000); 
+                }
+            }
         });
     </script>
 
@@ -132,8 +153,8 @@ require_once Yii::getAlias('@app/views/include/functions.php');
 
     <?php $index = 1;
     foreach ($questions as $question): ?>
-        <div id="<?= 'q' . $question['id'] ?>" style="display:flex;margin-bottom:5px;">
-            <div style="color: darkblue;font-weight: bold;">
+        <div style="display:flex;margin-bottom:5px">
+            <div id="<?= 'q' . $question['id'] ?>" style="color: darkblue;font-weight: bold;">
                 <?= "Question " . ($index++) ?>
             </div>
             <div id="stats<?= $question['id'] ?>" class="stats" style="">
