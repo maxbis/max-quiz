@@ -1,6 +1,10 @@
 <!DOCTYPE html>
 <html>
 
+<?php
+require_once Yii::getAlias('@app/views/include/functions.php');
+?>
+
 <head>
     <title>Multiple Choice Quiz</title>
     <style>
@@ -55,7 +59,7 @@
     foreach ($questions as $question) : ?>
         <div class="question>">
             <div style="color: darkblue;font-weight: bold;"><?= "Question " . $question['id'] ?></div>
-            <pre><?= $question['question']; ?></pre>
+<?= escapeHtmlExceptTags($question['question']); ?>
             <hr>
             <div class="pagebreak"> </div>
         </div>
