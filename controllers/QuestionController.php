@@ -236,7 +236,7 @@ class QuestionController extends Controller
         }
 
         // save refererer in session
-        Yii::$app->user->returnUrl = Yii::$app->request->referrer;
+        Yii::$app->user->returnUrl = Yii::$app->request->referrer."#q".$id;
         // dd(Yii::$app->user->returnUrl);
 
         return $this->render('update', [

@@ -77,7 +77,6 @@ require_once Yii::getAlias('@app/views/include/functions.php');
             color: darkblue;
             display: none;
         }
-
     </style>
     <script>
         function highlightCheckbox(questionId, answerNo) {
@@ -117,6 +116,10 @@ require_once Yii::getAlias('@app/views/include/functions.php');
             // Append the iframe to the container
             iframeContainer.appendChild(iframeElement);
         }
+
+        document.addEventListener('DOMContentLoaded', function () {
+            window.scrollBy(0, -120);
+        });
     </script>
 
 </head>
@@ -126,9 +129,10 @@ require_once Yii::getAlias('@app/views/include/functions.php');
         <?= $quiz['name']; ?>
     </h1>
 
+
     <?php $index = 1;
     foreach ($questions as $question): ?>
-        <div style="display:flex;margin-bottom:5px;">
+        <div id="<?= 'q' . $question['id'] ?>" style="display:flex;margin-bottom:5px;">
             <div style="color: darkblue;font-weight: bold;">
                 <?= "Question " . ($index++) ?>
             </div>
@@ -152,39 +156,39 @@ require_once Yii::getAlias('@app/views/include/functions.php');
             <div class="col" style="border-left:1px dashed blue;">
                 <label id="answer-<?= $question['id'] ?>-1">
                     a) <input type="checkbox" name="answer1" value="a1">
-                    <?= $question['a1']; ?>
+                    <?= Html::encode($question['a1']); ?>
                 </label>
                 <br>
                 <label id="answer-<?= $question['id'] ?>-2">
                     b) <input type="checkbox" name="answer2" value="a2">
-                    <?= $question['a2']; ?>
+                    <?= Html::encode($question['a2']); ?>
                 </label>
                 <br>
                 <?php if (!empty($question['a3'])): ?>
                     <label id="answer-<?= $question['id'] ?>-3">
                         c) <input type="checkbox" name="answer3" value="a3">
-                        <?= $question['a3']; ?>
+                        <?= Html::encode($question['a3']); ?>
                     </label>
                 <?php endif; ?>
                 <br>
                 <?php if (!empty($question['a4'])): ?>
                     <label id="answer-<?= $question['id'] ?>-4">
                         d) <input type="checkbox" name="answer4" value="a4">
-                        <?= $question['a4']; ?>
+                        <?= Html::encode($question['a4']); ?>
                     </label>
                 <?php endif; ?>
                 <br>
                 <?php if (!empty($question['a5'])): ?>
                     <label id="answer-<?= $question['id'] ?>-5">
                         e) <input type="checkbox" name="answer5" value="a5">
-                        <?= $question['a5']; ?>
+                        <?= Html::encode($question['a5']); ?>
                     </label>
                 <?php endif; ?>
                 <br>
                 <?php if (!empty($question['a6'])): ?>
                     <label id="answer-<?= $question['id'] ?>-6">
                         f) <input type="checkbox" name="answer6" value="a6">
-                        <?= $question['a6']; ?>
+                        <?= Html::encode($question['a6']); ?>
                     </label>
                 <?php endif; ?>
                 </form>
