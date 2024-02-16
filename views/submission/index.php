@@ -63,12 +63,36 @@ $params = Yii::$app->request->getQueryParams();
     .grid-view tr:hover {
         background-color: #e0e0e0;
     }
+
+    .dot {
+        height: 10px;
+        width: 10px;
+        border-radius: 50%;
+        display: inline-block;
+        margin-bottom: 5px;
+        margin-right: 5px;
+    }
+
+    .dot-red {
+        background-color: salmon;
+    }
+
+    .dot-green {
+        background-color: lightgreen;
+    }
 </style>
+
+<?php
+    $statusClass = $quizActive == 1 ? 'dot-green' : 'dot-red';
+?>
 
 <div class="row">
     <div class="col-md-10">
         <p style='color:#909090;font-size:16px;'>
-            <?= $this->title ?>
+            <h3>
+                <div class="dot <?= $statusClass ?>"></div>
+                <?= $this->title ?>
+            </h3>
         </p>
     </div>
     <div class="col-md-2 d-flex align-items-end">
@@ -108,7 +132,12 @@ $params = Yii::$app->request->getQueryParams();
         };
         ?>
 
-        <?php Pjax::begin(['id' => 'myPjaxGridView', 'timeout' => 10000, 'enablePushState' => false]); ?>
+        <?php
+            if ( $quizActive ) {
+                Pjax::begin(['id' => 'myPjaxGridView', 'timeout' => 10000, 'enablePushState' => false]);
+                echo "Active";
+            }
+        ?>
 
         <?= GridView::widget([
             'dataProvider' => $dataProvider,
@@ -328,7 +357,10 @@ $params = Yii::$app->request->getQueryParams();
 
         ]);
 
-        Pjax::end();
+        if ( $quizActive ) {
+            Pjax::end();
+        }
+       
 
         $script = <<<JS
 

@@ -69,6 +69,10 @@ class SubmissionController extends Controller
             $quiz = Quiz::findOne($quiz_id);
             if ($quiz !== null) {
                 $quizName = $quiz->name;
+                $quizActive = $quiz->active;
+            } else {
+                $quizName = "";
+                $quizActive = false;
             }
         }
 
@@ -76,6 +80,7 @@ class SubmissionController extends Controller
             'searchModel' => $searchModel,
             'dataProvider' => $dataProvider,
             'quizName' => $quizName,
+            'quizActive' => $quizActive,
         ]);
     }
 
