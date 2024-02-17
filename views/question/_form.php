@@ -139,6 +139,12 @@ use yii\widgets\ActiveForm;
                     $returnUrl = Yii::$app->request->referrer;
                 }
                 echo Html::a('Back', $returnUrl, ['class' => 'btn btn-primary quiz-button']);
+
+                $url = Yii::$app->urlManager->createUrl(['/question/copy', 'id' => $model['id']]);
+                echo Html::a('Copy', $url, [
+                    'title' => 'Copy Question',
+                    'class' => 'btn btn-warning quiz-button',
+                ]);
             ?>
         </div>
 

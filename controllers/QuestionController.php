@@ -203,7 +203,8 @@ class QuestionController extends Controller
 
         $sql = "select q.id, q.name, qq.active from quiz q
             left join quizquestion qq on qq.quiz_id = q.id 
-            and qq.active = 1 and qq.question_id=$id";
+            and qq.active = 1 and qq.question_id=$id
+            order by q.name ASC";
         $questionLinks = Yii::$app->db->createCommand($sql)->queryAll();
 
         if ($this->request->isPost && $model->load($this->request->post())) {

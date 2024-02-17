@@ -153,7 +153,7 @@ require_once Yii::getAlias('@app/views/include/functions.php');
 
     <?php $index = 1;
     foreach ($questions as $question): ?>
-        <div style="display:flex;margin-bottom:5px">
+        <div style="display:flex;margin-bottom:5px;">
             <div id="<?= 'q' . $question['id'] ?>" style="color: darkblue;font-weight: bold;">
                 <?= "Question " . ($index++) ?>
             </div>
