@@ -215,7 +215,7 @@ $this->registerJs($js); // Register the JavaScript code
                             <?php
                             $id = $quiz['id'];
                             $aantalQuestion = $quizCounts[$id] ?? 0;
-                            $maxQuestions = $model['no_questions'] ?? $aantalQuestion;
+                            $maxQuestions = $quiz['no_questions'] ?? $aantalQuestion;
                             echo "{$maxQuestions} from {$aantalQuestion}";
                             ?>
                         </td>

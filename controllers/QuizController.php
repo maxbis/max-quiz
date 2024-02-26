@@ -94,8 +94,8 @@ class QuizController extends Controller
             $quizCounts[$result['quiz_id']] = (int) $result['count'];
         }
 
-        $searchModel = new QuizSearch();
-        $dataProvider = $searchModel->search($this->request->queryParams);
+        // $searchModel = new QuizSearch();
+        // $dataProvider = $searchModel->search($this->request->queryParams);
 
         // sort on names containing a . first and second on name
         $sql = "select * from quiz order by CASE WHEN name LIKE '%.%' THEN 1 ELSE 2 END, name";

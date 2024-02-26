@@ -2,6 +2,8 @@
 
 use yii\helpers\Html;
 
+require_once Yii::getAlias('@app/views/include/functions.php');
+
 ?>
 
 <!DOCTYPE html>
@@ -25,7 +27,7 @@ use yii\helpers\Html;
             box-shadow: 3px 3px 5px #888888;
             margin-bottom: 40px;
             font-family: monospace;
-            max-width: 600px;
+            max-width: 1000px;
         }
 
         pre {
@@ -107,8 +109,7 @@ use yii\helpers\Html;
         <?php
             echo "<div class=\"question-container\" >";
             if (array_key_exists($thisQuestionId, $questionsById)) {
-                echo "<p>" . $questionsById[$thisQuestionId]['question'] . "</p>";
-                echo "<br>";
+echo  "<p>" . escapeHtmlExceptTags( $questionsById[$thisQuestionId]['question'] ) . "</p><br>";
                 // echo $answerArray[$i];
                 // echo $questionsById[$thisQuestionId]['correct'];
                 if ( isset($answerArray[$i]) && $answerArray[$i] ) {
