@@ -68,14 +68,13 @@ if ($selectedRecords == null) {
     <style>
         .background-image {
             position: relative;
-            background: linear-gradient(to bottom, rgba(255, 255, 255, 1) 200px, rgba(255, 255, 255, 0.85) 100%),
+            background: linear-gradient(to bottom, rgba(255, 255, 255, 1) 200px, rgba(255, 255, 255, 0.85) 80%, rgba(255, 255, 255, 1) 100% ),
                 url('<?= Url::to('@web/img/classroom.webp') ?>');
             background-size: cover;
             background-position: center;
-            height: 100vh;
+            height: 100%;
             /* Full height of the viewport */
         }
-
         .answer {
             padding: 15px;
             border: 2px solid #ddd;
