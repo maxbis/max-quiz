@@ -134,7 +134,7 @@ $params = Yii::$app->request->getQueryParams();
 
         <?php
             if ( $quizActive ) {
-                Pjax::begin(['id' => 'myPjaxGridView', 'timeout' => 10000, 'enablePushState' => false]);
+                Pjax::begin(['id' => 'myPjaxGridView', 'timeout' => false, 'enablePushState' => true]);
                 echo "Active";
             }
         ?>
@@ -392,8 +392,6 @@ $params = Yii::$app->request->getQueryParams();
         $this->registerJs($script);
 
         ?>
-
-
 
     </div>
 </div>
