@@ -30,6 +30,8 @@ The framework Yii will give pretty clear hints for this.
 
 The Yii app can be opened by navigating to the web directory, all routes mentioned in this document are relative to this directory.
 
+(this documentation needs to be updated)
+
 ### Students view
 
 [![image-1704213000660.png](https://www.roc.ovh/uploads/images/gallery/2024-01/scaled-1680-/image-1704213000660.png)](https://www.roc.ovh/uploads/images/gallery/2024-01/image-1704213000660.png)
