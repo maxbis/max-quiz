@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: 127.0.0.1
--- Generation Time: Jan 13, 2024 at 10:57 AM
+-- Generation Time: Apr 28, 2024 at 11:38 AM
 -- Server version: 10.4.28-MariaDB
 -- PHP Version: 8.0.25
 
@@ -67,10 +67,11 @@ CREATE TABLE `quiz` (
   `id` int(11) NOT NULL,
   `name` varchar(40) NOT NULL,
   `password` varchar(20) NOT NULL,
-  `active` tinyint(1) NOT NULL,
+  `active` tinyint(1) NOT NULL DEFAULT 0,
   `no_questions` int(11) DEFAULT NULL,
-  `review` int(11) DEFAULT NULL,
-  `blind` tinyint(1) DEFAULT NULL
+  `review` int(11) DEFAULT 0,
+  `blind` int(11) NOT NULL DEFAULT 0,
+  `ip_check` int(11) NOT NULL DEFAULT 0
 ) ENGINE=InnoDB DEFAULT CHARSET=utf32 COLLATE=utf32_general_ci;
 
 -- --------------------------------------------------------
@@ -160,7 +161,8 @@ ALTER TABLE `quizquestion`
 --
 ALTER TABLE `submission`
   ADD PRIMARY KEY (`id`),
-  ADD UNIQUE KEY `token` (`token`);
+  ADD UNIQUE KEY `token` (`token`),
+  ADD KEY `quiz_id` (`quiz_id`);
 
 --
 -- Indexes for table `tbl_user`
