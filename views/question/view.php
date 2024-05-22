@@ -151,7 +151,7 @@ $this->params['breadcrumbs'][] = $this->title;
             'correct',
             'label',
         ],
-        'options' => [
+         'options' => [
             'class' => 'table table-striped table-bordered detail-view',
             'style' => 'width: 600px;', // Inline CSS to set the width
         ],

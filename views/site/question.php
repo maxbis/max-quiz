@@ -360,6 +360,12 @@ echo escapeHtmlExceptTags($question['question']);
                         'title' => 'Copy Question',
                         'class' => 'btn btn-outline-secondary quiz-button',
                     ]);
+                    $url = Yii::$app->urlManager->createUrl(['/question/alternative', 'id' => $question['id']]);
+                    echo Html::a('Alternative', $url, [
+                        'id' => 'submitButton-org2',
+                        'title' => 'Create alternative question',
+                        'class' => 'btn btn-outline-secondary quiz-button',
+                    ]);
                     echo Html::a('Back', $returnUrl, [
                         'id' => 'submitButton-org2',
                         'title' => 'Back',

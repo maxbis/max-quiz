@@ -112,7 +112,7 @@ use yii\widgets\ActiveForm;
 
         <hr>
 
-        <?php if (isset($questionLinks)) { ?>
+        <?php if (isset($questionLinks) && $questionLinks != '' ) { ?>
             <div class="row justify-content-start">
                 <?php
                 foreach ($questionLinks as $link) {

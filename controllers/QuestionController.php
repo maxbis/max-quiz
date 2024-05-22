@@ -8,13 +8,15 @@ use yii\web\Controller;
 use yii\web\NotFoundHttpException;
 use yii\filters\VerbFilter;
 
-use yii\helpers\ArrayHelper;;
+use yii\helpers\ArrayHelper;
+;
 
 use yii\filters\AccessControl;
 
 use Yii;
 use app\models\Quizquestion;
 
+use yii\httpclient\Client;
 
 /**
  * QuestionController implements the CRUD actions for Question model!
@@ -125,8 +127,14 @@ class QuestionController extends Controller
     public function actionView($id)
     {
         $submission = [
-            'id' => 0, 'token' => '', 'first_name' => '', 'last_name' => '', 'class' => '',
-            'quiz_id' => '', 'no_answered' => 0, 'no_questions' => 1
+            'id' => 0,
+            'token' => '',
+            'first_name' => '',
+            'last_name' => '',
+            'class' => '',
+            'quiz_id' => '',
+            'no_answered' => 0,
+            'no_questions' => 1
         ];
         $sql = "select * from question where id=" . $id;
         $question = Yii::$app->db->createCommand($sql)->queryOne();
@@ -232,12 +240,12 @@ class QuestionController extends Controller
             }
 
             // get return URL from session
-            $returnUrl = Yii::$app->user->returnUrl ?: ['/question/view', 'id' => $id];            
+            $returnUrl = Yii::$app->user->returnUrl ?: ['/question/view', 'id' => $id];
             return $this->redirect($returnUrl);
         }
 
         // save refererer in session
-        Yii::$app->user->returnUrl = Yii::$app->request->referrer."#q".$id;
+        Yii::$app->user->returnUrl = Yii::$app->request->referrer . "#q" . $id;
         // dd(Yii::$app->user->returnUrl);
 
         return $this->render('update', [
@@ -335,10 +343,10 @@ class QuestionController extends Controller
     }
 
     public function actionImport($quiz_id, $input = "")
-    {      
+    {
         $sql = "select * from quiz where id=$quiz_id";
         $quiz = Yii::$app->db->createCommand($sql)->queryOne();
-        return $this->render('import', ['input' => $input, 'quiz' => $quiz ]);
+        return $this->render('import', ['input' => $input, 'quiz' => $quiz]);
     }
 
     private function parseBulkInput($input)
@@ -405,7 +413,8 @@ class QuestionController extends Controller
             }
         }
         if ($currentData) {
-            $thisQuestion[$currentKey] = $trimEmptyLines($currentData);;
+            $thisQuestion[$currentKey] = $trimEmptyLines($currentData);
+            ;
         }
         array_push($questions, $thisQuestion); // save the last question
 
@@ -464,7 +473,7 @@ class QuestionController extends Controller
         if ($label <> "") {
             $question->label = $label;
         } else {
-            $question->label =  $questionData['label'] ?? 'Imported';
+            $question->label = $questionData['label'] ?? 'Imported';
         }
 
         if ($question->save()) {
@@ -567,7 +576,7 @@ class QuestionController extends Controller
     public function actionMultipleUpdate($quiz_id)
     {
         // Example: Load multiple models (adjust the query as needed)
-        $models =   Question::find()->joinWith('quizquestions')
+        $models = Question::find()->joinWith('quizquestions')
             ->where(['quizquestion.quiz_id' => $quiz_id, 'quizquestion.active' => 1])
             ->all();
 
@@ -576,8 +585,8 @@ class QuestionController extends Controller
                 foreach ($models as $model) {
                     $model->save(false); // Save without validation as it's already done
                 }
-                
-                $returnUrl = Yii::$app->user->returnUrl ?: ['/question/index', 'quiz_id' => $quiz_id];            
+
+                $returnUrl = Yii::$app->user->returnUrl ?: ['/question/index', 'quiz_id' => $quiz_id];
                 return $this->redirect($returnUrl);
             }
         }
@@ -585,5 +594,104 @@ class QuestionController extends Controller
         Yii::$app->user->returnUrl = Yii::$app->request->referrer;
         return $this->render('multipleUpdate', ['models' => $models]);
     }
+
+    public function actionAlternative($question_id, $quiz_id)
+    {
+        $model = Question::findOne($question_id);
+        if ($model === null) {
+            throw new NotFoundHttpException('The requested question does not exist.');
+        }
+
+        $data = $model->toArray();
+        $json = json_encode($data);
+
+        $apiKey = Yii::$app->params['openApiKey'];
+
+        $prompt = "Genereer een alternatieve vraag voor een quiz.";
+        $prompt .= "Het formaat van de vraag is als volgt: QQ\nDan volgt de vraag\nAC\nCorrecte antwoord\nAA\nAlternatief antwoord\nAA\nAlternatief antwoord\nAA\nAlternatief antwoord\nAA\nAlternatief antwoord\nLL\nLabel van de vraag\n";
+        $prompt .= "Voor vragen die code snippets bevatten, gebruik <pre></pre> tags voor een juiste opmaak.";
+        $prompt .= "Genereer op basis van de voorbeeld een alternatieve vraag in een iets andere context en geef de output in het hierboven beschreven formaat.";
+        $prompt .= "QQ\n{$model->question}\n";
+        $prompt .= "AC\n{$model->a1}\n";
+        $prompt .= "AA\n{$model->a2}\n";
+        $prompt .= !empty($model->a3) ? "AA\n{$model->a3}\n" : "";
+        $prompt .= !empty($model->a4) ? "AA\n{$model->a4}\n" : "";
+        $prompt .= !empty($model->a5) ? "AA\n{$model->a5}\n" : "";
+        $prompt .= !empty($model->a6) ? "AA\n{$model->a6}\n" : "";
+        $prompt .= "LL\n{$model->label}";
+
+        // $prompt = "Genereer een alternatieve vraag voor een quiz.";
+        // $prompt .= "Het formaat van de vraag is zoals in de voorbeeld vraag in JSON.";
+        // $prompt .= "Voor vragen die code snippets bevatten, gebruik <pre></pre> tags voor een juiste opmaak.";
+        // $prompt .= "Genereer op basis van de voorbeeld een alternatieve vraag in een iets andere context en geef de output JSON.";
+        // $prompt .= "Hier is de JSON:\n";
+        // $prompt .= $json;
+
+        $messages = [
+            ["role" => "system", "content" => "You are a teacher who designs questions for students."],
+            ["role" => "user", "content" => $prompt]
+        ];
+
+        // Prepare the request data for OpenAPI
+        $requestData = [
+            'model' => 'gpt-3.5-turbo',
+            'content' => $messages,
+            'max_tokens' => 150, // Adjust based on your needs
+            'temperature' => 0.7, // Adjust based on your needs
+        ];
+
+        // Create HTTP client and send request to OpenAPI
+        $client = new Client([
+            'baseUrl' => 'https://api.openai.com/v1/chat/completions',
+        ]);
+
+        $response = $client->createRequest()
+            ->setMethod('POST')
+            ->setHeaders(['Authorization' => 'Bearer ' . $apiKey])
+            ->setFormat(Client::FORMAT_JSON)
+            ->setData([
+                'model' => 'gpt-3.5-turbo',
+                'messages' => [
+                    [
+                        'role' => 'system',
+                        'content' => 'You are a helpful assistant.'
+                    ],
+                    [
+                        'role' => 'user',
+                        'content' => $prompt
+                    ]
+                ],
+                'max_tokens' => 150,
+                'temperature' => 0.7,
+            ])
+            ->send();
+
+        $results = $response->data['choices'][0]['message']['content'];
+
+        $sql = "select * from quiz where id=$quiz_id";
+        $quiz = Yii::$app->db->createCommand($sql)->queryOne();
+
+        return $this->render('import', ['input' => $results, 'quiz' => $quiz]);
+
+        dd($response->data['choices'][0]['message']['content']);
+
+        // Check if the request was successful
+        if ($response->isOk) {
+            // Decode the response
+            $alternativeQuestion = $response->data['choices'][0]['message']['content'];
+            dd($alternativeQuestion);
+
+            // Return the alternative question
+            return $this->render('alternative', [
+                'originalQuestion' => $model,
+                'alternativeQuestion' => $alternativeQuestion,
+            ]);
+        } else {
+            echo "<h2>Error</h2>";
+            dd($response);
+        }
+
+    }
+
 
 }
