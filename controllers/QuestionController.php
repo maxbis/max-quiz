@@ -9,6 +9,7 @@ use yii\web\NotFoundHttpException;
 use yii\filters\VerbFilter;
 
 use yii\helpers\ArrayHelper;
+
 ;
 
 use yii\filters\AccessControl;
@@ -595,7 +596,7 @@ class QuestionController extends Controller
         return $this->render('multipleUpdate', ['models' => $models]);
     }
 
-    public function actionAlternative($question_id, $quiz_id)
+    public function actionAlternative($question_id)
     {
         $model = Question::findOne($question_id);
         if ($model === null) {
@@ -608,9 +609,10 @@ class QuestionController extends Controller
         $apiKey = Yii::$app->params['openApiKey'];
 
         $prompt = "Genereer een alternatieve vraag voor een quiz.";
-        $prompt .= "Het formaat van de vraag is als volgt: QQ\nDan volgt de vraag\nAC\nCorrecte antwoord\nAA\nAlternatief antwoord\nAA\nAlternatief antwoord\nAA\nAlternatief antwoord\nAA\nAlternatief antwoord\nLL\nLabel van de vraag\n";
+        $prompt .= "Het formaat van de vraag is als volgt: QQ\nDan volgt de vraag\nAC\nCorrecte antwoord\nAA\nAlternatief antwoord\nAA\nAlternatief antwoord\nAA\nAlternatief antwoord\nAA\nAlternatief antwoord\nAA\nAlternatief antwoord\nLL\nLabel van de vraag\n";
         $prompt .= "Voor vragen die code snippets bevatten, gebruik <pre></pre> tags voor een juiste opmaak.";
-        $prompt .= "Genereer op basis van de voorbeeld een alternatieve vraag in een iets andere context en geef de output in het hierboven beschreven formaat.";
+        $prompt .= "Genereer op basis van de voorbeeld twee alternatieve vragen in een andere context maar over hetzelfde onderwerp en zelfde (code) taal.";
+        $prompt .= "Geef de output in het hierboven beschreven formaat.";
         $prompt .= "QQ\n{$model->question}\n";
         $prompt .= "AC\n{$model->a1}\n";
         $prompt .= "AA\n{$model->a2}\n";
@@ -620,25 +622,15 @@ class QuestionController extends Controller
         $prompt .= !empty($model->a6) ? "AA\n{$model->a6}\n" : "";
         $prompt .= "LL\n{$model->label}";
 
-        // $prompt = "Genereer een alternatieve vraag voor een quiz.";
-        // $prompt .= "Het formaat van de vraag is zoals in de voorbeeld vraag in JSON.";
-        // $prompt .= "Voor vragen die code snippets bevatten, gebruik <pre></pre> tags voor een juiste opmaak.";
-        // $prompt .= "Genereer op basis van de voorbeeld een alternatieve vraag in een iets andere context en geef de output JSON.";
-        // $prompt .= "Hier is de JSON:\n";
-        // $prompt .= $json;
+        $results = $this->openAI($prompt);
 
-        $messages = [
-            ["role" => "system", "content" => "You are a teacher who designs questions for students."],
-            ["role" => "user", "content" => $prompt]
-        ];
+        return $this->render('import', ['input' => $results, 'quiz' => null]);
+        dd($response->data);
 
-        // Prepare the request data for OpenAPI
-        $requestData = [
-            'model' => 'gpt-3.5-turbo',
-            'content' => $messages,
-            'max_tokens' => 150, // Adjust based on your needs
-            'temperature' => 0.7, // Adjust based on your needs
-        ];
+    }
+    private function openAI($prompt)
+    {
+        $apiKey = Yii::$app->params['openApiKey'];
 
         // Create HTTP client and send request to OpenAPI
         $client = new Client([
@@ -654,44 +646,20 @@ class QuestionController extends Controller
                 'messages' => [
                     [
                         'role' => 'system',
-                        'content' => 'You are a helpful assistant.'
+                        'content' => 'You are a teacher who designs questions for students.'
                     ],
                     [
                         'role' => 'user',
                         'content' => $prompt
                     ]
                 ],
-                'max_tokens' => 150,
-                'temperature' => 0.7,
+                'max_tokens' => 750,
+                'temperature' => 0.8,
             ])
             ->send();
 
-        $results = $response->data['choices'][0]['message']['content'];
-
-        $sql = "select * from quiz where id=$quiz_id";
-        $quiz = Yii::$app->db->createCommand($sql)->queryOne();
-
-        return $this->render('import', ['input' => $results, 'quiz' => $quiz]);
-
-        dd($response->data['choices'][0]['message']['content']);
-
-        // Check if the request was successful
-        if ($response->isOk) {
-            // Decode the response
-            $alternativeQuestion = $response->data['choices'][0]['message']['content'];
-            dd($alternativeQuestion);
-
-            // Return the alternative question
-            return $this->render('alternative', [
-                'originalQuestion' => $model,
-                'alternativeQuestion' => $alternativeQuestion,
-            ]);
-        } else {
-            echo "<h2>Error</h2>";
-            dd($response);
-        }
+        return $response->data['choices'][0]['message']['content'];
 
     }
-
 
 }

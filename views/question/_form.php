@@ -145,6 +145,12 @@ use yii\widgets\ActiveForm;
                     'title' => 'Copy Question',
                     'class' => 'btn btn-warning quiz-button',
                 ]);
+
+                $url = Yii::$app->urlManager->createUrl(['/question/alternative', 'question_id' => $model['id']]);
+                echo Html::a('Alternative (AI)', $url, [
+                    'title' => 'Alternative Question (AI)',
+                    'class' => 'btn btn-danger quiz-button',
+                ]);
             ?>
         </div>
 
