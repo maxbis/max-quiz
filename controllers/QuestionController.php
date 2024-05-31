@@ -459,11 +459,11 @@ class QuestionController extends Controller
         if ($question === null) { // nothing to update
             $questionText = rtrim($questionData['question'], "\r\n");
 
-            // Check for duplicate
-            $existingQuestion = Question::find()->where(['like', 'question', $questionText . '%', false])->one();
-            if ($existingQuestion !== null) {
-                return -1;
-            }
+            // Check for duplicate - oops sometimes questions are the same!
+            // $existingQuestion = Question::find()->where(['like', 'question', $questionText . '%', false])->one();
+            // if ($existingQuestion !== null) {
+            //     return -1;
+            // }
             $question = new Question();
         }
 
@@ -480,6 +480,8 @@ class QuestionController extends Controller
         } else {
             $question->label = $questionData['label'] ?? 'Imported';
         }
+
+        // dd($question);
 
         if ($question->save()) {
             $succes++;
