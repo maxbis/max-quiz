@@ -35,6 +35,10 @@ require_once Yii::getAlias('@app/views/include/functions.php');
             box-shadow: 3px 3px 5px #888888;
             margin-bottom: 40px;
             font-family: monospace;
+            font-size:24px;
+        }
+        .question-container pre {
+            font-size: 26px;
         }
 
         .question {
@@ -79,8 +83,15 @@ require_once Yii::getAlias('@app/views/include/functions.php');
         }
 
         @keyframes breathe {
-            0%, 100% { transform: scale(1); }
-            50% { transform: scale(2); }
+
+            0%,
+            100% {
+                transform: scale(1);
+            }
+
+            50% {
+                transform: scale(2);
+            }
         }
 
         .breathing {
@@ -137,7 +148,7 @@ require_once Yii::getAlias('@app/views/include/functions.php');
                     targetDiv.innerHTML = targetDiv.innerHTML + 'last edited';
                     setTimeout(() => {
                         targetDiv.classList.remove('breathing');
-                    }, 1000); 
+                    }, 1000);
                 }
             }
         });
@@ -151,7 +162,13 @@ require_once Yii::getAlias('@app/views/include/functions.php');
     </h1>
 
 
-    <?php $index = 1;
+    <?php
+    // escape HTML tags to dispay properly in browser and 
+    // don't convert pre and code becasue these are used for formatting.
+    // function escapeHtmlExceptTags($html, $deleteTags = [], $allowedTags = ['pre', 'code', 'i', 'b'])
+    require_once Yii::getAlias('@app/views/include/functions.php');
+
+    $index = 1;
     foreach ($questions as $question): ?>
         <div style="display:flex;margin-bottom:5px;">
             <div id="<?= 'q' . $question['id'] ?>" style="color: darkblue;font-weight: bold;">
@@ -167,51 +184,33 @@ require_once Yii::getAlias('@app/views/include/functions.php');
         </div>
 
         <div class="question-container row">
-            <div class="col">
+            <div class="_col">
                 <form class="answers">
                     <div class="question" id="question<?= $question['id'] ?>">
-<?= escapeHtmlExceptTags($question['question']); ?>
+<?= escapeHtmlExceptTags($question['question'] ); ?>
                     </div>
             </div>
 
-            <div class="col" style="border-left:1px dashed blue;">
-                <label id="answer-<?= $question['id'] ?>-1">
-                    a) <input type="checkbox" name="answer1" value="a1">
-                    <?= Html::encode($question['a1']); ?>
-                </label>
-                <br>
-                <label id="answer-<?= $question['id'] ?>-2">
-                    b) <input type="checkbox" name="answer2" value="a2">
-                    <?= Html::encode($question['a2']); ?>
-                </label>
-                <br>
-                <?php if (!empty($question['a3'])): ?>
-                    <label id="answer-<?= $question['id'] ?>-3">
-                        c) <input type="checkbox" name="answer3" value="a3">
-                        <?= Html::encode($question['a3']); ?>
-                    </label>
-                <?php endif; ?>
-                <br>
-                <?php if (!empty($question['a4'])): ?>
-                    <label id="answer-<?= $question['id'] ?>-4">
-                        d) <input type="checkbox" name="answer4" value="a4">
-                        <?= Html::encode($question['a4']); ?>
-                    </label>
-                <?php endif; ?>
-                <br>
-                <?php if (!empty($question['a5'])): ?>
-                    <label id="answer-<?= $question['id'] ?>-5">
-                        e) <input type="checkbox" name="answer5" value="a5">
-                        <?= Html::encode($question['a5']); ?>
-                    </label>
-                <?php endif; ?>
-                <br>
-                <?php if (!empty($question['a6'])): ?>
-                    <label id="answer-<?= $question['id'] ?>-6">
-                        f) <input type="checkbox" name="answer6" value="a6">
-                        <?= Html::encode($question['a6']); ?>
-                    </label>
-                <?php endif; ?>
+            <div class="_col" style="border-top:1px dashed blue;">
+
+                <?php
+                $array = ['1','2','3','4','5','6'];
+                shuffle($array);
+                $questionLabel = 'a';
+                foreach($array as $item) {
+                    if (!empty($question['a'.$item])){
+                        // echo escapeHtmlExceptTags( $question['a'.$item] , ['pre']);
+                        ?>
+                            <label id="answer-<?= $question['id'].'-'.$item ?>">
+                                <?= $questionLabel ?> ) <input type="checkbox" name="answer<?= $item ?>" value="a<?= $item ?>">
+                                <?= escapeHtmlExceptTags( $question['a'.$item] , ['pre']) ?>
+                            </label>
+                            <br>
+                        <?php
+                        $questionLabel++;
+                    }
+                }
+                ?>
                 </form>
             </div>
 

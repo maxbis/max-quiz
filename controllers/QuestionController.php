@@ -630,7 +630,10 @@ class QuestionController extends Controller
     }
     private function openAI($prompt)
     {
-        $apiKey = Yii::$app->params['openApiKey'];
+        //$apiKey = Yii::$app->params['openApiKey'];
+
+        $secret = require __DIR__ . '/../config/secret.php';
+        $apiKey = $secret['openApiKey'];
 
         // Create HTTP client and send request to OpenAPI
         $client = new Client([
@@ -653,11 +656,15 @@ class QuestionController extends Controller
                         'content' => $prompt
                     ]
                 ],
-                'max_tokens' => 750,
-                'temperature' => 0.8,
+                'max_tokens' => 700,
+                'temperature' => 0.7,
             ])
             ->send();
 
+            if (! isset($response->data['choices'][0]['message']['content'])) {
+               dd($$response->data);
+            } 
+        
         return $response->data['choices'][0]['message']['content'];
 
     }
