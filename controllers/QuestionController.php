@@ -415,7 +415,6 @@ class QuestionController extends Controller
         }
         if ($currentData) {
             $thisQuestion[$currentKey] = $trimEmptyLines($currentData);
-            ;
         }
         array_push($questions, $thisQuestion); // save the last question
 
@@ -437,6 +436,10 @@ class QuestionController extends Controller
                 $no_succes += $this->insertQuestion($questionData, $action, $quiz_id, $label);
             }
         }
+
+        if ($no_succes == -1) {
+            $no_succes = 'import aborted, due to duplicates';
+        }
         Yii::$app->session->setFlash('success', ' Question(s) imported: ' . $no_succes);
 
         return $this->redirect(['/quiz/index']);
@@ -446,6 +449,7 @@ class QuestionController extends Controller
     private function insertQuestion($questionData, $mode, $quiz_id = null, $label = null)
     {
         $succes = 0;
+        $feedback = "";
         $question = null;
 
         // if mode is update and id give, retrieve existing question
@@ -455,11 +459,11 @@ class QuestionController extends Controller
         if ($question === null) { // nothing to update
             $questionText = rtrim($questionData['question'], "\r\n");
 
-            // Check for duplicate
-            $existingQuestion = Question::find()->where(['like', 'question', $questionText . '%', false])->one();
-            if ($existingQuestion !== null) {
-                return $succes;
-            }
+            // Check for duplicate - oops sometimes questions are the same!
+            // $existingQuestion = Question::find()->where(['like', 'question', $questionText . '%', false])->one();
+            // if ($existingQuestion !== null) {
+            //     return -1;
+            // }
             $question = new Question();
         }
 
@@ -476,6 +480,8 @@ class QuestionController extends Controller
         } else {
             $question->label = $questionData['label'] ?? 'Imported';
         }
+
+        // dd($question);
 
         if ($question->save()) {
             $succes++;
