@@ -191,7 +191,7 @@ require_once Yii::getAlias('@app/views/include/functions.php');
                     </div>
             </div>
 
-            <div class="_col" style="border-top:1px dashed blue;">
+            <div class="_col" style="border-top:1px dashed gray;margin-top:80px;">
 
                 <?php
                 $array = ['1','2','3','4','5','6'];
