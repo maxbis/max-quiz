@@ -179,6 +179,7 @@ class SubmissionController extends Controller
 
         $ip_address = Yii::$app->request->userIP;
         $user_agent = Yii::$app->request->userAgent;
+        $user_agent = substr($user_agent, 0, 200); // make sure $user_agent is no longer than 200 chars
 
         $sql = "insert into submission (token, first_name, last_name, class, question_order, no_questions, no_answered, no_correct, quiz_id, ip_address, user_agent, answer_order)
                 values ('$token', '$first_name', '$last_name', '$class', '$question_order', $no_questions, 0, 0, $quiz_id, '$ip_address', '$user_agent', '')";
