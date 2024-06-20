@@ -331,8 +331,21 @@ $params = Yii::$app->request->getQueryParams();
                     },
                 ],
                 [
+                    'attribute' => 'user_agent',
+                    'label' => 'User Agent',
+                    'headerOptions' => ['style' => 'width:90px;'],
+                    'value' => function($model) {
+                        // Split the user_agent by spaces and return the first word
+                        return strtok($model->user_agent, ' ');
+                    },
+                    'contentOptions' => function($model) {
+                        // Set the title attribute for the tooltip with the full user_agent
+                        return ['title' => $model->user_agent];
+                    },
+                ],
+                [
                     'attribute' => 'ip_address',
-                    'label' => 'ip',
+                    'label' => 'IP',
                     'headerOptions' => ['style' => 'width:60px;'],
                 ],
                 [

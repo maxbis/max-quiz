@@ -41,6 +41,7 @@ class Submission extends \yii\db\ActiveRecord
             [['start_time', 'end_time'], 'safe'],
             [['first_name', 'last_name'], 'string', 'max' => 40],
             [['class'], 'string', 'max' => 8],
+            [['user_agent'], 'string', 'max' => 200],
             [['question_order'], 'string', 'max' => 600],
             [['token'], 'unique'],
         ];

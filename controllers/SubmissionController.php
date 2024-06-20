@@ -178,9 +178,10 @@ class SubmissionController extends Controller
         $question_order = implode(" ", $questionIds); // serialize questions (questin ids seperated by spaces)
 
         $ip_address = Yii::$app->request->userIP;
+        $user_agent = Yii::$app->request->userAgent;
 
-        $sql = "insert into submission (token, first_name, last_name, class, question_order, no_questions, no_answered, no_correct, quiz_id, ip_address, answer_order)
-                values ('$token', '$first_name', '$last_name', '$class', '$question_order', $no_questions, 0, 0, $quiz_id, '$ip_address', '')";
+        $sql = "insert into submission (token, first_name, last_name, class, question_order, no_questions, no_answered, no_correct, quiz_id, ip_address, user_agent, answer_order)
+                values ('$token', '$first_name', '$last_name', '$class', '$question_order', $no_questions, 0, 0, $quiz_id, '$ip_address', '$user_agent', '')";
         $result = Yii::$app->db->createCommand($sql)->execute();
 
         $cookie = new Cookie([
