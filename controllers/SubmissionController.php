@@ -149,7 +149,7 @@ class SubmissionController extends Controller
         }
 
 
-        if ( $user_agent == "max-quiz" and $password=="" ) { // if user_agent is quiz client (max-quiz) and there''s only one quiz active, start that quiz.
+        if ( strtolower($user_agent) == "max-quiz" and $password=="" ) { // if user_agent is quiz client (max-quiz) and there''s only one quiz active, start that quiz.
             $sql = "select * from quiz where active = 1";
             $quiz = Yii::$app->db->createCommand($sql)->queryOne();
             if (count($quiz) != 1) {
