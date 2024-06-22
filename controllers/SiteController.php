@@ -148,7 +148,7 @@ class SiteController extends Controller
         } else {
             // quiz is finised, no current question left anymore
             // this could only happen if an answer is received on a finshed quiz
-            $submission['thisQuestion'] = -99;
+            return false
         }
 
         return $submission;
@@ -171,7 +171,7 @@ class SiteController extends Controller
             return $this->redirect(['submission/create']);
         }
         // are we (still) ready?
-        if ($submission && $submission['no_answered'] == $submission['no_questions'] || $submission['finished']) {
+        if ($submission['no_answered'] == $submission['no_questions'] || $submission['finished']) {
             return $this->redirect(['site/finished']);
         }
 
