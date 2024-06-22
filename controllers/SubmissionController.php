@@ -148,7 +148,7 @@ class SubmissionController extends Controller
             return $this->redirect(['/submission/create']);
         }
 
-
+        dd([strtolower($user_agent), $password]);
         if ( strtolower($user_agent) == "max-quiz" and $password=="" ) { // if user_agent is quiz client (max-quiz) and there''s only one quiz active, start that quiz.
             $sql = "select * from quiz where active = 1";
             $quiz = Yii::$app->db->createCommand($sql)->queryOne();

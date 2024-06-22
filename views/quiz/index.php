@@ -255,4 +255,6 @@ $this->registerJs($js);
 
 <p>
     <?= Html::a('➕ New Quiz', ['create'], ['title' => 'Create New Quiz', 'class' => 'btn btn-outline-success quiz-button']) ?>
+    &nbsp;&nbsp;&nbsp;
+    <?= Html::a('➕ Reset All', ['index', 'reset' => 1], ['title' => 'Disbale all quizes', 'class' => 'btn btn-outline-success quiz-button']) ?>
 </p>

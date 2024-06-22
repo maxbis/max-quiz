@@ -249,5 +249,7 @@ $this->registerJs($js); // Register the JavaScript code
 
     <p style='margin-top:30px;'>
         <?= Html::a('➕ New Quiz', ['create'], ['title' => 'Create New Quiz', 'class' => 'btn btn-outline-success quiz-button']) ?>
+        &nbsp;&nbsp;&nbsp;
+        <?= Html::a('Disable All', ['index', 'reset' => 1], ['title' => 'Disbale all quizes', 'class' => 'btn btn-outline-success quiz-button']) ?>
     </p>
 </body>

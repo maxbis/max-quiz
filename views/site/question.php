@@ -246,7 +246,7 @@ if ($selectedRecords == null) {
 
 </head>
 
-<body class="background-image">
+<body class="background-image page-effect">
 
     <div class="container-fluid banner-container text-white text-center py-3">
         <div class="banner-content">

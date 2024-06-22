@@ -84,8 +84,13 @@ class QuizController extends Controller
         Yii::$app->db->createCommand($sql)->execute();
     }
 
-    public function actionIndex()
+    public function actionIndex($reset=false)
     {
+        if ( $reset) {
+            $sql="update quiz set active=0";
+            $results = Yii::$app->db->createCommand($sql)->execute();
+        }
+
         $sql = "select quiz_id, count(*) as count from quizquestion where active = 1 group by quiz_id";
         $results = Yii::$app->db->createCommand($sql)->queryAll();
 
