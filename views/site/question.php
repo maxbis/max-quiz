@@ -66,15 +66,19 @@ if ($selectedRecords == null) {
     <title>Question and Answers</title>
 
     <style>
+        body {
+            font-family: 'Consolas', 'Menlo', 'Liberation Mono', 'Courier New', monospace;
+        }
         .background-image {
             position: relative;
-            background: linear-gradient(to bottom, rgba(255, 255, 255, 1) 200px, rgba(255, 255, 255, 0.85) 80%, rgba(255, 255, 255, 1) 100% ),
+            background: linear-gradient(to bottom, rgba(255, 255, 255, 1) 200px, rgba(255, 255, 255, 0.85) 80%, rgba(255, 255, 255, 1) 100%),
                 url('<?= Url::to('@web/img/classroom.webp') ?>');
             background-size: cover;
             background-position: center;
             height: 100%;
             /* Full height of the viewport */
         }
+
         .answer {
             padding: 15px;
             border: 2px solid #ddd;
@@ -254,8 +258,8 @@ if ($selectedRecords == null) {
                 <?= $title ?>
             </h1>
             <p>vraag
-            <?php
-                if ($submission['id'] != 0) { 
+                <?php
+                if ($submission['id'] != 0) {
                     echo $submission['no_answered'] + 1;
                     echo " van ";
                     echo $submission['no_questions'];
@@ -265,7 +269,7 @@ if ($selectedRecords == null) {
                     echo $vraagNr[0];
 
                 }
-            ?>
+                ?>
             </p>
         </div>
     </div>
@@ -280,21 +284,21 @@ if ($selectedRecords == null) {
         <div class="row d-flex justify-content-center align-items-start  page-effect">
             <div class="col-12 question-title">Vraag
                 <?php
-                    if ($submission['id'] != 0) { 
-                        echo $submission['no_answered'] + 1;
-                    } else {
-                        echo $vraagNr[0] - $vraagNr[1]; 
-                    }
+                if ($submission['id'] != 0) {
+                    echo $submission['no_answered'] + 1;
+                } else {
+                    echo $vraagNr[0] - $vraagNr[1];
+                }
                 ?>
             </div>
 
             <div class="question-block">
                 <!-- this code needs to be non-idented becasue pre is used for formatting -->
-<?php if (isset($quiz['blind']) && $quiz['blind']) { // view is also called from backend when adding a question in which case $quiz is not provided....
-echo "On paper, look up question with id: <b>" . $question['id'] . "</b><br><br>Then, select the right answer....";
-} else {
-echo escapeHtmlExceptTags($question['question']);
-} ?>
+                <?php if (isset($quiz['blind']) && $quiz['blind']) { // view is also called from backend when adding a question in which case $quiz is not provided....
+                        echo "On paper, look up question with id: <b>" . $question['id'] . "</b><br><br>Then, select the right answer....";
+                    } else {
+                        echo escapeHtmlExceptTags($question['question']);
+                    } ?>
                 <!-- end of non-identation-->
             </div>
 
@@ -314,7 +318,7 @@ echo escapeHtmlExceptTags($question['question']);
                 <?php for ($i = 1; $i <= 5; $i += 2) { ?>
                     <?php if ($noAnswers >= $i) { ?>
                         <div class="answer <?= $style ?>" onclick="selectAnswer(this, '<?= $answers[($i - 1)] ?>')">
-                            <?= escapeHtmlExceptTags( $question[$answers[$i - 1]] , ['pre']) ?>
+                            <?= escapeHtmlExceptTags($question[$answers[$i - 1]], ['pre']) ?>
                         </div>
                     <?php } ?>
                 <?php } ?>
@@ -325,7 +329,7 @@ echo escapeHtmlExceptTags($question['question']);
                 <?php for ($i = 2; $i <= 6; $i += 2) { ?>
                     <?php if ($noAnswers >= $i) { ?>
                         <div class="answer <?= $style ?>" onclick="selectAnswer(this, '<?= $answers[($i - 1)] ?>')">
-                        <?= escapeHtmlExceptTags( $question[$answers[$i - 1]] , ['pre']) ?>
+                            <?= escapeHtmlExceptTags($question[$answers[$i - 1]], ['pre']) ?>
                         </div>
                     <?php } ?>
                 <?php } ?>
@@ -337,8 +341,8 @@ echo escapeHtmlExceptTags($question['question']);
                 <input type="hidden" id="no_answered" name="no_answered" value="<?= $submission['no_answered']; ?>">
                 <input type="hidden" name="<?= $csrfTokenName ?>" value="<?= $csrfToken ?>">
                 <?php if ($submission['id'] != 0) { ?>
-                    <button type="button" id="submitButton" class="btn btn-light" style="margin-bottom:10px;" title="Click eerst op een antwoord"
-                        disabled>Volgende vraag >></button>
+                    <button type="button" id="submitButton" class="btn btn-light" style="margin-bottom:10px;"
+                        title="Click eerst op een antwoord" disabled>Volgende vraag >></button>
                 <?php } else {
                     if ($nextRecordId !== null) {
                         $url = Yii::$app->urlManager->createUrl(['/question/view', 'id' => $nextRecordId]);
