@@ -136,6 +136,8 @@ class SubmissionController extends Controller
     {
         usleep(500000); // wait 0.5 seconds to prevent (re)post-DOS-attack
         $request = Yii::$app->request;
+        $user_agent = Yii::$app->request->userAgent;
+        $user_agent = substr($user_agent, 0, 200); // make sure $user_agent is no longer than 200 chars
 
         if ($request->isPost) {
             $first_name = $request->post('first_name');
@@ -146,11 +148,21 @@ class SubmissionController extends Controller
             return $this->redirect(['/submission/create']);
         }
 
-        $sql = "select * from quiz where password='$password' and active = 1"; // password is same as quiz code
-        $quiz = Yii::$app->db->createCommand($sql)->queryOne();
-        if (!$quiz) {
-            return $this->redirect(Yii::$app->request->referrer);
+
+        if ( $user_agent == "max-quiz" and $password=="" ) { // if user_agent is quiz client (max-quiz) and there''s only one quiz active, start that quiz.
+            $sql = "select * from quiz where active = 1";
+            $quiz = Yii::$app->db->createCommand($sql)->queryOne();
+            if (count($quiz) != 1) {
+                return $this->redirect(Yii::$app->request->referrer);
+            }
+        } else {
+            $sql = "select * from quiz where password='$password' and active = 1"; // password is same as quiz code
+            $quiz = Yii::$app->db->createCommand($sql)->queryOne();
+            if (!$quiz) {
+                return $this->redirect(Yii::$app->request->referrer);
+            }
         }
+
         if ($quiz['ip_check']) {
             MyHelpers::CheckIP();
         }
@@ -178,8 +190,6 @@ class SubmissionController extends Controller
         $question_order = implode(" ", $questionIds); // serialize questions (questin ids seperated by spaces)
 
         $ip_address = Yii::$app->request->userIP;
-        $user_agent = Yii::$app->request->userAgent;
-        $user_agent = substr($user_agent, 0, 200); // make sure $user_agent is no longer than 200 chars
 
         $sql = "insert into submission (token, first_name, last_name, class, question_order, no_questions, no_answered, no_correct, quiz_id, ip_address, user_agent, answer_order)
                 values ('$token', '$first_name', '$last_name', '$class', '$question_order', $no_questions, 0, 0, $quiz_id, '$ip_address', '$user_agent', '')";
