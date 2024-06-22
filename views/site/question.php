@@ -68,6 +68,7 @@ if ($selectedRecords == null) {
     <style>
         body {
             font-family: 'Consolas', 'Menlo', 'Liberation Mono', 'Courier New', monospace;
+            color: black;
         }
         .background-image {
             position: relative;
