@@ -148,7 +148,7 @@ class SiteController extends Controller
         } else {
             // quiz is finised, no current question left anymore
             // this could only happen if an answer is received on a finshed quiz
-            return false
+            return false;
         }
 
         return $submission;
