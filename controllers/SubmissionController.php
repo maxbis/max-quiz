@@ -140,26 +140,31 @@ class SubmissionController extends Controller
         $user_agent = substr($user_agent, 0, 200); // make sure $user_agent is no longer than 200 chars
 
         if ($request->isPost) {
-            $first_name = $request->post('first_name');
-            $last_name = $request->post('last_name');
+            $first_name = ucfirst($request->post('first_name'));
+            $last_name = ucfirst($request->post('last_name'));
             $class = $request->post('class');
             $password = $request->post('password');
         } else {
             return $this->redirect(['/submission/create']);
         }
 
-        if ( strtolower($user_agent) == "max-quiz" and $password=="" ) { // if user_agent is quiz client (max-quiz) and there''s only one quiz active, start that quiz.
+        if ( strlen($first_name)<3 || strlen($last_name)<3 ) {
+            return $this->redirect(Yii::$app->request->referrer);
+        }
+
+        if ( strtolower($user_agent) == "max-quiz" && $password=="" ) { // if user_agent is quiz client (max-quiz) and there''s only one quiz active, start that quiz.
             $sql = "select * from quiz where active = 1";
-            $quiz = Yii::$app->db->createCommand($sql)->queryOne();
+            $quiz = Yii::$app->db->createCommand($sql)->queryAll();
             if (count($quiz) != 1) {
                 return $this->redirect(Yii::$app->request->referrer);
             }
-        } else {
-            $sql = "select * from quiz where password='$password' and active = 1"; // password is same as quiz code
-            $quiz = Yii::$app->db->createCommand($sql)->queryOne();
-            if (!$quiz) {
-                return $this->redirect(Yii::$app->request->referrer);
-            }
+            $password = $quiz[0]['password'];
+        } 
+
+        $sql = "select * from quiz where password='$password' and active = 1"; // password is same as quiz code
+        $quiz = Yii::$app->db->createCommand($sql)->queryOne();
+        if (!$quiz) {
+            return $this->redirect(Yii::$app->request->referrer);
         }
 
         if ($quiz['ip_check']) {

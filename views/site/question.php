@@ -246,7 +246,7 @@ if ($selectedRecords == null) {
 
 </head>
 
-<body class="background-image page-effect">
+<body class="background-image">
 
     <div class="container-fluid banner-container text-white text-center py-3">
         <div class="banner-content">
@@ -277,7 +277,7 @@ if ($selectedRecords == null) {
     <?php endif; ?>
 
     <div class="container text-center">
-        <div class="row d-flex justify-content-center align-items-start">
+        <div class="row d-flex justify-content-center align-items-start  page-effect">
             <div class="col-12 question-title">Vraag
                 <?php
                     if ($submission['id'] != 0) { 
