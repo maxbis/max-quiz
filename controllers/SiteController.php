@@ -140,7 +140,7 @@ class SiteController extends Controller
                 where token = '" . $token . "'";
         $submission = Yii::$app->db->createCommand($sql)->queryOne();
 
-        if ($submission['no_answered'] != $submission['no_questions']) {
+        if ($submission and $submission['no_answered'] != $submission['no_questions']) {
             // determine next question number
             $questionOrderArray = explode(' ', $submission['question_order']);
             $thisQuestion = $questionOrderArray[$submission['no_answered']];
