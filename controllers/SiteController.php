@@ -139,8 +139,11 @@ class SiteController extends Controller
                 from submission s join quiz q on q.id = s.quiz_id
                 where token = '" . $token . "'";
         $submission = Yii::$app->db->createCommand($sql)->queryOne();
+        if ( ! $submission ) {
+            return false;
+        }
 
-        if ($submission && $submission['no_answered'] != $submission['no_questions']) {
+        if ($submission['no_answered'] != $submission['no_questions']) {
             // determine next question number
             $questionOrderArray = explode(' ', $submission['question_order']);
             $thisQuestion = $questionOrderArray[$submission['no_answered']];
@@ -148,7 +151,7 @@ class SiteController extends Controller
         } else {
             // quiz is finised, no current question left anymore
             // this could only happen if an answer is received on a finshed quiz
-            return false;
+            $submission['thisQuestion'] = -99;
         }
 
         return $submission;
