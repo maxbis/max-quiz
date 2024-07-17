@@ -128,6 +128,7 @@ use yii\widgets\ActiveForm;
                 ?>
             </div>
         <?php } ?>
+        
 
         <hr>
         <div class="form-group">

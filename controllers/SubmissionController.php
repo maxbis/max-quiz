@@ -148,7 +148,7 @@ class SubmissionController extends Controller
             return $this->redirect(['/submission/create']);
         }
 
-        if ( strlen($first_name)<3 || strlen($last_name)<3 ) {
+        if ( strlen($first_name)<2 || strlen($last_name)<2 ) {
             return $this->redirect(Yii::$app->request->referrer);
         }
 

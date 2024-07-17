@@ -249,7 +249,7 @@ class QuestionController extends Controller
         Yii::$app->user->returnUrl = Yii::$app->request->referrer . "#q" . $id;
         // dd(Yii::$app->user->returnUrl);
 
-        return $this->render('update', [
+        return $this->render('/question/update', [
             'model' => $model,
             'questionLinks' => $questionLinks,
         ]);

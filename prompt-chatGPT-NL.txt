@@ -18,3 +18,26 @@ QQ
 Vraag 2
 
 etc. etc.
+
+--
+
+Stel een multiple-choice vraag over [onderwerp] in het volgende formaat:
+
+Vraag:
+QQ
+[De vraagstelling]
+ID
+AC
+[Juiste antwoord]
+AA
+[Alternatief antwoord 1]
+AA
+[Alternatief antwoord 2]
+AA
+[Alternatief antwoord 3]
+AA
+[Alternatief antwoord 4]
+LL
+[Categorie]
+
+Zorg ervoor dat het juiste antwoord correct is en de alternatieve antwoorden plausibel zijn, maar onjuist. 
