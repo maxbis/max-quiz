@@ -121,22 +121,22 @@ $csrfToken = Yii::$app->request->getCsrfToken();
                             <div class="form-group">
                                 <label for="voornaam">First Name</label>
                                 <input type="text" class="form-control" id="first_name" name="first_name"
-                                    placeholder="First Name" required>
+                                    placeholder="First Name"  maxlength="30" required>
                             </div>
                             <div class="form-group">
                                 <label for="achternaam">Last Name</label>
                                 <input type="text" class="form-control" id="last_name" name="last_name"
-                                    placeholder="Last Name" required>
+                                    placeholder="Last Name"  maxlength="30" required>
                             </div>
                             <div class="form-group">
                                 <label for="klas">Class</label>
                                 <input type="text" class="form-control" id="class" name="class" placeholder="Class"
-                                    required>
+                                    maxlength="3" required>
                             </div>
                             <div class="form-group">
                                 <label for="wachtwoord">Quiz Code</label>
                                 <input type="text" class="form-control" id="password" name="password"
-                                    placeholder="Quiz Code" required>
+                                    placeholder="Quiz Code"  maxlength="30" required>
                             </div>
                             <button type="button" id="submitButton" class="btn btn-primary mt-3">Start</button>
                         </form>
