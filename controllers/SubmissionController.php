@@ -148,18 +148,18 @@ class SubmissionController extends Controller
             return $this->redirect(['/submission/create']);
         }
 
-        if ( strlen($first_name)<2 || strlen($last_name)<2 ) {
+        if (strlen($first_name) < 2 || strlen($last_name) < 2) {
             return $this->redirect(Yii::$app->request->referrer);
         }
 
-        if ( strtolower($user_agent) == "max-quiz" && $password=="" ) { // if user_agent is quiz client (max-quiz) and there''s only one quiz active, start that quiz.
+        if (strtolower($user_agent) == "max-quiz" && $password == "") { // if user_agent is quiz client (max-quiz) and there''s only one quiz active, start that quiz.
             $sql = "select * from quiz where active = 1";
             $quiz = Yii::$app->db->createCommand($sql)->queryAll();
             if (count($quiz) != 1) {
                 return $this->redirect(Yii::$app->request->referrer);
             }
             $password = $quiz[0]['password'];
-        } 
+        }
 
         $sql = "select * from quiz where password='$password' and active = 1"; // password is same as quiz code
         $quiz = Yii::$app->db->createCommand($sql)->queryOne();
@@ -362,10 +362,103 @@ class SubmissionController extends Controller
         // _dd($submissions);
 
         if ($submissions)
-            return $this->exportExcel($submissions);
+            $columns = [
+                'Cursus' => 'name',
+                'Student' => ['first_name', 'last_name'], // Concatenate first_name and last_name
+                'Klas' => 'class',
+                'Score' => 'score',
+                'Aantal Vragen' => 'no_questions',
+                'Aantal Antwoorden' => 'no_answered',
+                'Aantal Correct' => 'no_correct',
+                'Start Tijd' => 'start_time',
+                'Eind Tijd' => 'end_time',
+                'Aantal minuten' => 'duration'
+            ];
+            return $this->exportExcel($submissions, $columns);
     }
 
-    private function exportExcel($data)
+    // WIP: stats over this quiz
+    public function actionExportStats($quiz_id)
+    {
+        $sql = "
+            SELECT
+                CAST(timestamp AS DATE) datum, 
+                question_id question_id,
+                q.question question,
+                sum(1) aantal,
+                sum(l.correct) correct,
+                ROUND(SUM(l.correct) * 100 / SUM(1), 1) AS perc
+            FROM `log`l
+            join question q on q.id = l.question_id
+            WHERE quiz_id=$quiz_id
+            group by 1,2,3
+            order by 6 desc
+        ";
+        $submissions = Yii::$app->db->createCommand($sql)->queryAll();
+
+        if ($submissions)
+            $columns = [
+                'Datum' => 'datum',
+                'Vraag ID' => 'question_id',
+                'Vraag' => 'question',
+                'Aantal' => 'aantal',
+                'Correct' => 'correct',
+                'Percentag Correct' => 'perc',
+            ];
+            return $this->exportExcel($submissions, $columns);
+
+    }
+
+
+    private function exportExcel($data, $columns)
+    {
+        header('Content-type: text/csv; charset=utf-8');
+        header('Content-Disposition: attachment; filename="max-quiz-export' . date('YmdHi') . '.csv"');
+        header("Pragma: no-cache");
+        header("Expires: 0");
+        header('Content-Transfer-Encoding: binary');
+        echo "\xEF\xBB\xBF";
+
+        $output = "";
+
+        $separator = ";"; // NL version, use ',' for EN
+
+        // Output the headers
+        foreach ($columns as $header => $field) {
+            $output .= $header . $separator;
+        }
+        $output .= "\n";
+
+        // Output the data
+        foreach ($data as $line) {
+            foreach ($columns as $field) {
+                if (is_array($field)) {
+                    // Concatenate multiple fields (e.g., first_name and last_name)
+                    $value = '';
+                    foreach ($field as $subfield) {
+                        $value .= isset($line[$subfield]) ? $line[$subfield] . ' ' : '';
+                    }
+                    $output .= trim($value) . $separator;
+                } else {
+                    $value = isset($line[$field]) ? $line[$field] : '';
+                    $value = preg_replace('/[\r\n]+/', ' ', $value); // Replace newlines with spaces
+                    $value = str_replace(";", " ", $value);
+                    $output .= $value . $separator;
+                }
+            }
+            // If there's nested data like 'questions-answers', handle it here
+            if (isset($line['questions-answers']) && is_array($line['questions-answers'])) {
+                foreach ($line['questions-answers'] as $key => $value) {
+                    $output .= $value[0] . '-' . $key . $separator . $value[1] . $separator . $value[2] . $separator;
+                }
+            }
+            $output .= "\n";
+        }
+
+        return $output;
+    }
+
+    private function exportExcelOldWeg($data)
     {
         header('Content-type: text/csv; charset=utf-8');
         header('Content-Disposition: attachment; filename="max-quiz-export' . date('YmdHi') . '.csv"');

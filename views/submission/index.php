@@ -47,7 +47,7 @@ $params = Yii::$app->request->getQueryParams();
     .quiz-button {
         font-size: 10px;
         padding: 2px 5px;
-        min-width: 55px;
+        min-width: 65px;
         margin: 5px;
     }
 
@@ -83,16 +83,16 @@ $params = Yii::$app->request->getQueryParams();
 </style>
 
 <?php
-    $statusClass = $quizActive == 1 ? 'dot-green' : 'dot-red';
+$statusClass = $quizActive == 1 ? 'dot-green' : 'dot-red';
 ?>
 
 <div class="row">
-    <div class="col-md-10">
+    <div class="col-md-9">
         <p style='color:#909090;font-size:16px;'>
-            <h3>
-                <div class="dot <?= $statusClass ?>"></div>
-                <?= $this->title ?>
-            </h3>
+        <h3>
+            <div class="dot <?= $statusClass ?>"></div>
+            <?= $this->title ?>
+        </h3>
         </p>
     </div>
     <div class="col-md-2 d-flex align-items-end">
@@ -107,8 +107,11 @@ $params = Yii::$app->request->getQueryParams();
         ]);
 
         if (isset($params['quiz_id'])) { ?>
+        <span style="margin-left:20px;"></span>
             <a href="<?= Url::to(['submission/export', 'quiz_id' => $params['quiz_id']]) ?>"
-                class="btn btn-outline-dark quiz-button">📊 Excel</a>
+                class="btn btn-outline-dark quiz-button" title="Export all results per student">📊 Results</a>
+            <a href="<?= Url::to(['submission/export-stats', 'quiz_id' => $params['quiz_id']]) ?>"
+                class="btn btn-outline-dark quiz-button" title="Export the stats per question">📊 Stats</a>
         <?php } ?>
 
     </div>
@@ -133,10 +136,10 @@ $params = Yii::$app->request->getQueryParams();
         ?>
 
         <?php
-            if ( $quizActive ) {
-                Pjax::begin(['id' => 'myPjaxGridView', 'timeout' => false, 'enablePushState' => true]);
-                echo "Active";
-            }
+        if ($quizActive) {
+            Pjax::begin(['id' => 'myPjaxGridView', 'timeout' => false, 'enablePushState' => true]);
+            echo "Active";
+        }
         ?>
 
         <?= GridView::widget([
@@ -334,11 +337,11 @@ $params = Yii::$app->request->getQueryParams();
                     'attribute' => 'user_agent',
                     'label' => 'User Agent',
                     'headerOptions' => ['style' => 'width:90px;'],
-                    'value' => function($model) {
+                    'value' => function ($model) {
                         // Split the user_agent by spaces and return the first word
                         return strtok($model->user_agent, ' ');
                     },
-                    'contentOptions' => function($model) {
+                    'contentOptions' => function ($model) {
                         // Set the title attribute for the tooltip with the full user_agent
                         return ['title' => $model->user_agent];
                     },
@@ -359,7 +362,7 @@ $params = Yii::$app->request->getQueryParams();
                                 'title' => 'Delete',
                                 'data' => [
                                     'url' => Url::to(['submission/delete', 'id' => $model->id]),
-                                    'name' => $model->first_name. ' ' . $model->last_name,
+                                    'name' => $model->first_name . ' ' . $model->last_name,
                                 ],
                             ]);
                         },
@@ -370,10 +373,10 @@ $params = Yii::$app->request->getQueryParams();
 
         ]);
 
-        if ( $quizActive ) {
+        if ($quizActive) {
             Pjax::end();
         }
-       
+
 
         $script = <<<JS
 
