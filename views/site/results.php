@@ -107,9 +107,13 @@ require_once Yii::getAlias('@app/views/include/functions.php');
         foreach ($questionIdArray as $thisQuestionId) {
             ?>
             <p style="color: darkblue;font-weight: bold;">
-                <?= "Question " . ($i + 1) .
-                    "<span style=\"color:#d0d0d0; font-weight: normal;\"> (id: " . $thisQuestionId . ", correct: " . ($stats[$thisQuestionId] ?? "-") . "%)
-                    </span>"
+                <?= "Question " . ($i + 1) ?>
+                <?php
+                    // if logged in show how many % of users in the current course scored on this question; this will not be shown to a student!
+                    if ( !Yii::$app->user->isGuest ) {
+                        echo "<span style=\"color:#d0d0d0; font-weight: normal;\"> (id: " . $thisQuestionId . ", correct: " . ($stats[$thisQuestionId] ?? "-") . "%)
+                        </span>";
+                    }
                 ?>
             </p>
             <?php
