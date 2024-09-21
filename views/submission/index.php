@@ -242,7 +242,7 @@ $statusClass = $quizActive == 1 ? 'dot-green' : 'dot-red';
                     'format' => 'raw',
                     'value' => function ($model) {
                         $fullName = $model->first_name . ' ' . $model->last_name;
-                        $displayedName = mb_substr($fullName, 0, 26) . (mb_strlen($fullName) > 26 ? '...' : '');
+                        $displayedName = mb_substr($fullName, 0, 20) . (mb_strlen($fullName) > 20 ? '...' : '');
 
                         // Create the URL
                         $url = Url::to(['/site/results', 'token' => $model->token]);

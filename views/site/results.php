@@ -12,7 +12,8 @@ require_once Yii::getAlias('@app/views/include/functions.php');
 <head>
     <title>Results</title>
 
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-EVSTQN3/azprG1Anm3QDgpJLIm9Nao0Yz1ztcQTwFspd3yD65VohhpuuCOmLASjC" crossorigin="anonymous">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/css/bootstrap.min.css" rel="stylesheet"
+        integrity="sha384-EVSTQN3/azprG1Anm3QDgpJLIm9Nao0Yz1ztcQTwFspd3yD65VohhpuuCOmLASjC" crossorigin="anonymous">
 
     <style>
         .main {
@@ -101,25 +102,30 @@ require_once Yii::getAlias('@app/views/include/functions.php');
         // _d($submission['question_order']);
         // _d($submission['answer_order']);
         // _d($answerArray);
-
+        
         $i = 0;
         foreach ($questionIdArray as $thisQuestionId) {
-        ?>
-            <p style="color: darkblue;font-weight: bold;"><?= "Question " . ($i + 1) ?></p>
-        <?php
+            ?>
+            <p style="color: darkblue;font-weight: bold;">
+                <?= "Question " . ($i + 1) .
+                    "<span style=\"color:#d0d0d0; font-weight: normal;\"> (id: " . $thisQuestionId . ", correct: " . ($stats[$thisQuestionId] ?? "-") . "%)
+                    </span>"
+                ?>
+            </p>
+            <?php
             echo "<div class=\"question-container\" >";
             if (array_key_exists($thisQuestionId, $questionsById)) {
-echo  "<p>" . escapeHtmlExceptTags( $questionsById[$thisQuestionId]['question'] ) . "</p><br>";
+                echo "<p>" . escapeHtmlExceptTags($questionsById[$thisQuestionId]['question']) . "</p><br>";
                 // echo $answerArray[$i];
                 // echo $questionsById[$thisQuestionId]['correct'];
-                if ( isset($answerArray[$i]) && $answerArray[$i] ) {
+                if (isset($answerArray[$i]) && $answerArray[$i]) {
                     if ($answerArray[$i] == $questionsById[$thisQuestionId]['correct']) {
                         echo "<p class=\"correct\">Correct answer given: ";
-                        echo $questionsById[$thisQuestionId]['a' . $answerArray[$i]];
+                        echo htmlspecialchars($questionsById[$thisQuestionId]['a' . $answerArray[$i]]);
                         echo "</p>";
                     } else {
                         echo "<p class=\"incorrect\">Incorrect answer given: ";
-                        echo $questionsById[$thisQuestionId]['a' . $answerArray[$i]];
+                        echo htmlspecialchars($questionsById[$thisQuestionId]['a' . $answerArray[$i]]);
                         echo "</p>";
                     }
                 } else {
@@ -135,7 +141,8 @@ echo  "<p>" . escapeHtmlExceptTags( $questionsById[$thisQuestionId]['question'] 
         }
         ?>
 
-        <p style="color: darkblue;font-weight: bold;">Summary for <?= $submission['first_name'] . " " . $submission['last_name'] ?></p>
+        <p style="color: darkblue;font-weight: bold;">Summary for
+            <?= $submission['first_name'] . " " . $submission['last_name'] ?></p>
         <div class="question-container">
             <table>
                 <tr>

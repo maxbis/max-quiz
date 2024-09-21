@@ -291,10 +291,24 @@ class SiteController extends Controller
             $questionsById[$question['id']] = $question;
         }
 
+        $sql = "
+            SELECT
+                question_id question_id,
+                ROUND(SUM(l.correct) * 100 / SUM(1), 1) AS perc
+            FROM `log`l
+            join question q on q.id = l.question_id
+            WHERE quiz_id=". $submission['quiz_id'] ."
+            group by 1
+        ";
+        $stats = Yii::$app->db->createCommand($sql)->queryAll();
+        $statsKeyValueArray = array_combine(array_column($stats, 'question_id'), array_column($stats, 'perc'));
+
+
         $this->layout = false;
         return $this->render('results', [
             'questionsById' => $questionsById,
             'submission' => $submission,
+            'stats' => $statsKeyValueArray,
         ]);
     }
 }
