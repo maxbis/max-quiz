@@ -124,6 +124,18 @@ $formattedTime = sprintf("%02d:%02d", $diff->i, $diff->s);
       color: #707070;
     }
 
+    .code {
+      padding: 5px;
+      min-width: 180px;
+      position: absolute;
+      text-align: left;
+      top: 4%;
+      left: 8%;
+      font-size: 14px;
+      font-family: Arial, sans-serif;
+      color: #efc15e;
+    }
+
     .delayed-content {
       opacity: 0;
       /* Start with zero opacity to hide the content */
@@ -149,10 +161,12 @@ $formattedTime = sprintf("%02d:%02d", $diff->i, $diff->s);
         font-size: 12px;
         bottom: 6%;
       }
+
       .signature-r {
-        left:auto;
+        left: auto;
         right: 10%;
       }
+
     }
 
     @media (max-width: 600px) {
@@ -168,12 +182,15 @@ $formattedTime = sprintf("%02d:%02d", $diff->i, $diff->s);
       .signature-r {
         font-size: 10px;
       }
+
       .signature-r {
         border-top: 0px;
         left: 2%;
       }
     }
+
     @media (max-width: 400px) {
+
       .signature-l,
       .signature-r {
         font-size: 8px;
@@ -236,11 +253,19 @@ $formattedTime = sprintf("%02d:%02d", $diff->i, $diff->s);
   });
 </script>
 
+
+<?php
+  $characters = '0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ';
+  $shuffled = str_shuffle($characters);
+  $code = substr($shuffled, 0, 2) .'ax'. $submission['no_questions'] . chr(ord($submission['first_name'][0]) + 1) . $submission['last_name'][0] . $submission['quiz_name'][0] . $submission['quiz_name'][2] . $submission['no_correct']+3;
+?>
+
 <body>
   <div class="main-block">
     <div class="certificate-container dynamic-size">
       <img src="<?= Url::to('@web/img/certificate01.jpg') ?>" alt="Certificate of Appreciation"
         class="delayed-content certificate-image" data-delay="0">
+      <div class="code" style="font-size:12px;"><?= $code ?></div>
       <div class="delayed-content name" data-delay="400">
         <?= $submission['first_name'] . " " . $submission['last_name'] ?>
       </div>
