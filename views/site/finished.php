@@ -257,7 +257,7 @@ $formattedTime = sprintf("%02d:%02d", $diff->i, $diff->s);
 <?php
   $characters = '0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ';
   $shuffled = str_shuffle($characters);
-  $code = substr($shuffled, 0, 2) .'ax'. $submission['no_questions'] . chr(ord($submission['first_name'][0]) + 1) . $submission['last_name'][0] . $submission['quiz_name'][0] . $submission['quiz_name'][2] . ($submission['no_correct']+3);
+  $code = substr($shuffled, 0, 2) .'x'. $submission['no_questions'] . 'x' . chr(ord($submission['first_name'][0]) + 1) . $submission['last_name'][0] . $submission['quiz_id'] .'x'. ($submission['no_correct']+3);
 ?>
 
 <body>
