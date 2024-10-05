@@ -198,12 +198,12 @@ require_once Yii::getAlias('@app/views/include/functions.php');
                 shuffle($array);
                 $questionLabel = 'a';
                 foreach($array as $item) {
-                    if ( $question['a'.$item]==='' ) continue;
+                    if ( $question['a'.$item]==='' || $question['a'.$item] === null ) continue;
                     // echo escapeHtmlExceptTags( $question['a'.$item] , ['pre']);
                     ?>
                         <label id="answer-<?= $question['id'].'-'.$item ?>">
                             <?= $questionLabel ?> ) <input type="checkbox" name="answer<?= $item ?>" value="a<?= $item ?>">
-                            X<?= escapeHtmlExceptTags( $question['a'.$item] , ['pre']) ?>X
+                            <?= escapeHtmlExceptTags( $question['a'.$item] , ['pre']) ?>
                         </label>
                         <br>
                     <?php
