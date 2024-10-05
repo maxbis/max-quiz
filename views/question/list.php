@@ -198,7 +198,7 @@ require_once Yii::getAlias('@app/views/include/functions.php');
                 shuffle($array);
                 $questionLabel = 'a';
                 foreach($array as $item) {
-                    if (!empty($question['a'.$item])){
+                    if ( $question['a'.$item] !== 0 ){
                         // echo escapeHtmlExceptTags( $question['a'.$item] , ['pre']);
                         ?>
                             <label id="answer-<?= $question['id'].'-'.$item ?>">

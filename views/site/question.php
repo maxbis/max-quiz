@@ -70,6 +70,7 @@ if ($selectedRecords == null) {
             font-family: 'Consolas', 'Menlo', 'Liberation Mono', 'Courier New', monospace;
             color: black;
         }
+
         .background-image {
             position: relative;
             background: linear-gradient(to bottom, rgba(255, 255, 255, 1) 200px, rgba(255, 255, 255, 0.85) 80%, rgba(255, 255, 255, 1) 100%),
@@ -295,11 +296,11 @@ if ($selectedRecords == null) {
 
             <div class="question-block">
                 <!-- this code needs to be non-idented becasue pre is used for formatting -->
-<?php if (isset($quiz['blind']) && $quiz['blind']) { // view is also called from backend when adding a question in which case $quiz is not provided....
-echo "On paper, look up question with id: <b>" . $question['id'] . "</b><br><br>Then, select the right answer....";
-} else {
-echo escapeHtmlExceptTags($question['question']);
-} ?>
+                <?php if (isset($quiz['blind']) && $quiz['blind']) { // view is also called from backend when adding a question in which case $quiz is not provided....
+                        echo "On paper, look up question with id: <b>" . $question['id'] . "</b><br><br>Then, select the right answer....";
+                    } else {
+                        echo escapeHtmlExceptTags($question['question']);
+                    } ?>
                 <!-- end of non-identation-->
             </div>
 
@@ -397,6 +398,40 @@ echo escapeHtmlExceptTags($question['question']);
         </div>
 
         <script>
+            let initialX, initialY;
+            let dragging = false;
+
+            document.addEventListener('mousedown', function (event) {
+                // Store the initial mouse position when the mouse button is pressed
+                initialX = event.clientX;
+                initialY = event.clientY;
+                dragging = true; // Set dragging to true on mousedown
+            });
+
+            document.addEventListener('mouseup', function () {
+                dragging = false; // Reset dragging on mouseup
+            });
+
+            document.addEventListener('mousemove', function (event) {
+                if (dragging) {
+                    // Calculate the distance moved
+                    let deltaX = Math.abs(event.clientX - initialX);
+                    let deltaY = Math.abs(event.clientY - initialY);
+
+                    // If the distance dragged in X and Y direction is more than 100 pixels, blank the screen
+                    if ( (deltaX + deltaY) > 100) {
+                        document.body.style.visibility = 'hidden'; // Blank the page
+                        setTimeout(function () {
+                            document.body.style.visibility = 'visible'; 
+                        }, 500); 
+
+                        // Reset dragging to prevent repeated triggering
+                        dragging = false;
+                    }
+                }
+            });
+
+
             function selectAnswer(element, answer) {
                 // Remove 'selected' class from all answers
                 document.querySelectorAll('.answer').forEach(function (el) {
