@@ -203,7 +203,7 @@ require_once Yii::getAlias('@app/views/include/functions.php');
                     ?>
                         <label id="answer-<?= $question['id'].'-'.$item ?>">
                             <?= $questionLabel ?> ) <input type="checkbox" name="answer<?= $item ?>" value="a<?= $item ?>">
-                            <?= escapeHtmlExceptTags( $question['a'.$item] , ['pre']) ?>
+                            X<?= escapeHtmlExceptTags( $question['a'.$item] , ['pre']) ?>X
                         </label>
                         <br>
                     <?php
