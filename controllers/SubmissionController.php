@@ -305,7 +305,7 @@ class SubmissionController extends Controller
 
     public function actionExport($quiz_id)
     {
-        $sql = "select q.name, first_name, last_name, class,
+        $sql = "select q.name, student_nr, first_name, last_name, class,
                 CASE 
                     WHEN no_correct = 0 THEN 0
                     ELSE ROUND((no_correct / CAST(s.no_questions AS DECIMAL)) * 100, 0)
