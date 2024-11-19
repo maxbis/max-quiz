@@ -364,6 +364,7 @@ class SubmissionController extends Controller
         if ($submissions)
             $columns = [
                 'Cursus' => 'name',
+                'Student_nr' => 'student_nr',
                 'Student' => ['first_name', 'last_name'], // Concatenate first_name and last_name
                 'Klas' => 'class',
                 'Score' => 'score',
