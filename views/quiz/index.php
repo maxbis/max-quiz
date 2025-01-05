@@ -213,6 +213,21 @@ $this->registerJs($js);
 
             ],
             [
+                'label' => 'Rnd',
+                'headerOptions' => ['style' => 'width:35px;font-size: 10px;', 'title' => 'Ip-restricted'],
+                'attribute' => 'random',
+                'format' => 'raw',
+                'enableSorting' => false,
+                'value' => function ($model) {
+                        if ($model->random) {
+                            return "&#10003;";
+                        } else {
+                            return "-";
+                        }
+                    },
+
+            ],
+            [
                 'class' => 'yii\grid\ActionColumn',
                 'headerOptions' => ['style' => 'width:600px;'],
                 'template' => '{quizButton}',

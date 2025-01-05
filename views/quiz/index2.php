@@ -196,6 +196,7 @@ $this->registerJs($js); // Register the JavaScript code
                                 <td title='Review Quiz' style='width:35px;color:lightgrey'>RW</td>
                                 <td title='Blind Quiz' style='width:35px;color:lightgrey'>BL</td>
                                 <td title='IP Check' style='width:35px;color:lightgrey'>IP</td>
+                                 <td title='Random' style='width:35px;color:lightgrey'>Rd</td>
                                 <td style='width:600px;color:lightgrey'>Actions</td>
                             </tr>";
                     endif;
@@ -227,6 +228,9 @@ $this->registerJs($js); // Register the JavaScript code
                         </td>
                         <td class="grey-column">
                             <?= $quiz['ip_check'] ? "&#10003;" : "-" ?>
+                        </td>
+                        <td class="grey-column">
+                            <?= $quiz['random'] ? "&#10003;" : "-" ?>
                         </td>
                         <td>
                             <?= Html::a('✏️ Edit', ['/quiz/update', 'id' => $quiz['id']], ['class' => 'btn quiz-button-small', 'title' => 'Edit Quiz']) ?>

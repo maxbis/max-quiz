@@ -176,7 +176,11 @@ class SubmissionController extends Controller
         $token = $this->generateRandomToken();
 
         // Get all questions connected, shuffle and create space seprated string
-        $sql = "select question_id from quizquestion where quiz_id = $quiz_id and active = 1";
+        $sql = "select qq.question_id 
+                from quizquestion qq 
+                join question q on qq.question_id = q.id 
+                where qq.quiz_id = $quiz_id and qq.active = 1 
+                order by q.label, qq.id";
         $result = Yii::$app->db->createCommand($sql)->queryAll();
         $questionIds = array_column($result, 'question_id');
 
@@ -185,7 +189,9 @@ class SubmissionController extends Controller
             return $this->redirect(Yii::$app->request->referrer);
         }
 
-        shuffle($questionIds);
+        if ($quiz['random']) {
+            shuffle($questionIds);
+        }
         if ($quiz['no_questions']) { // if quiz had question number limit, take first only
             $limitArrayToN = fn(array $array, int $N) => ($N >= count($array)) ? $array : array_slice($array, 0, $N);
             $questionIds = $limitArrayToN($questionIds, $quiz['no_questions']);

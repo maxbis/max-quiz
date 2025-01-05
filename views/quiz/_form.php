@@ -69,6 +69,14 @@ $id = Yii::$app->request->get('id');
                 )->label('IP Check') ?>
             </div>
         </div>
+        <div class="row">
+            <div class="col-md-4">
+                <?= $form->field($model, 'random')->dropDownList(
+                    [0 => 'Questions in right order', 1 => 'Random Order'], // Options: value => display text
+                    ['prompt' => '...', 'style' => 'width: 150px;'] // Optional: prompt message
+                )->label('Sequential (label,id)') ?>
+            </div>
+        </div>
 
         <div class="form-group">
             <?= Html::submitButton('Save', ['class' => 'btn btn-success quiz-button']) ?>
