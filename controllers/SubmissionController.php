@@ -189,7 +189,7 @@ class SubmissionController extends Controller
             return $this->redirect(Yii::$app->request->referrer);
         }
 
-        if ($quiz['random']) {
+        if ($quiz['random']==1) {
             shuffle($questionIds);
         }
         if ($quiz['no_questions']) { // if quiz had question number limit, take first only
