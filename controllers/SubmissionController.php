@@ -180,7 +180,7 @@ class SubmissionController extends Controller
                 from quizquestion qq 
                 join question q on qq.question_id = q.id 
                 where qq.quiz_id = $quiz_id and qq.active = 1 
-                order by q.question_id DESC";
+                order by qq.question_id DESC";
         $result = Yii::$app->db->createCommand($sql)->queryAll();
         $questionIds = array_column($result, 'question_id');
 
