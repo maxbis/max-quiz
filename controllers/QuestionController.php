@@ -32,7 +32,6 @@ class QuestionController extends Controller
         return array_merge(
             parent::behaviors(),
             [
-
                 // VerbFilter
                 'verbs' => [
                     'class' => VerbFilter::className(),
@@ -48,7 +47,15 @@ class QuestionController extends Controller
                             'allow' => true,
                             'roles' => ['@'], // '@' represents authenticated users
                         ],
-                        // You can add more rules here
+                        [
+                            'allow' => true,
+                            'matchCallback' => function ($rule, $action) {
+                                $secret = require __DIR__ . '/../config/secret.php';
+                                $apiKey = Yii::$app->request->getHeaders()->get('X-API-Key') ?? 
+                                        Yii::$app->request->post('api_key');
+                                return $apiKey === ($secret['questionApiKey'] ?? null);
+                            }
+                        ],
                     ],
                 ],
             ]
