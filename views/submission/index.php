@@ -339,11 +339,11 @@ $statusClass = $quizActive == 1 ? 'dot-green' : 'dot-red';
                     'headerOptions' => ['style' => 'width:90px;'],
                     'value' => function ($model) {
                         // Split the user_agent by spaces and return the first word
-                        return strtok($model->user_agent, ' ');
+                        return $model->user_agent ? strtok($model->user_agent, ' ') : '';
                     },
                     'contentOptions' => function ($model) {
                         // Set the title attribute for the tooltip with the full user_agent
-                        return ['title' => $model->user_agent];
+                        return ['title' => $model->user_agent ?: ''];
                     },
                 ],
                 [
