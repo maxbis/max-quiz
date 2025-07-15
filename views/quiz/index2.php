@@ -28,9 +28,21 @@ function updateActiveStatus(id, active) {
                 id: id,
                 active: active ? 1 : 0
         },
-
         success: function(response) {
             console.log('Update successful', response);
+            var row = $('#quiz-row-' + id);
+            var nameCell = row.find('.quiz-name-cell');
+            if (active) {
+                row.css('background-color', '#e6ffe6');
+                if (nameCell.find('.active-dot').length === 0) {
+                    nameCell.prepend('<span class="active-dot" title="Active" style="color:#28a745;font-size:1.2em;margin-right:4px;">●</span>');
+                }
+                nameCell.css('font-weight', 'bold');
+            } else {
+                row.css('background-color', '');
+                nameCell.find('.active-dot').remove();
+                nameCell.css('font-weight', '');
+            }
         },
         error: function(xhr, status, error) {
             console.log('Update failed:', error);
@@ -174,6 +186,19 @@ $this->registerJs($js); // Register the JavaScript code
     tr:hover .highlight-column {
         color: #333;
     }
+
+    .quiz-name-cell {
+        max-width: 220px;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+    .group-header {
+        background: #e3e8f0 !important;
+        font-weight: 600 !important;
+        font-size: 1.08em;
+        border-bottom: 2px solid #d0d7e5;
+    }
 </style>
 
 <body>
@@ -190,9 +215,14 @@ $this->registerJs($js); // Register the JavaScript code
                         $lastGroup = $currentGroup;
                         $groupTitle = $currentGroup ?: 'No Category';
                         echo "<tr class='group-header collapsed' style='background-color:#f0f0f9;color:darkblue;font-weight:350;font-style:italic;'>
-                                <td colspan=3 style='width:250px;'><div class='group-title'><span class='triangle'>&#9662;</span>&nbsp;{$groupTitle}</div></td>
+                                <td style='width:15px;'></td>
+                                <td style='width:15px;'></td>
+                                <td style='width:250px;'>
+                                    <div class='group-title'><span class='triangle'>&#9662;</span>&nbsp;{$groupTitle}</div>
+                                </td>
                                 <td style='width:200px;color:lightgrey'>Password</td>
                                 <td style='width:120px;color:lightgrey'>Questions</td>
+                                <td style='width:100px;color:lightgrey'>Taken</td>
                                 <td title='Review Quiz' style='width:35px;color:lightgrey'>RW</td>
                                 <td title='Blind Quiz' style='width:35px;color:lightgrey'>BL</td>
                                 <td title='IP Check' style='width:35px;color:lightgrey'>IP</td>
@@ -201,13 +231,14 @@ $this->registerJs($js); // Register the JavaScript code
                             </tr>";
                     endif;
                     ?>
-                    <tr>
+                    <tr id="quiz-row-<?= $quiz['id'] ?>"<?= $quiz['active'] ? " style='background-color:#e6ffe6;'" : '' ?>>
                         <td style="color:#e0e0e0;width:15px;">•</td>
                         <td style='width:15px;'>
                             <?= Html::checkbox('active', $quiz['active'], ['value' => $quiz['id'], 'class' => 'active-radio']) ?>
                         </td>
-                        <td>
-                            <?= Html::a($quiz['name'], Yii::$app->urlManager->createUrl(['question/index', 'quiz_id' => $quiz['id']]), ['title' => 'Show Quiz']) ?>
+                        <td class="quiz-name-cell" style="width:250px;<?= $quiz['active'] ? 'font-weight:bold;' : '' ?>">
+                            <?php if ($quiz['active']) echo "<span class='active-dot' title='Active' style='color:#28a745;font-size:1.2em;margin-right:4px;'>●</span>"; ?>
+                            <?= Html::a($quiz['name'], Yii::$app->urlManager->createUrl(['submission', 'quiz_id' => $quiz['id']]), ['title' => 'Show Quiz']) ?>
                         </td>
                         <td class="highlight-column" _style='background-color:#f8f8f8;color:#d0d0e0;'>
                             <?= $quiz['password'] ?>
@@ -218,6 +249,12 @@ $this->registerJs($js); // Register the JavaScript code
                             $aantalQuestion = $quizCounts[$id] ?? 0;
                             $maxQuestions = $quiz['no_questions'] ?? $aantalQuestion;
                             echo "{$maxQuestions} from {$aantalQuestion}";
+                            ?>
+                        </td>
+                        <td>
+                            <?php
+                            $takenCount = $quizTakenCounts[$quiz['id']] ?? 0;
+                            echo $takenCount;
                             ?>
                         </td>
                         <td class="grey-column">

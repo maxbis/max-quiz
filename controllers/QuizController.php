@@ -99,8 +99,13 @@ class QuizController extends Controller
             $quizCounts[$result['quiz_id']] = (int) $result['count'];
         }
 
-        // $searchModel = new QuizSearch();
-        // $dataProvider = $searchModel->search($this->request->queryParams);
+        // Fetch how many times each quiz has been taken (number of submissions per quiz)
+        $sql = "select quiz_id, count(*) as taken_count from submission group by quiz_id";
+        $results = Yii::$app->db->createCommand($sql)->queryAll();
+        $quizTakenCounts = [];
+        foreach ($results as $result) {
+            $quizTakenCounts[$result['quiz_id']] = (int) $result['taken_count'];
+        }
 
         // sort on names containing a . first and second on name
         $sql = "select * from quiz order by CASE WHEN name LIKE '%.%' THEN 1 ELSE 2 END, name";
@@ -109,6 +114,7 @@ class QuizController extends Controller
         return $this->render('index2', [
             'quizCounts' => $quizCounts,
             'quizes' => $quizes,
+            'quizTakenCounts' => $quizTakenCounts,
         ]);
     }
 
