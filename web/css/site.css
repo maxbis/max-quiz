@@ -86,3 +86,78 @@ a.desc:after {
 .form-group {
     margin-bottom: 1rem;
 }
+
+/* Custom styles for question tabs */
+.question-tabs {
+    width: 100%;
+    margin-bottom: 20px;
+}
+.question-tabs .nav-tabs {
+    border-bottom: 2px solid #e0e0e0;
+    display: flex;
+    flex-wrap: wrap;
+    background: #f8f9fa;
+    border-radius: 8px 8px 0 0;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.04);
+    padding-left: 0;
+    margin-bottom: 0;
+}
+.question-tabs .nav-item {
+    margin-bottom: -2px;
+}
+.question-tabs .nav-link {
+    border: none;
+    border-radius: 8px 8px 0 0;
+    color: #495057;
+    background: transparent;
+    padding: 10px 24px;
+    font-size: 1.05em;
+    transition: background 0.2s, color 0.2s;
+    margin-right: 2px;
+}
+.question-tabs .nav-link.active, .question-tabs .nav-link:focus, .question-tabs .nav-link:hover {
+    background: #fff;
+    color: #007bff;
+    font-weight: bold;
+    border-bottom: 2px solid #007bff;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.03);
+    outline: none;
+}
+@media (max-width: 600px) {
+    .question-tabs .nav-link {
+        padding: 8px 10px;
+        font-size: 0.98em;
+    }
+}
+
+/* Animated tab transitions and tab description styling */
+.question-tab-animated .nav-link {
+    transition: background 0.3s, color 0.3s, box-shadow 0.3s;
+    position: relative;
+    min-height: 48px;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    justify-content: center;
+    padding-bottom: 6px;
+}
+.question-tab-animated .nav-link .tab-desc {
+    font-size: 0.85em;
+    color: #888;
+    font-weight: 400;
+    margin-top: 2px;
+    line-height: 1.1;
+    pointer-events: none;
+}
+.question-tab-animated .nav-link.active, .question-tab-animated .nav-link:focus, .question-tab-animated .nav-link:hover {
+    background: #fff;
+    color: #007bff;
+    font-weight: bold;
+    border-bottom: 2.5px solid #007bff;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+    outline: none;
+}
+.question-tab-animated .nav-link:focus-visible {
+    outline: 2px solid #007bff;
+    outline-offset: 2px;
+}

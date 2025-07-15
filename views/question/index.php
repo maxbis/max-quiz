@@ -233,21 +233,28 @@ if ($show == 0) {
                 $statusClass = $quiz['active'] == 1 ? 'dot-green' : 'dot-red';
                 $statusHelp = $quiz['active'] == 1 ? 'active' : 'inactive';
                 ?>
-                <h3>
-                    <div title="<?=$statusHelp?>" class="dot <?= $statusClass ?>"></div> <?= $quiz['name'] ?>
-                </h3>
+                <h2 style="font-size:2.1em; font-weight: bold; margin-bottom: 0.2em; display: flex; align-items: center;">
+                    <span title="<?=$statusHelp?>" class="dot <?= $statusClass ?>" style="margin-right:10px;"></span>
+                    <span><?= $quiz['name'] ?></span>
+                </h2>
             </div>
         </div>
         <div class="row">
-            <div class="col-md-6">
-
-                <p style="color:#404080;">
-                    Password: <?= Html::encode($quiz['password']) ?>
-                    <br>
-                    questions: <span id="countDisplay"><?= count($questionIds); ?></span>
-                </p>
+            <div class="col-md-12">
+                <div style="display: flex; gap: 30px; align-items: center; background: #f8f9fa; border-radius: 6px; padding: 10px 18px; margin: 12px 0 18px 0; box-shadow: 0 1px 4px rgba(0,0,0,0.03); font-size: 1.1em;">
+                    <span style="display: flex; align-items: center; color: #888;">
+                        <span style="font-size:1.3em; margin-right: 7px;">🔒</span>
+                        <span style="font-weight: 500;">Password:</span> <span style="margin-left: 5px; color: #404080; font-family: monospace;"> <?= Html::encode($quiz['password']) ?> </span>
+                    </span>
+                    <span style="display: flex; align-items: center; color: #888;">
+                        <span style="font-size:1.3em; margin-right: 7px;">❓</span>
+                        <span style="font-weight: 500;">Questions:</span> <span id="countDisplay" style="margin-left: 5px; color: #404080;"> <?= count($questionIds); ?> </span>
+                    </span>
+                </div>
             </div>
-            <div class="col-md-6 d-flex align-items-end">
+        </div>
+        <div class="row">
+            <div class="col-md-12 d-flex align-items-end">
                 <?= Html::a('✏️ Edit', ['quiz/update', 'id' => $quiz['id']], ['class' => 'btn btn-outline-primary quiz-button'],) ?>
                 <?php
                 $url = Yii::$app->urlManager->createUrl(['/question/list', 'quiz_id' => $quiz['id']]);
@@ -268,7 +275,6 @@ if ($show == 0) {
                     'class' => 'btn btn-outline-dark quiz-button',
                 ]);
                 ?>
-
             </div>
         </div>
     </div>
@@ -276,6 +282,53 @@ if ($show == 0) {
 
 
 <div class="question-index">
+
+    <div class="question-tabs" style="margin-bottom: 20px;">
+        <?php
+        $tabItems = [
+            1 => [
+                'label' => 'Active Quiz Questions',
+                'show' => 1,
+                'desc' => 'Questions currently assigned and active',
+                'tooltip' => 'Show only active questions assigned to this quiz.'
+            ],
+            0 => [
+                'label' => 'Inactive Questions',
+                'show' => 0,
+                'desc' => 'Assigned but set as inactive',
+                'tooltip' => 'Show questions assigned to this quiz but marked inactive.'
+            ],
+            -1 => [
+                'label' => 'All Questions',
+                'show' => -1,
+                'desc' => 'All questions in the database',
+                'tooltip' => 'Show all questions, including unassigned.'
+            ],
+        ];
+        echo '<ul class="nav nav-tabs question-tab-animated">';
+        foreach ($tabItems as $tabShow => $tab) {
+            $isActive = ($show == $tabShow) ? 'active' : '';
+            $tabParams = $params;
+            $tabParams['show'] = $tabShow;
+            $tabUrl = Url::toRoute(array_merge([$currentRoute], $tabParams));
+            echo '<li class="nav-item" style="position:relative;">';
+            echo Html::a(
+                '<span>' . $tab['label'] . '</span>' .
+                '<div class="tab-desc" style="font-size:0.85em; color:#888; font-weight:400; line-height:1.1;">' . $tab['desc'] . '</div>',
+                $tabUrl,
+                [
+                    'class' => 'nav-link ' . $isActive,
+                    'style' => 'font-weight:' . ($isActive ? 'bold' : 'normal') . '; transition: background 0.3s, color 0.3s; min-width: 120px;',
+                    'title' => $tab['tooltip'],
+                    'aria-label' => $tab['label'],
+                    'tabindex' => 0,
+                ]
+            );
+            echo '</li>';
+        }
+        echo '</ul>';
+        ?>
+    </div>
 
     <?= GridView::widget([
         'dataProvider' => $dataProvider,
@@ -286,18 +339,19 @@ if ($show == 0) {
             [
                 'attribute' => 'status',
                 'headerOptions' => ['style' => 'width:40px;'],
-                'header' => '<a href="#" id="header-checkbox" name="header-checkbox" class="nostyle""
-                            onclick="headerCheckbox(' . $show . ');" >' . $headerStatus[$show + 1] . '</a>',
+                // Remove the clickable box from the header
+                'header' => '',
                 'label' => '',
                 'format' => 'raw', // to render raw HTML
                 'value' => function ($model) use ($questionIds, $quiz_id) {
                     $isChecked = in_array($model->id, $questionIds);
-                    $status = 'Question included (checked) or not (unchecked)';
+                    $status = $isChecked ? 'Unlink this question from the quiz' : 'Link this question to the quiz';
                     return Html::checkbox('status[]', $isChecked, [
                         'class' => 'status-checkbox',
                         'question-id' => $model->id,
                         'quiz-id' => $quiz_id,
                         'title' => $status,
+                        'aria-label' => $status,
                     ]);
                 },
             ],
@@ -349,7 +403,11 @@ if ($show == 0) {
     <p>
         <hr>
         <?php
-        echo Html::a('➕ New', ['create', 'quiz_id' => $quiz['id']], ['class' => 'btn btn-outline-success quiz-button', 'title' => 'Create new question']);
+        echo Html::a('➕ New', ['create', 'quiz_id' => $quiz['id']], [
+            'class' => 'btn btn-outline-success quiz-button',
+            'title' => 'Create a new question for this quiz',
+            'aria-label' => 'Create new question',
+        ]);
         ?>
         <span style="margin-left:50px;"> </span>
 
@@ -357,17 +415,33 @@ if ($show == 0) {
         echo Html::button('🔗 Link All', [
             'class' => 'btn btn-outline-secondary quiz-button',
             'onclick' => 'checkAllCheckboxes(true);',
+            'title' => 'Link all questions to this quiz',
+            'aria-label' => 'Link all questions',
         ]);
         echo Html::button('🔗 Unlink All', [
             'class' => 'btn btn-outline-secondary quiz-button',
             'onclick' => 'checkAllCheckboxes(false);',
+            'title' => 'Unlink all questions from this quiz',
+            'aria-label' => 'Unlink all questions',
         ]);
         ?>
         <span style="margin-left:50px;"> </span>
         <?php
-        echo Html::a('📥 import', ['import', 'quiz_id' => $quiz['id']], ['class' => 'btn btn-outline-secondary quiz-button', 'title' => '']);
-        echo Html::a('📤 export', ['export', 'quiz_id' => $quiz['id']], ['class' => 'btn btn-outline-secondary quiz-button', 'title' => '']);
-        echo Html::a('✏️ Multi Edit', ['multiple-update', 'quiz_id' => $quiz['id']], ['class' => 'btn btn-outline-secondary quiz-button', 'title' => '']);
+        echo Html::a('📥 import', ['import', 'quiz_id' => $quiz['id']], [
+            'class' => 'btn btn-outline-secondary quiz-button',
+            'title' => 'Import questions in bulk for this quiz',
+            'aria-label' => 'Import questions',
+        ]);
+        echo Html::a('📤 export', ['export', 'quiz_id' => $quiz['id']], [
+            'class' => 'btn btn-outline-secondary quiz-button',
+            'title' => 'Export all questions for this quiz',
+            'aria-label' => 'Export questions',
+        ]);
+        echo Html::a('✏️ Multi Edit', ['multiple-update', 'quiz_id' => $quiz['id']], [
+            'class' => 'btn btn-outline-secondary quiz-button',
+            'title' => 'Edit multiple questions at once',
+            'aria-label' => 'Multi Edit',
+        ]);
         ?>
         <span style="margin-left:50px;"> </span>
         <?php

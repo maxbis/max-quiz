@@ -109,7 +109,7 @@ $statusClass = $quizActive == 1 ? 'dot-green' : 'dot-red';
         if (isset($params['quiz_id'])) { ?>
         <span style="margin-left:20px;"></span>
             <a href="<?= Url::to(['submission/export', 'quiz_id' => $params['quiz_id']]) ?>"
-                class="btn btn-outline-dark quiz-button" title="Export all results per student">📊 Results</a>
+                class="btn btn-outline-dark quiz-button" title="Export all results per student">📊&nbsp;Results</a>
             <a href="<?= Url::to(['submission/export-stats', 'quiz_id' => $params['quiz_id']]) ?>"
                 class="btn btn-outline-dark quiz-button" title="Export the stats per question">📊 Stats</a>
         <?php } ?>

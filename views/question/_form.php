@@ -114,19 +114,115 @@ use yii\widgets\ActiveForm;
 
         <?php if (isset($questionLinks) && $questionLinks != '' ) { ?>
             <div class="row justify-content-start">
-                <?php
-                foreach ($questionLinks as $link) {
-                    echo '<div class="col-1 checkbox" style="margin-left: 20px;font-size:11px;white-space: nowrap;">';
-                    echo Html::hiddenInput('questionLinks[' . $link['id'] . ']', 0);
-                    echo Html::checkbox('questionLinks[' . $link['id'] . ']', $link['active'], [
-                        'label' => Html::encode(shortText($link['name'])),
-                        'value' => $link['active'],
-                        'title' => $link['name'],
-                    ]);
-                    echo '</div>';
-                }
-                ?>
+                <div class="col-12">
+                    <h6>Quiz Assignments: 
+                        <span class="badge bg-info" id="assignmentCount">
+                            <?= count(array_filter($questionLinks, function($link) { return $link['active']; })) ?> of <?= count($questionLinks) ?> selected
+                        </span>
+                    </h6>
+                    
+                    <!-- Collapsible Quiz List -->
+                    <div class="mb-3">
+                        <button class="btn btn-outline-primary btn-sm" type="button" data-bs-toggle="collapse" data-bs-target="#quizAssignments" aria-expanded="false">
+                            📋 Manage Quiz Assignments
+                        </button>
+                        <button type="button" class="btn btn-outline-success btn-sm ms-2" onclick="toggleAllQuizzes(true)">✓ Select All</button>
+                        <button type="button" class="btn btn-outline-danger btn-sm" onclick="toggleAllQuizzes(false)">✗ Deselect All</button>
+                    </div>
+                    
+                    <div class="collapse" id="quizAssignments">
+                        <div class="card card-body">
+                            <div class="mb-3">
+                                <input type="text" class="form-control form-control-sm" placeholder="🔍 Search quizzes..." onkeyup="searchQuizzes(this)">
+                            </div>
+                            
+                            <div class="quiz-assignments-list" style="max-height: 350px; overflow-y: auto;">
+                                <?php foreach ($questionLinks as $link): ?>
+                                    <div class="quiz-assignment-item border rounded p-2 mb-2" data-quiz-name="<?= strtolower($link['name']) ?>">
+                                        <div class="form-check d-flex justify-content-between align-items-center">
+                                            <div class="d-flex align-items-center">
+                                                <?= Html::hiddenInput('questionLinks[' . $link['id'] . ']', 0) ?>
+                                                <?= Html::checkbox('questionLinks[' . $link['id'] . ']', $link['active'], [
+                                                    'id' => 'quiz_assignment_' . $link['id'],
+                                                    'class' => 'form-check-input me-2 quiz-assignment-checkbox',
+                                                    'value' => 1,
+                                                    'onchange' => 'updateAssignmentCount()'
+                                                ]) ?>
+                                                <label class="form-check-label flex-grow-1" for="quiz_assignment_<?= $link['id'] ?>">
+                                                    <strong><?= Html::encode($link['name']) ?></strong>
+                                                </label>
+                                            </div>
+                                            <span class="badge <?= $link['active'] ? 'bg-success' : 'bg-secondary' ?> ms-2">
+                                                <?= $link['active'] ? 'Active' : 'Inactive' ?>
+                                            </span>
+                                        </div>
+                                    </div>
+                                <?php endforeach; ?>
+                            </div>
+                        </div>
+                    </div>
+                </div>
             </div>
+
+            <style>
+                .quiz-assignment-item:hover {
+                    background-color: #f8f9fa;
+                }
+                
+                .quiz-assignment-item .form-check-label {
+                    cursor: pointer;
+                    width: 100%;
+                }
+                
+                .quiz-assignments-list {
+                    background-color: #ffffff;
+                }
+            </style>
+
+            <script>
+                function updateAssignmentCount() {
+                    const checkedBoxes = document.querySelectorAll('.quiz-assignment-checkbox:checked');
+                    const totalBoxes = document.querySelectorAll('.quiz-assignment-checkbox');
+                    document.getElementById('assignmentCount').textContent = 
+                        checkedBoxes.length + ' of ' + totalBoxes.length + ' selected';
+                    
+                    // Update individual badges
+                    document.querySelectorAll('.quiz-assignment-checkbox').forEach(checkbox => {
+                        const quizId = checkbox.id.replace('quiz_assignment_', '');
+                        const badge = checkbox.closest('.quiz-assignment-item').querySelector('.badge');
+                        if (checkbox.checked) {
+                            badge.textContent = 'Active';
+                            badge.className = 'badge bg-success ms-2';
+                        } else {
+                            badge.textContent = 'Inactive';
+                            badge.className = 'badge bg-secondary ms-2';
+                        }
+                    });
+                }
+
+                function toggleAllQuizzes(selectAll) {
+                    const visibleCheckboxes = document.querySelectorAll('.quiz-assignment-item:not([style*="display: none"]) .quiz-assignment-checkbox');
+                    visibleCheckboxes.forEach(checkbox => checkbox.checked = selectAll);
+                    updateAssignmentCount();
+                }
+
+                function searchQuizzes(input) {
+                    const searchTerm = input.value.toLowerCase();
+                    const quizItems = document.querySelectorAll('.quiz-assignment-item');
+                    
+                    quizItems.forEach(item => {
+                        const quizName = item.getAttribute('data-quiz-name');
+                        if (quizName.includes(searchTerm)) {
+                            item.style.display = 'block';
+                        } else {
+                            item.style.display = 'none';
+                        }
+                    });
+                }
+
+                // Initialize count on page load
+                document.addEventListener('DOMContentLoaded', updateAssignmentCount);
+            </script>
         <?php } ?>
         
 
