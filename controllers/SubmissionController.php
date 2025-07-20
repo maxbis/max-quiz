@@ -134,7 +134,9 @@ class SubmissionController extends Controller
 
     public function actionStart() // start a new quiz
     {
-        usleep(500000); // wait 0.5 seconds to prevent (re)post-DOS-attack
+        $delay = random_int(200_000, 30_00_000); // wait 0.2-3.0 seconds to prevent (re)post-DOS-attack and avoi overloading
+        usleep($delay);
+
         $request = Yii::$app->request;
         $user_agent = Yii::$app->request->userAgent;
         $user_agent = substr($user_agent, 0, 200); // make sure $user_agent is no longer than 200 chars
@@ -149,9 +151,9 @@ class SubmissionController extends Controller
             return $this->redirect(['/submission/create']);
         }
 
-        if (strlen($first_name) < 2 || strlen($last_name) < 2) {
-            return $this->redirect(Yii::$app->request->referrer);
-        }
+        // if (strlen($first_name) < 2 || strlen($last_name) < 2) {
+        //     return $this->redirect(Yii::$app->request->referrer);
+        // }
 
         if (strtolower($user_agent) == "max-quiz" && $password == "") { // if user_agent is quiz client (max-quiz) and there''s only one quiz active, start that quiz.
             $sql = "select * from quiz where active = 1";
@@ -164,6 +166,8 @@ class SubmissionController extends Controller
 
         $sql = "select * from quiz where password='$password' and active = 1"; // password is same as quiz code
         $quiz = Yii::$app->db->createCommand($sql)->queryOne();
+        // echo "<pre>";print_r($quiz);
+        // exit();
         if (!$quiz) {
             return $this->redirect(Yii::$app->request->referrer);
         }

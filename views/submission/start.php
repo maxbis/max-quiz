@@ -95,6 +95,26 @@ $csrfToken = Yii::$app->request->getCsrfToken();
                 transform: rotate(360deg);
             }
         }
+
+        input:not(:placeholder-shown):invalid {
+            border-bottom: 2px solid #e3342f;
+        }
+
+        input:valid {
+            border-bottom: 2px solid #38c172;
+        }
+
+        .text-uppercase {
+            text-transform: uppercase;
+        }
+
+        #submitButton {
+            visibility: hidden;
+        }
+
+        form:valid #submitButton {
+            visibility: visible;
+        }
     </style>
 
 </head>
@@ -112,38 +132,46 @@ $csrfToken = Yii::$app->request->getCsrfToken();
         <div class="container h-100">
             <div class="row h-100">
                 <!-- Form on the right -->
-                <div class="col-md-6 offset-md-6 d-flex align-items-center justify-content-center">
+                <div class="col-md-6 offset-md-5 d-flex align-items-center justify-content-center">
                     <div class="form-container">
-                        <h2 class="mb-5">Start Quiz</h2>
+                        <h2 class="mb-4 col-sm-10">Start Quiz</h2>
                         <form action="<?= Url::to(['/submission/start']) ?>" id="form" method="POST">
                             <input type="hidden" name="<?= $csrfTokenName ?>" value="<?= $csrfToken ?>">
                             <input type="hidden" name="answer_order" value="">
-                            <div class="form-group">
+
+                            <div class="form-group col-sm-10">
                                 <label for="voornaam">First Name</label>
                                 <input type="text" class="form-control" id="first_name" name="first_name"
-                                    placeholder="First Name" minlength="2"  maxlength="30" required>
+                                    placeholder="First Name" minlength="2" maxlength="30" required pattern=".{2,30}"
+                                    title="Please enter between 2 and 30 characters.">
                             </div>
-                            <div class="form-group">
+                            <div class="form-group col-sm-10">
                                 <label for="achternaam">Last Name</label>
                                 <input type="text" class="form-control" id="last_name" name="last_name"
-                                    placeholder="Last Name"  minlength="2" maxlength="30" required>
+                                    placeholder="Last Name" minlength="2" maxlength="30" required>
                             </div>
-                            <div class="form-group">
+
+
+                            <div class="form-group col-sm-10">
                                 <label for="student_nr">Student Number</label>
                                 <input type="text" class="form-control" id="student_nr" name="student_nr"
-                                    placeholder="Student Number"  minlength="4" maxlength="8" required>
+                                    placeholder="Student Number" minlength="4" maxlength="8" required>
                             </div>
-                            <div class="form-group">
+                            <div class="form-group col-sm-10">
                                 <label for="klas">Class</label>
                                 <input type="text" class="form-control" id="class" name="class" placeholder="Class"
-                                   minlength="1"  maxlength="3" required>
+                                    minlength="1" maxlength="3" required>
                             </div>
-                            <div class="form-group">
+
+
+                            <div class="form-group col-sm-10 ">
                                 <label for="wachtwoord">Quiz Code</label>
-                                <input type="text" class="form-control" id="password" name="password"
+                                <input type="text" class="form-control text-uppercase" id="password" name="password"
                                     placeholder="Quiz Code" minlength="3" maxlength="30" required>
                             </div>
-                            <button type="button" id="submitButton" class="btn btn-primary mt-3">Start</button>
+
+                            <button type="button" id="submitButton"
+                                class="btn btn-primary ml-3 mt-3 px-4">Start</button>
                         </form>
                     </div>
                 </div>
