@@ -129,9 +129,9 @@ $csrfToken = Yii::$app->request->getCsrfToken();
                                     placeholder="Last Name"  minlength="2" maxlength="30" required>
                             </div>
                             <div class="form-group">
-                                <label for="student_nr">Student Nummer</label>
+                                <label for="student_nr">Student Number</label>
                                 <input type="text" class="form-control" id="student_nr" name="student_nr"
-                                    placeholder="Student Nummer"  minlength="4" maxlength="8" required>
+                                    placeholder="Student Number"  minlength="4" maxlength="8" required>
                             </div>
                             <div class="form-group">
                                 <label for="klas">Class</label>
