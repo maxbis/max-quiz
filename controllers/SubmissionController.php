@@ -142,6 +142,7 @@ class SubmissionController extends Controller
         if ($request->isPost) {
             $first_name = ucfirst($request->post('first_name'));
             $last_name = ucfirst($request->post('last_name'));
+            $student_nr = $request->post('student_nr');
             $class = $request->post('class');
             $password = $request->post('password');
         } else {
@@ -201,8 +202,8 @@ class SubmissionController extends Controller
 
         $ip_address = Yii::$app->request->userIP;
 
-        $sql = "insert into submission (token, first_name, last_name, class, question_order, no_questions, no_answered, no_correct, quiz_id, ip_address, user_agent, answer_order)
-                values ('$token', '$first_name', '$last_name', '$class', '$question_order', $no_questions, 0, 0, $quiz_id, '$ip_address', '$user_agent', '')";
+        $sql = "insert into submission (token, first_name, last_name, student_nr, class, question_order, no_questions, no_answered, no_correct, quiz_id, ip_address, user_agent, answer_order)
+                values ('$token', '$first_name', '$last_name', '$student_nr', '$class', '$question_order', $no_questions, 0, 0, $quiz_id, '$ip_address', '$user_agent', '')";
         $result = Yii::$app->db->createCommand($sql)->execute();
 
         $cookie = new Cookie([

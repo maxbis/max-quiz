@@ -36,7 +36,7 @@ class Submission extends \yii\db\ActiveRecord
     public function rules()
     {
         return [
-            [['no_questions', 'no_answered', 'no_correct', 'quiz_id'], 'integer'],
+            [['student_nr', 'no_questions', 'no_answered', 'no_correct', 'quiz_id'], 'integer'],
             [['first_name', 'last_name', 'class', 'question_order', 'no_questions', 'finished', 'quiz_id'], 'required'],
             [['start_time', 'end_time'], 'safe'],
             [['first_name', 'last_name'], 'string', 'max' => 40],
@@ -57,6 +57,7 @@ class Submission extends \yii\db\ActiveRecord
             'token' => 'Token',
             'first_name' => 'First Name',
             'last_name' => 'Last Name',
+            'student_nr' => 'Student Number',
             'class' => 'Class',
             'start_time' => 'Start Time',
             'end_time' => 'End Time',

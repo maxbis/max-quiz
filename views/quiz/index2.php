@@ -174,10 +174,6 @@ $this->registerJs($js); // Register the JavaScript code
         background-color: #f8f8f8;
     }
 
-    tr:hover {
-        cursor: pointer;
-        background-color: #f0f0f9;
-    }
 
     tr:hover .grey-column {
         background-color: #f0f0f9;
@@ -198,6 +194,10 @@ $this->registerJs($js); // Register the JavaScript code
         font-weight: 600 !important;
         font-size: 1.08em;
         border-bottom: 2px solid #d0d7e5;
+    }
+
+    tr:hover {
+        background: #e6f7ff;
     }
 </style>
 

@@ -14,7 +14,7 @@ $csrfToken = Yii::$app->request->getCsrfToken();
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Form with Background Image</title>
+    <title>Start Quiz</title>
     <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css" rel="stylesheet">
 
     <style>
@@ -121,22 +121,27 @@ $csrfToken = Yii::$app->request->getCsrfToken();
                             <div class="form-group">
                                 <label for="voornaam">First Name</label>
                                 <input type="text" class="form-control" id="first_name" name="first_name"
-                                    placeholder="First Name"  maxlength="30" required>
+                                    placeholder="First Name" minlength="2"  maxlength="30" required>
                             </div>
                             <div class="form-group">
                                 <label for="achternaam">Last Name</label>
                                 <input type="text" class="form-control" id="last_name" name="last_name"
-                                    placeholder="Last Name"  maxlength="30" required>
+                                    placeholder="Last Name"  minlength="2" maxlength="30" required>
+                            </div>
+                            <div class="form-group">
+                                <label for="student_nr">Student Nummer</label>
+                                <input type="text" class="form-control" id="student_nr" name="student_nr"
+                                    placeholder="Student Nummer"  minlength="4" maxlength="8" required>
                             </div>
                             <div class="form-group">
                                 <label for="klas">Class</label>
                                 <input type="text" class="form-control" id="class" name="class" placeholder="Class"
-                                    maxlength="3" required>
+                                   minlength="1"  maxlength="3" required>
                             </div>
                             <div class="form-group">
                                 <label for="wachtwoord">Quiz Code</label>
                                 <input type="text" class="form-control" id="password" name="password"
-                                    placeholder="Quiz Code"  maxlength="30" required>
+                                    placeholder="Quiz Code" minlength="3" maxlength="30" required>
                             </div>
                             <button type="button" id="submitButton" class="btn btn-primary mt-3">Start</button>
                         </form>
