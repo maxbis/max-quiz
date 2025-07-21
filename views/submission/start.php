@@ -204,14 +204,6 @@ $csrfToken = Yii::$app->request->getCsrfToken();
             return null;
         }
 
-        function triggerInputEvent(element) {
-            const event = new Event('input', {
-                bubbles: true,
-                cancelable: true,
-            });
-            element.dispatchEvent(event);
-        }
-
         // When the page loads, fill the form with cookie data if it exists.
         document.addEventListener('DOMContentLoaded', () => {
             const studentInfoCookie = getCookie('studentInfo');
@@ -229,8 +221,6 @@ $csrfToken = Yii::$app->request->getCsrfToken();
                         const element = document.getElementById(id);
                         if (element && studentInfo[fields[id]]) {
                             element.value = studentInfo[fields[id]];
-                            // Trigger input event to ensure CSS pseudo-classes are updated
-                            triggerInputEvent(element); 
                         }
                     }
                 } catch (e) {
