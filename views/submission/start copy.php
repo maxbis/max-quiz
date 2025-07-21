@@ -141,7 +141,7 @@ $csrfToken = Yii::$app->request->getCsrfToken();
 
                             <div class="form-group col-sm-10">
                                 <label for="voornaam">First Name</label>
-                                <input type="text" class="form-control" id="first_name" name="first_name" 
+                                <input type="text" class="form-control" id="first_name" name="first_name"
                                     placeholder="First Name" minlength="2" maxlength="30" required pattern=".{2,30}"
                                     title="Please enter between 2 and 30 characters.">
                             </div>
