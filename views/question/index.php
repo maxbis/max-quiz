@@ -437,6 +437,11 @@ if ($show == 0) {
             'title' => 'Export all questions for this quiz',
             'aria-label' => 'Export questions',
         ]);
+        echo Html::a('📄 PDF', ['pdf', 'quiz_id' => $quiz['id']], [
+            'class' => 'btn btn-outline-primary quiz-button',
+            'title' => 'Generate PDF with all questions for this quiz',
+            'aria-label' => 'Generate PDF',
+        ]);
         echo Html::a('✏️ Multi Edit', ['multiple-update', 'quiz_id' => $quiz['id']], [
             'class' => 'btn btn-outline-secondary quiz-button',
             'title' => 'Edit multiple questions at once',

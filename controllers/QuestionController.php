@@ -554,6 +554,70 @@ class QuestionController extends Controller
         return $this->render('export', ['output' => $output]);
     }
 
+    public function actionPdf($quiz_id)
+    {
+        if ($quiz_id == "") {
+            $sql = "SELECT max(id) id FROM quiz WHERE active = 1";
+            $quiz_id = Yii::$app->db->createCommand($sql)->queryOne()['id'];
+            if ($quiz_id == "") {
+                $sql = "SELECT max(id) id FROM quiz";
+                $quiz_id = Yii::$app->db->createCommand($sql)->queryOne()['id'];
+                if ($quiz_id == "") {
+                    return $this->redirect(['/question']);
+                }
+            }
+        }
+
+        // Get quiz information - only select existing columns
+        $sql = "select name from quiz where id=$quiz_id";
+        $quiz = Yii::$app->db->createCommand($sql)->queryOne();
+
+        // Get questions for this quiz
+        $sql = "select
+                q.id id, question question, a1, a2, a3, a4, a5, a6, correct, label
+                from question q
+                join quizquestion qq on qq.question_id = q.id
+                where qq.quiz_id=$quiz_id and qq.active=1
+                order by id ASC";
+
+        $questions = Yii::$app->db->createCommand($sql)->queryAll();
+
+        // Generate PDF using mPDF
+        $mpdf = new \Mpdf\Mpdf([
+            'mode' => 'utf-8',
+            'format' => 'A4',
+            'margin_left' => 20,
+            'margin_right' => 20,
+            'margin_top' => 30,
+            'margin_bottom' => 30,
+            'margin_header' => 15,
+            'margin_footer' => 15,
+        ]);
+
+        // Set document properties
+        $mpdf->SetTitle($quiz['name'] . ' - Questions');
+        $mpdf->SetAuthor('Max Quiz System');
+        $mpdf->SetCreator('Max Quiz System');
+
+        // Set header and footer
+        $mpdf->SetHeader('Max Quiz System|' . $quiz['name'] . '|' . date('Y-m-d H:i'));
+        $mpdf->SetFooter('Page {PAGENO} of {nbpg}');
+
+        // Generate HTML content
+        $html = $this->renderPartial('pdf', [
+            'quiz' => $quiz,
+            'questions' => $questions,
+        ]);
+
+        // Write HTML to PDF
+        $mpdf->WriteHTML($html);
+
+        // Output PDF
+        $filename = 'quiz_' . $quiz_id . '_' . date('Ymd_His') . '.pdf';
+        $mpdf->Output($filename, 'D'); // 'D' for download
+        exit;
+    }
+
     public function actionBulkDelete($quiz_id)
     {
         _dd('Not available, only for testing');

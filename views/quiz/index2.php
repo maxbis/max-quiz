@@ -272,6 +272,7 @@ $this->registerJs($js); // Register the JavaScript code
                         <td>
                             <?= Html::a('✏️ Edit', ['/quiz/update', 'id' => $quiz['id']], ['class' => 'btn quiz-button-small', 'title' => 'Edit Quiz']) ?>
                             <?= Html::a('👁️ View', ['/question/list', 'quiz_id' => $quiz['id']], ['class' => 'btn quiz-button-small', 'title' => 'View Questions']) ?>
+                            <?= Html::a('📄 PDF', ['/question/pdf', 'quiz_id' => $quiz['id']], ['class' => 'btn quiz-button-small', 'title' => 'Generate PDF']) ?>
                             <?= Html::a('❌ Delete', ['/quiz/delete', 'id' => $quiz['id']], [
                                 'class' => 'btn quiz-button-small',
                                 'title' => 'Delete Quiz',
