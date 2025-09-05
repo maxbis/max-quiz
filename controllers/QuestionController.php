@@ -178,7 +178,7 @@ class QuestionController extends Controller
                     $quizquestion->active = 1;
                     $quizquestion->save();
                 }
-                return $this->redirect(['view', 'id' => $model->id]);
+                return $this->redirect(['index', 'quiz_id' => $quiz_id]);
             }
         } else {
             $model->loadDefaultValues();

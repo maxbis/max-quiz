@@ -74,42 +74,6 @@ require_once Yii::getAlias('@app/views/include/functions.php');
             overflow-x: auto;
         }
         
-        .answers {
-            margin-left: 20px;
-        }
-        
-        .answer {
-            margin-bottom: 8px;
-            padding: 5px 0;
-        }
-        
-        .answer-label {
-            font-weight: bold;
-            color: #2c3e50;
-            margin-right: 8px;
-        }
-        
-        .answer-text {
-            color: #34495e;
-        }
-        
-        .correct-answer {
-            background-color: #d5f4e6;
-            border-left: 3px solid #27ae60;
-            padding-left: 10px;
-        }
-        
-        .question-label {
-            background-color: #f39c12;
-            color: white;
-            padding: 3px 8px;
-            border-radius: 12px;
-            font-size: 10px;
-            font-weight: bold;
-            display: inline-block;
-            margin-top: 10px;
-        }
-        
         .page-break {
             page-break-before: always;
         }
@@ -145,20 +109,6 @@ require_once Yii::getAlias('@app/views/include/functions.php');
             <?= escapeHtmlExceptTags($question['question']) ?>
         </div>
         
-        <div class="answers">
-            <?php for ($i = 1; $i <= 6; $i++): ?>
-                <?php if (!empty($question['a' . $i])): ?>
-                    <div class="answer <?= ($question['correct'] == $i) ? 'correct-answer' : '' ?>">
-                        <span class="answer-label"><?= chr(64 + $i) ?>.</span>
-                        <span class="answer-text"><?= htmlspecialchars($question['a' . $i]) ?></span>
-                    </div>
-                <?php endif; ?>
-            <?php endfor; ?>
-        </div>
-        
-        <?php if (!empty($question['label'])): ?>
-            <div class="question-label"><?= htmlspecialchars($question['label']) ?></div>
-        <?php endif; ?>
     </div>
     <?php endforeach; ?>
 </body>
