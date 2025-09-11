@@ -94,12 +94,7 @@ require_once Yii::getAlias('@app/views/include/functions.php');
     <?php 
     $questionCount = count($questions);
     foreach ($questions as $index => $question): 
-        // Add page break if this question would split across pages
-        if ($index > 0 && $index % 3 == 0): // Adjust this number based on question length
     ?>
-        <div class="page-break"></div>
-    <?php endif; ?>
-    
     <div class="question-container">
         <div class="question-header">
             Question <?= $question['id'] ?> (<?= $index + 1 ?> of <?= $questionCount ?>)

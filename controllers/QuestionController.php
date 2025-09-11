@@ -578,7 +578,7 @@ class QuestionController extends Controller
                 from question q
                 join quizquestion qq on qq.question_id = q.id
                 where qq.quiz_id=$quiz_id and qq.active=1
-                order by id ASC";
+                order by id DESC";
 
         $questions = Yii::$app->db->createCommand($sql)->queryAll();
 
