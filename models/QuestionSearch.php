@@ -17,7 +17,7 @@ class QuestionSearch extends Question
     public function rules()
     {
         return [
-            [['id', 'correct'], 'integer'],
+            [['id', 'correct', 'sort_order'], 'integer'],
             [['question', 'a1', 'a2', 'a3', 'a4', 'a5', 'a6', 'label'], 'safe'],
         ];
     }
@@ -51,17 +51,18 @@ class QuestionSearch extends Question
             }
         }
 
+        // Add custom ordering to handle NULL sort_order as 0
+        $query->orderBy([
+            new \yii\db\Expression('COALESCE(sort_order, 0) ASC'),
+            'id' => SORT_ASC
+        ]);
+
         // add conditions that should always apply here
 
         $dataProvider = new ActiveDataProvider([
             'query' => $query,
             'pagination' => [
                 'pageSize' => 20,
-            ],
-            'sort' => [
-                'defaultOrder' => [
-                    'id' => SORT_DESC, // Sort by id in descending order
-                ],
             ],
         ]);
 

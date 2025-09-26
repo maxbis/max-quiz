@@ -315,11 +315,11 @@ class QuestionController extends Controller
     public function actionList($quiz_id, $view = 'list')
     {
         $sql = "select
-                q.id id, question question, a1, a2, a3, a4, a5, a6, correct, label
+                q.id id, question question, a1, a2, a3, a4, a5, a6, correct, label, sort_order
                 from question q
                 join quizquestion qq on qq.question_id = q.id
                 where qq.quiz_id=$quiz_id and qq.active=1
-                order by id DESC";
+                order by COALESCE(sort_order, 0) ASC, id ASC";
         $questions = Yii::$app->db->createCommand($sql)->queryAll();
 
         // $sql = "select question_id id, sum(answer_no) answer, sum(correct) correct from log where quiz_id = $quiz_id group by 1";
@@ -530,11 +530,11 @@ class QuestionController extends Controller
         // where qq.quiz_id=$quiz_id and qq.active=1
 
         $sql = "select
-                q.id id, question question, a1, a2, a3, a4, a5, a6, correct, label
+                q.id id, question question, a1, a2, a3, a4, a5, a6, correct, label, sort_order
                 from question q
                 join quizquestion qq on qq.question_id = q.id
                 where qq.quiz_id=$quiz_id and qq.active=1
-                order by id DESC";
+                order by COALESCE(sort_order, 0) ASC, id ASC";
 
         $questions = Yii::$app->db->createCommand($sql)->queryAll();
         $output = "";
@@ -574,11 +574,11 @@ class QuestionController extends Controller
 
         // Get questions for this quiz
         $sql = "select
-                q.id id, question question, a1, a2, a3, a4, a5, a6, correct, label
+                q.id id, question question, a1, a2, a3, a4, a5, a6, correct, label, sort_order
                 from question q
                 join quizquestion qq on qq.question_id = q.id
                 where qq.quiz_id=$quiz_id and qq.active=1
-                order by id DESC";
+                order by COALESCE(sort_order, 0) ASC, id ASC";
 
         $questions = Yii::$app->db->createCommand($sql)->queryAll();
 

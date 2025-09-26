@@ -375,6 +375,15 @@ if ($show == 0) {
                 'contentOptions' => ['style' => 'color: #404080;'],
             ],
             [
+                'attribute' => 'sort_order',
+                'label' => 'Sort',
+                'headerOptions' => ['style' => 'width:60px;'],
+                'contentOptions' => ['style' => 'color: #404080;'],
+                'value' => function ($model) {
+                    return $model->sort_order === null ? '' : $model->sort_order;
+                },
+            ],
+            [
                 'attribute' => 'id',
                 'label' => 'id',
                 'headerOptions' => ['style' => 'width:30px;'],

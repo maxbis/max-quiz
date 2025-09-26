@@ -67,7 +67,7 @@ use yii\widgets\ActiveForm;
                     <div class="col">
                         <?= $form->field($model, "[$index]label")->textInput([
                             'rows' => 2,
-                            'style' => 'width: 450px;',
+                            'style' => 'width: 300px;',
                             'maxlength' => true
                         ]) ?>
                     </div>
@@ -75,6 +75,12 @@ use yii\widgets\ActiveForm;
                         <?= $form->field($model, "[$index]correct")->textInput([
                             'style' => 'width: 60px;',
                         ])->label('Correct') ?>
+                    </div>
+                    <div class="col">
+                        <?= $form->field($model, "[$index]sort_order")->textInput([
+                            'style' => 'width: 80px;',
+                            'placeholder' => 'Optional'
+                        ])->label('Sort') ?>
                     </div>
                     <?php
                         $b1 = Html::a(

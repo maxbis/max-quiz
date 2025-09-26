@@ -108,6 +108,13 @@ use yii\widgets\ActiveForm;
                     'maxlength' => true
                 ]) ?>
             </div>
+            <div class="col">
+                <?= $form->field($model, 'sort_order')->textInput([
+                    'style' => 'width: 120px;',
+                    'maxlength' => true,
+                    'placeholder' => 'Optional'
+                ]) ?>
+            </div>
         </div>
 
         <hr>

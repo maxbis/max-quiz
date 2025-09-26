@@ -17,6 +17,7 @@ use Yii;
  * @property string|null $a6
  * @property int $correct
  * @property string|null $label
+ * @property int|null $sort_order
  */
 class Question extends \yii\db\ActiveRecord
 {
@@ -35,7 +36,7 @@ class Question extends \yii\db\ActiveRecord
     {
         return [
             [['question', 'a1', 'a2', 'correct'], 'required'],
-            [['correct'], 'integer'],
+            [['correct', 'sort_order'], 'integer'],
             [['question'], 'string', 'max' => 800],
             [['a1', 'a2', 'a3', 'a4', 'a5', 'a6'], 'string', 'max' => 300],
             [['label'], 'string', 'max' => 100],
@@ -58,6 +59,7 @@ class Question extends \yii\db\ActiveRecord
             'a6' => 'Answer #6',
             'correct' => 'Correct Answer',
             'label' => 'Label',
+            'sort_order' => 'Sort Order',
         ];
     }
 
