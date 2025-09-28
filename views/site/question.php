@@ -422,12 +422,18 @@ echo escapeHtmlExceptTags($question['question']);
                     let deltaX = Math.abs(event.clientX - initialX);
                     let deltaY = Math.abs(event.clientY - initialY);
 
-                    // If the distance dragged in X and Y direction is more than 100 pixels, blank the screen
-                    if ( (deltaX + deltaY) > 100) {
+                    if ((deltaX + deltaY) > 50 ) {
+                        // Clear any text selection to prevent cheating
+                        if (window.getSelection) {
+                            window.getSelection().removeAllRanges();
+                        } else if (document.selection) {
+                            document.selection.empty();
+                        }
+                        
                         document.body.style.visibility = 'hidden'; // Blank the page
                         setTimeout(function () {
                             document.body.style.visibility = 'visible'; 
-                        }, 500); 
+                        }, 2000); 
 
                         // Reset dragging to prevent repeated triggering
                         dragging = false;
