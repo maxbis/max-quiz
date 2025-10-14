@@ -286,4 +286,84 @@ class QuizController extends Controller
         ]);
     }
 
+    /**
+     * AJAX endpoint to update question order via drag-and-drop
+     */
+    public function actionUpdateQuestionOrder($id)
+    {
+        Yii::$app->response->format = \yii\web\Response::FORMAT_JSON;
+        
+        // Verify quiz exists
+        $quiz = $this->findModel($id);
+        
+        if (!$this->request->isPost) {
+            return [
+                'success' => false,
+                'message' => 'Only POST requests are allowed'
+            ];
+        }
+
+        try {
+            // Get JSON payload
+            $rawBody = Yii::$app->request->getRawBody();
+            $data = json_decode($rawBody, true);
+            
+            if (!isset($data['order']) || !is_array($data['order'])) {
+                return [
+                    'success' => false,
+                    'message' => 'Invalid data format'
+                ];
+            }
+
+            $orderData = $data['order'];
+            
+            // Update order for each question in a transaction
+            $transaction = Yii::$app->db->beginTransaction();
+            
+            try {
+                foreach ($orderData as $item) {
+                    $questionId = (int)$item['question_id'];
+                    $order = (int)$item['order'];
+                    
+                    // Update the order in quizquestion table
+                    $sql = "UPDATE quizquestion 
+                            SET `order` = :order 
+                            WHERE quiz_id = :quiz_id 
+                            AND question_id = :question_id 
+                            AND active = 1";
+                    
+                    Yii::$app->db->createCommand($sql)
+                        ->bindValue(':order', $order)
+                        ->bindValue(':quiz_id', $id)
+                        ->bindValue(':question_id', $questionId)
+                        ->execute();
+                }
+                
+                $transaction->commit();
+                
+                return [
+                    'success' => true,
+                    'message' => 'Question order updated successfully'
+                ];
+                
+            } catch (\Exception $e) {
+                $transaction->rollBack();
+                Yii::error('Failed to update question order: ' . $e->getMessage(), __METHOD__);
+                
+                return [
+                    'success' => false,
+                    'message' => 'Database error: ' . $e->getMessage()
+                ];
+            }
+            
+        } catch (\Exception $e) {
+            Yii::error('Error in updateQuestionOrder: ' . $e->getMessage(), __METHOD__);
+            
+            return [
+                'success' => false,
+                'message' => 'Server error: ' . $e->getMessage()
+            ];
+        }
+    }
+
 }

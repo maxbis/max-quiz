@@ -13,6 +13,9 @@ $this->title = 'Edit Question Labels - ' . Html::encode($quiz['name']);
 <html>
 <head>
     <title><?= Html::encode($this->title) ?></title>
+    <!-- SortableJS from CDN -->
+    <script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.0/Sortable.min.js"></script>
+    
     <style>
         body {
             font-family: Arial, sans-serif;
@@ -47,6 +50,52 @@ $this->title = 'Edit Question Labels - ' . Html::encode($quiz['name']);
             box-shadow: 0 2px 4px rgba(0,0,0,0.05);
             display: flex;
             gap: 20px;
+            transition: all 0.3s ease;
+            cursor: move;
+        }
+
+        .question-item:hover {
+            box-shadow: 0 4px 8px rgba(0,0,0,0.15);
+            border-color: #4CAF50;
+        }
+
+        .question-item.sortable-ghost {
+            opacity: 0.4;
+            background-color: #f0f0f0;
+        }
+
+        .question-item.sortable-drag {
+            opacity: 0.8;
+            transform: rotate(2deg);
+        }
+
+        .drag-handle {
+            flex: 0 0 30px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #999;
+            font-size: 20px;
+            cursor: grab;
+            user-select: none;
+        }
+
+        .drag-handle:active {
+            cursor: grabbing;
+        }
+
+        .question-number {
+            flex: 0 0 40px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background-color: #4CAF50;
+            color: white;
+            font-weight: bold;
+            border-radius: 50%;
+            width: 35px;
+            height: 35px;
+            font-size: 14px;
         }
 
         .question-content {
@@ -223,6 +272,44 @@ $this->title = 'Edit Question Labels - ' . Html::encode($quiz['name']);
             font-size: 14px;
             color: #666;
         }
+
+        .save-order-notice {
+            background-color: #fff3cd;
+            border: 1px solid #ffc107;
+            color: #856404;
+            padding: 15px;
+            border-radius: 5px;
+            margin-bottom: 20px;
+            text-align: center;
+            font-size: 14px;
+            display: none;
+        }
+
+        .save-order-notice.show {
+            display: block;
+        }
+
+        .order-saved-notice {
+            background-color: #d4edda;
+            border: 1px solid #c3e6cb;
+            color: #155724;
+            padding: 10px;
+            border-radius: 5px;
+            margin-bottom: 20px;
+            text-align: center;
+            font-size: 14px;
+            display: none;
+        }
+
+        .order-saved-notice.show {
+            display: block;
+            animation: fadeIn 0.3s ease-in;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
     </style>
 </head>
 
@@ -255,7 +342,12 @@ $this->title = 'Edit Question Labels - ' . Html::encode($quiz['name']);
         </div>
     <?php else: ?>
         <div class="question-counter">
-            Total Questions: <strong><?= count($questions) ?></strong>
+            Total Questions: <strong><?= count($questions) ?></strong> | 
+            <span style="color: #4CAF50;">💡 Tip: Drag questions to reorder them</span>
+        </div>
+
+        <div id="orderSavedNotice" class="order-saved-notice">
+            ✓ Question order saved automatically
         </div>
 
         <?php $form = ActiveForm::begin([
@@ -263,11 +355,18 @@ $this->title = 'Edit Question Labels - ' . Html::encode($quiz['name']);
             'action' => ['edit-labels', 'id' => $quiz['id']],
         ]); ?>
 
+            <div id="questionsList">
             <?php foreach ($questions as $index => $question): ?>
-                <div class="question-item">
+                <div class="question-item" data-question-id="<?= $question['id'] ?>">
+                    <div class="drag-handle" title="Drag to reorder">
+                        ⋮⋮
+                    </div>
+                    <div class="question-number">
+                        <?= ($index + 1) ?>
+                    </div>
                     <div class="question-content">
                         <div class="question-meta">
-                            Question #<?= ($index + 1) ?> (ID: <?= $question['id'] ?>)
+                            Question ID: <?= $question['id'] ?>
                         </div>
                         <div class="question-preview" title="Scroll to see full question">
                             <?= escapeHtmlExceptTags($question['question']) ?>
@@ -289,6 +388,7 @@ $this->title = 'Edit Question Labels - ' . Html::encode($quiz['name']);
                     </div>
                 </div>
             <?php endforeach; ?>
+            </div>
 
             <div class="submit-container">
                 <button type="submit" class="btn-submit">
@@ -299,6 +399,86 @@ $this->title = 'Edit Question Labels - ' . Html::encode($quiz['name']);
 
         <?php ActiveForm::end(); ?>
     <?php endif; ?>
+
+    <script>
+        // Initialize SortableJS on the questions list
+        const questionsList = document.getElementById('questionsList');
+        
+        if (questionsList) {
+            const sortable = new Sortable(questionsList, {
+                animation: 150,
+                handle: '.drag-handle', // Only allow dragging by the handle
+                ghostClass: 'sortable-ghost',
+                dragClass: 'sortable-drag',
+                
+                onEnd: function(evt) {
+                    // Update question numbers after drag
+                    updateQuestionNumbers();
+                    
+                    // Save the new order via AJAX
+                    saveQuestionOrder();
+                }
+            });
+        }
+
+        function updateQuestionNumbers() {
+            const items = document.querySelectorAll('.question-item');
+            items.forEach((item, index) => {
+                const numberElement = item.querySelector('.question-number');
+                if (numberElement) {
+                    numberElement.textContent = index + 1;
+                }
+            });
+        }
+
+        function saveQuestionOrder() {
+            const items = document.querySelectorAll('.question-item');
+            const orderData = [];
+            
+            items.forEach((item, index) => {
+                const questionId = item.getAttribute('data-question-id');
+                orderData.push({
+                    question_id: questionId,
+                    order: index + 1
+                });
+            });
+
+            // Send AJAX request to save order
+            fetch('<?= \yii\helpers\Url::to(['quiz/update-question-order', 'id' => $quiz['id']]) ?>', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRF-Token': '<?= Yii::$app->request->csrfToken ?>'
+                },
+                body: JSON.stringify({
+                    order: orderData
+                })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    // Show success notification
+                    showOrderSavedNotice();
+                } else {
+                    alert('Error saving order: ' + (data.message || 'Unknown error'));
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                alert('Failed to save question order. Please try again.');
+            });
+        }
+
+        function showOrderSavedNotice() {
+            const notice = document.getElementById('orderSavedNotice');
+            notice.classList.add('show');
+            
+            // Hide after 3 seconds
+            setTimeout(() => {
+                notice.classList.remove('show');
+            }, 3000);
+        }
+    </script>
 
 </body>
 </html>
