@@ -11,13 +11,15 @@ use app\models\Question;
  */
 class QuestionSearch extends Question
 {
+    public $order; // Virtual attribute for quizquestion.order
+    
     /**
      * {@inheritdoc}
      */
     public function rules()
     {
         return [
-            [['id', 'correct', 'sort_order'], 'integer'],
+            [['id', 'correct', 'order'], 'integer'],
             [['question', 'a1', 'a2', 'a3', 'a4', 'a5', 'a6', 'label'], 'safe'],
         ];
     }
@@ -42,20 +44,16 @@ class QuestionSearch extends Question
     {
         $query = Question::find();
 
+        // Always join with quizquestion to get order field
+        $query->select(['question.*', 'quizquestion.order as order']);
+        $query->joinWith(['quizquestion']);
+        
         if ( $quiz_id ) {
-            $query->joinWith(['quizquestion' => function ($query) use ($quiz_id, $active) {
-                $query->onCondition(['quizquestion.quiz_id' => $quiz_id]);
-            }]);
+            $query->andWhere(['quizquestion.quiz_id' => $quiz_id]);
             if ( $active == 1 || $active == 0 ) {
                 $query->andWhere(['quizquestion.active' => $active]);
             }
         }
-
-        // Add custom ordering to handle NULL sort_order as 0
-        $query->orderBy([
-            new \yii\db\Expression('COALESCE(sort_order, 0) ASC'),
-            'id' => SORT_ASC
-        ]);
 
         // add conditions that should always apply here
 
@@ -63,6 +61,23 @@ class QuestionSearch extends Question
             'query' => $query,
             'pagination' => [
                 'pageSize' => 20,
+            ],
+            'sort' => [
+                'attributes' => [
+                    'id',
+                    'question',
+                    'label',
+                    'correct',
+                    'order' => [
+                        'asc' => ['quizquestion.order' => SORT_ASC],
+                        'desc' => ['quizquestion.order' => SORT_DESC],
+                        'default' => SORT_ASC,
+                    ],
+                ],
+                'defaultOrder' => [
+                    'order' => SORT_ASC,
+                    'id' => SORT_ASC
+                ],
             ],
         ]);
 

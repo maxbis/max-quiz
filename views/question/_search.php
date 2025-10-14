@@ -35,7 +35,6 @@ use yii\widgets\ActiveForm;
 
     <?php // echo $form->field($model, 'label') ?>
 
-    <?= $form->field($model, 'sort_order') ?>
 
     <div class="form-group">
         <?= Html::submitButton('Search', ['class' => 'btn btn-primary']) ?>

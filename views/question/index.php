@@ -375,12 +375,12 @@ if ($show == 0) {
                 'contentOptions' => ['style' => 'color: #404080;'],
             ],
             [
-                'attribute' => 'sort_order',
+                'attribute' => 'order',
                 'label' => 'Sort',
                 'headerOptions' => ['style' => 'width:60px;'],
                 'contentOptions' => ['style' => 'color: #404080;'],
                 'value' => function ($model) {
-                    return $model->sort_order === null ? '' : $model->sort_order;
+                    return $model->order === null ? '' : $model->order;
                 },
             ],
             [
@@ -398,8 +398,8 @@ if ($show == 0) {
             [
                 'class' => ActionColumn::className(),
                 'headerOptions' => ['style' => 'width:80px;'],
-                'urlCreator' => function ($action, Question $model, $key, $index, $column) {
-                    return Url::toRoute([$action, 'id' => $model->id]);
+                'urlCreator' => function ($action, Question $model, $key, $index, $column) use ($quiz_id) {
+                    return Url::toRoute([$action, 'id' => $model->id, 'quiz_id' => $quiz_id]);
                 }
             ],
         ],

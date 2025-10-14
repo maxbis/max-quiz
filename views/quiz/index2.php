@@ -231,7 +231,7 @@ $this->registerJs($js); // Register the JavaScript code
         margin-top: 0 !important;
         margin-bottom: 0 !important;
     }
-</style>
+</style
 
 <body>
     <div class="quiz-index">

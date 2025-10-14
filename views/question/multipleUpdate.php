@@ -76,12 +76,6 @@ use yii\widgets\ActiveForm;
                             'style' => 'width: 60px;',
                         ])->label('Correct') ?>
                     </div>
-                    <div class="col">
-                        <?= $form->field($model, "[$index]sort_order")->textInput([
-                            'style' => 'width: 80px;',
-                            'placeholder' => 'Optional'
-                        ])->label('Sort') ?>
-                    </div>
                     <?php
                         $b1 = Html::a(
                             'View/copy',

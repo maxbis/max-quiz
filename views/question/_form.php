@@ -17,6 +17,7 @@ use yii\widgets\ActiveForm;
     }
 </style>
 
+
 <div class="question-form">
 
     <?php
@@ -102,19 +103,30 @@ use yii\widgets\ActiveForm;
                     'maxlength' => true
                 ]) ?>
             </div>
+
+            <?php if (isset($quiz_id) && $quiz_id): ?>
+            <div class="col">
+                <div class="form-group">
+                    <label class="control-label" for="quiz_order">Sort Order</label>
+                    <?= Html::textInput('quiz_order', $currentOrder, [
+                        'class' => 'form-control',
+                        'style' => 'width: 120px;',
+                        'type' => 'number',
+                        'min' => '0',
+                        'placeholder' => '0',
+                        'title' => 'Order of this question in the quiz (lower numbers appear first)'
+                    ]) ?>
+                </div>
+            </div>
+            <?php endif; ?>
+
             <div class="col">
                 <?= $form->field($model, 'label')->textInput([
                     'rows' => 2,
                     'maxlength' => true
                 ]) ?>
             </div>
-            <div class="col">
-                <?= $form->field($model, 'sort_order')->textInput([
-                    'style' => 'width: 120px;',
-                    'maxlength' => true,
-                    'placeholder' => 'Optional'
-                ]) ?>
-            </div>
+        
         </div>
 
         <hr>

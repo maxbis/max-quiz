@@ -9,8 +9,7 @@ use yii\web\NotFoundHttpException;
 use yii\filters\VerbFilter;
 
 use yii\helpers\ArrayHelper;
-
-;
+use yii\helpers\Url;
 
 use yii\filters\AccessControl;
 
@@ -186,6 +185,7 @@ class QuestionController extends Controller
 
         return $this->render('create', [
             'model' => $model,
+            'quiz_id' => $quiz_id,
         ]);
     }
 
@@ -213,9 +213,22 @@ class QuestionController extends Controller
      * @return string|\yii\web\Response
      * @throws NotFoundHttpException if the model cannot be found
      */
-    public function actionUpdate($id)
+    public function actionUpdate($id, $quiz_id = null)
     {
         $model = $this->findModel($id);
+
+        // Store return URL if coming from a specific quiz
+        if ($quiz_id) {
+            Yii::$app->user->returnUrl = Url::to(['question/index', 'quiz_id' => $quiz_id]);
+        }
+
+        // Get current order for this specific quiz if quiz_id is provided
+        $currentOrder = null;
+        if ($quiz_id) {
+            $sql = "select `order` from quizquestion where question_id = $id and quiz_id = $quiz_id";
+            $result = Yii::$app->db->createCommand($sql)->queryOne();
+            $currentOrder = $result ? $result['order'] : 0;
+        }
 
         $sql = "select q.id, q.name, qq.active from quiz q
             left join quizquestion qq on qq.quiz_id = q.id 
@@ -226,6 +239,17 @@ class QuestionController extends Controller
         if ($this->request->isPost && $model->load($this->request->post())) {
             $questionLinks = Yii::$app->request->post('questionLinks', []);
             $updateSql = "";
+            
+            // Handle sort order update for the current quiz context
+            if ($quiz_id) {
+                $newOrder = (int)Yii::$app->request->post('quiz_order', 0);
+                $sql = "select count(*) count from quizquestion where question_id=$id and quiz_id=$quiz_id";
+                $count = Yii::$app->db->createCommand($sql)->queryOne()['count'];
+                if ($count > 0) {
+                    $updateSql .= "update quizquestion set `order` = $newOrder where question_id=$id and quiz_id=$quiz_id;\n";
+                }
+            }
+            
             foreach ($questionLinks as $quiz_id => $active) {
                 if ($active == 'on') {
                     $active = 1;
@@ -259,6 +283,8 @@ class QuestionController extends Controller
         return $this->render('/question/update', [
             'model' => $model,
             'questionLinks' => $questionLinks,
+            'quiz_id' => $quiz_id,
+            'currentOrder' => $currentOrder,
         ]);
     }
 
@@ -315,11 +341,11 @@ class QuestionController extends Controller
     public function actionList($quiz_id, $view = 'list')
     {
         $sql = "select
-                q.id id, question question, a1, a2, a3, a4, a5, a6, correct, label, sort_order
+                q.id id, question question, a1, a2, a3, a4, a5, a6, correct, label, qq.order
                 from question q
                 join quizquestion qq on qq.question_id = q.id
                 where qq.quiz_id=$quiz_id and qq.active=1
-                order by COALESCE(sort_order, 0) ASC, id ASC";
+                order by COALESCE(qq.order, 0) ASC, id ASC";
         $questions = Yii::$app->db->createCommand($sql)->queryAll();
 
         // $sql = "select question_id id, sum(answer_no) answer, sum(correct) correct from log where quiz_id = $quiz_id group by 1";
@@ -530,11 +556,11 @@ class QuestionController extends Controller
         // where qq.quiz_id=$quiz_id and qq.active=1
 
         $sql = "select
-                q.id id, question question, a1, a2, a3, a4, a5, a6, correct, label, sort_order
+                q.id id, question question, a1, a2, a3, a4, a5, a6, correct, label, qq.order
                 from question q
                 join quizquestion qq on qq.question_id = q.id
                 where qq.quiz_id=$quiz_id and qq.active=1
-                order by COALESCE(sort_order, 0) ASC, id ASC";
+                order by COALESCE(qq.order, 0) ASC, id ASC";
 
         $questions = Yii::$app->db->createCommand($sql)->queryAll();
         $output = "";
@@ -574,11 +600,11 @@ class QuestionController extends Controller
 
         // Get questions for this quiz
         $sql = "select
-                q.id id, question question, a1, a2, a3, a4, a5, a6, correct, label, sort_order
+                q.id id, question question, a1, a2, a3, a4, a5, a6, correct, label, qq.order
                 from question q
                 join quizquestion qq on qq.question_id = q.id
                 where qq.quiz_id=$quiz_id and qq.active=1
-                order by COALESCE(sort_order, 0) ASC, id ASC";
+                order by COALESCE(qq.order, 0) ASC, id ASC";
 
         $questions = Yii::$app->db->createCommand($sql)->queryAll();
 

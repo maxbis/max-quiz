@@ -15,6 +15,8 @@ $this->title = 'Update Question: ' . $model->id;
     <?= $this->render('_form', [
         'model' => $model,
         'questionLinks' => $questionLinks,
+        'quiz_id' => $quiz_id ?? null,
+        'currentOrder' => $currentOrder ?? null,
     ]) ?>
 
 </div>

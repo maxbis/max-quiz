@@ -10,6 +10,7 @@ use Yii;
  * @property int $id
  * @property int $quiz_id
  * @property int $question_id
+ * @property int|null $order
  */
 class Quizquestion extends \yii\db\ActiveRecord
 {
@@ -28,7 +29,7 @@ class Quizquestion extends \yii\db\ActiveRecord
     {
         return [
             [['quiz_id', 'question_id'], 'required'],
-            [['quiz_id', 'question_id'], 'integer'],
+            [['quiz_id', 'question_id', 'order'], 'integer'],
         ];
     }
 
@@ -41,6 +42,7 @@ class Quizquestion extends \yii\db\ActiveRecord
             'id' => 'ID',
             'quiz_id' => 'Quiz ID',
             'question_id' => 'Question ID',
+            'order' => 'Order',
         ];
     }
 }

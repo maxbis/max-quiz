@@ -13,6 +13,9 @@ $this->title = 'Create Question';
     
     <?= $this->render('_form', [
         'model' => $model,
+        'questionLinks' => $questionLinks ?? null,
+        'quiz_id' => $quiz_id ?? null,
+        'currentOrder' => $currentOrder ?? null,
     ]) ?>
 
 </div>

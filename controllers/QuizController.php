@@ -252,7 +252,7 @@ class QuizController extends Controller
         $sql = "SELECT q.* FROM question q 
                 INNER JOIN quizquestion qq ON q.id = qq.question_id 
                 WHERE qq.quiz_id = :quiz_id AND qq.active = 1 
-                ORDER BY COALESCE(q.sort_order, 0) ASC, q.id ASC";
+                ORDER BY COALESCE(qq.order, 0) ASC, q.id ASC";
         $questions = Yii::$app->db->createCommand($sql)
             ->bindValue(':quiz_id', $id)
             ->queryAll();

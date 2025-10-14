@@ -131,14 +131,25 @@ require_once Yii::getAlias('@app/views/include/functions.php');
         }
 
         .presentation-question {
-            font-size: 2.5rem;
+            font-size: 1.5rem;
             font-weight: bold;
             margin-top: 40px;
             margin-bottom: 40px;
             line-height: 1.4;
-            text-align: center;
+            text-align: left;
             color: #2c3e50;
             flex-shrink: 0;
+            white-space: pre-wrap;
+        }
+
+        .presentation-question pre {
+            margin-top: 20px;
+            margin-left: 60px;
+            font-size: 2rem;
+            color: darkblue;
+            border-left: 4px solid lightgray;
+            padding-left: 10px;
+            text-align: left;
         }
 
         .presentation-answers {
@@ -160,6 +171,18 @@ require_once Yii::getAlias('@app/views/include/functions.php');
             transition: all 0.3s ease;
             cursor: pointer;
             position: relative;
+        }
+
+        .presentation-answer pre {
+            margin-top: 20px;
+        }
+
+        .presentation-answer pre pre {
+            margin-left: 30px;
+            font-size: 1.3rem;
+            color: darkblue;
+            border-left: 2px solid lightgray;
+            padding-left: 10px;
         }
 
         .presentation-answer:hover {
@@ -469,11 +492,11 @@ require_once Yii::getAlias('@app/views/include/functions.php');
     // function escapeHtmlExceptTags($html, $deleteTags = [], $allowedTags = ['pre', 'code', 'i', 'b'])
     require_once Yii::getAlias('@app/views/include/functions.php');
 
-    $index = 1;
+    $index = 0;
     foreach ($questions as $question): ?>
         <div style="display:flex;margin-bottom:5px;">
             <div id="<?= 'q' . $question['id'] ?>" style="color: darkblue;font-weight: bold;">
-                <?= "Question " . ($index++) ?>
+                <?= "Question " . ($index + 1) ?>
             </div>
             <div id="stats<?= $question['id'] ?>" class="stats" style="">
                 <?php if (isset($logItems[$question['id']])) {
@@ -484,7 +507,7 @@ require_once Yii::getAlias('@app/views/include/functions.php');
             </div>
         </div>
 
-        <div class="question-container row" onclick="openPresentationMode(<?= $index - 1 ?>)">
+        <div class="question-container row" onclick="openPresentationMode(<?= $index ?>)">
             <div class="_col">
                 <form class="answers">
                     <div class="question" id="question<?= $question['id'] ?>">
@@ -536,7 +559,9 @@ require_once Yii::getAlias('@app/views/include/functions.php');
                 <?= $b2 ?>
             </div>
         </div>
-    <?php endforeach; ?>
+    <?php 
+    $index++;
+    endforeach; ?>
     <hr>
     <?php
     $currentRoute = Yii::$app->controller->getRoute();
