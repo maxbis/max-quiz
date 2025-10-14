@@ -49,6 +49,7 @@ $this->title = 'Edit Question Labels - ' . Html::encode($quiz['name']);
             margin-bottom: 20px;
             box-shadow: 0 2px 4px rgba(0,0,0,0.05);
             display: flex;
+            align-items: center;
             gap: 20px;
             transition: all 0.3s ease;
             cursor: move;
@@ -78,6 +79,7 @@ $this->title = 'Edit Question Labels - ' . Html::encode($quiz['name']);
             font-size: 20px;
             cursor: grab;
             user-select: none;
+            align-self: center;
         }
 
         .drag-handle:active {
@@ -85,7 +87,7 @@ $this->title = 'Edit Question Labels - ' . Html::encode($quiz['name']);
         }
 
         .question-number {
-            flex: 0 0 40px;
+            flex: 0 0 35px;
             display: flex;
             align-items: center;
             justify-content: center;
@@ -96,6 +98,7 @@ $this->title = 'Edit Question Labels - ' . Html::encode($quiz['name']);
             width: 35px;
             height: 35px;
             font-size: 14px;
+            align-self: center;
         }
 
         .question-content {

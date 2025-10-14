@@ -275,6 +275,22 @@ if ($show == 0) {
                     'class' => 'btn btn-outline-dark quiz-button',
                 ]);
                 ?>
+                <?= Html::a(
+                    '🏷️ Labels',
+                    ['quiz/edit-labels', 'id' => $quiz['id']],
+                    [
+                        'class' => 'btn btn-outline-info quiz-button',
+                        'title' => 'Edit Question Labels',
+                    ]
+                ); ?>
+                <?= Html::a(
+                    '📄 PDF',
+                    ['pdf', 'quiz_id' => $quiz['id']],
+                    [
+                        'class' => 'btn btn-outline-secondary quiz-button',
+                        'title' => 'Generate PDF with all questions for this quiz',
+                    ]
+                ); ?>
             </div>
         </div>
     </div>
