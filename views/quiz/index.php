@@ -102,6 +102,19 @@ $this->registerJs($js);
         color: darkblue;
         font-weight: 600;
     }
+    
+    /* Dropdown menu styling */
+    .btn-group {
+        vertical-align: middle;
+    }
+    
+    .dropdown-menu {
+        min-width: 150px;
+    }
+    
+    .dropdown-item.text-danger:hover {
+        background-color: #f8d7da;
+    }
 </style>
 
 <div class="quiz-index">
@@ -229,38 +242,46 @@ $this->registerJs($js);
             ],
             [
                 'class' => 'yii\grid\ActionColumn',
-                'headerOptions' => ['style' => 'width:600px;'],
+                'headerOptions' => ['style' => 'width:300px;'],
                 'template' => '{quizButton}',
                 'buttons' => [
                     'quizButton' => function ($url, $model) {
-                            $url = Yii::$app->urlManager->createUrl(['/question/list', 'quiz_id' => $model->id]);
-                            $b1 = Html::a('👁️ View', $url, [
-                                'title' => 'View Questions',
-                                'class' => 'btn btn-outline-success quiz-button-small',
-                            ]);
-                            $url = Yii::$app->urlManager->createUrl(['/quiz/update', 'id' => $model->id]);
-                            $b2 = Html::a('✏️ Edit', $url, [
-                                'title' => 'Edit Quiz',
-                                'class' => 'btn btn-outline-primary quiz-button-small',
-                            ]);
-                            $url = Yii::$app->urlManager->createUrl(['/quiz/delete', 'id' => $model->id]);
-                            $b3 = Html::a('❌ Delete', $url, [
-                                'title' => 'Delete Quiz',
-                                'class' => 'btn btn-outline-danger quiz-button-small',
-                                'data-confirm' => 'Are you sure you want to delete this quiz?',
-                                'data-method' => 'post',
-                            ]);
-                            $url = Yii::$app->urlManager->createUrl(['/submission', 'quiz_id' => $model->id]);
-                            $b4 = Html::a('📊 Results', $url, [
-                                'title' => 'Show Results/Progress',
-                                'class' => 'btn btn-outline-dark quiz-button-small',
-                            ]);
-                            $url = Yii::$app->urlManager->createUrl(['question/index', 'quiz_id' => $model->id]);
-                            $b5 = Html::a('❓ Qstions', $url, [
+                            // Primary buttons: Questions and Edit
+                            $questionsUrl = Yii::$app->urlManager->createUrl(['question/index', 'quiz_id' => $model->id]);
+                            $btnQuestions = Html::a('❓ Questions', $questionsUrl, [
                                 'title' => 'Show Questions',
                                 'class' => 'btn btn-outline-dark quiz-button-small',
                             ]);
-                            return $b5 . ' ' . $b2 . ' ' . $b1 . ' ' . $b3 . ' ' . $b4;
+                            
+                            $editUrl = Yii::$app->urlManager->createUrl(['/quiz/update', 'id' => $model->id]);
+                            $btnEdit = Html::a('✏️ Edit', $editUrl, [
+                                'title' => 'Edit Quiz',
+                                'class' => 'btn btn-outline-primary quiz-button-small',
+                            ]);
+                            
+                            // Dropdown for less frequently used options
+                            $viewUrl = Yii::$app->urlManager->createUrl(['/question/list', 'quiz_id' => $model->id]);
+                            $deleteUrl = Yii::$app->urlManager->createUrl(['/quiz/delete', 'id' => $model->id]);
+                            $resultsUrl = Yii::$app->urlManager->createUrl(['/submission', 'quiz_id' => $model->id]);
+                            
+                            $dropdown = '<div class="btn-group" style="display: inline-block;">
+                                <button type="button" class="btn btn-outline-secondary quiz-button-small dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                                    ⋮ More
+                                </button>
+                                <div class="dropdown-menu">
+                                    ' . Html::a('👁️ View', $viewUrl, ['class' => 'dropdown-item', 'title' => 'View Questions']) . '
+                                    ' . Html::a('📊 Results', $resultsUrl, ['class' => 'dropdown-item', 'title' => 'Show Results/Progress']) . '
+                                    <div class="dropdown-divider"></div>
+                                    ' . Html::a('❌ Delete', $deleteUrl, [
+                                        'class' => 'dropdown-item text-danger',
+                                        'title' => 'Delete Quiz',
+                                        'data-confirm' => 'Are you sure you want to delete this quiz?',
+                                        'data-method' => 'post',
+                                    ]) . '
+                                </div>
+                            </div>';
+                            
+                            return $btnQuestions . ' ' . $btnEdit . ' ' . $dropdown;
                         },
                 ],
             ],

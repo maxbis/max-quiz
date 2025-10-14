@@ -244,4 +244,46 @@ class QuizController extends Controller
         return $this->redirect(['question/index', 'quiz_id' => $newId]);
     }
 
+    public function actionEditLabels($id)
+    {
+        $quiz = $this->findModel($id);
+        
+        // Get all active questions for this quiz
+        $sql = "SELECT q.* FROM question q 
+                INNER JOIN quizquestion qq ON q.id = qq.question_id 
+                WHERE qq.quiz_id = :quiz_id AND qq.active = 1 
+                ORDER BY COALESCE(q.sort_order, 0) ASC, q.id ASC";
+        $questions = Yii::$app->db->createCommand($sql)
+            ->bindValue(':quiz_id', $id)
+            ->queryAll();
+
+        if ($this->request->isPost) {
+            $labels = $this->request->post('labels', []);
+            $success = true;
+            
+            foreach ($labels as $questionId => $label) {
+                $question = Question::findOne($questionId);
+                if ($question) {
+                    $question->label = $label;
+                    if (!$question->save(false)) {
+                        $success = false;
+                    }
+                }
+            }
+            
+            if ($success) {
+                Yii::$app->session->setFlash('success', 'Labels updated successfully.');
+            } else {
+                Yii::$app->session->setFlash('error', 'There was a problem updating some labels.');
+            }
+            
+            return $this->redirect(['edit-labels', 'id' => $id]);
+        }
+
+        return $this->render('edit-labels', [
+            'quiz' => $quiz,
+            'questions' => $questions,
+        ]);
+    }
+
 }

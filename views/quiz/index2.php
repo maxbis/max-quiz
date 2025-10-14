@@ -199,6 +199,38 @@ $this->registerJs($js); // Register the JavaScript code
     tr:hover {
         background: #e6f7ff;
     }
+
+    
+    .dropdown-menu {
+        min-width: 150px;
+    }
+    
+    .dropdown-item.text-danger:hover {
+        background-color: #f8d7da;
+    }
+    
+    /* Fix vertical alignment of action buttons */
+    .quiz-button-small {
+        vertical-align: top !important;
+        display: inline-flex !important;
+        align-items: center !important;
+        line-height: 1 !important;
+        margin-top: 0 !important;
+        margin-bottom: 0 !important;
+        font-size: 12px !important;
+        padding: 2px 4px !important;
+    }
+    
+    .btn-group {
+        vertical-align: top !important;
+        display: inline-block !important;
+    }
+    
+    .btn-group .quiz-button-small {
+        vertical-align: top !important;
+        margin-top: 0 !important;
+        margin-bottom: 0 !important;
+    }
 </style>
 
 <body>
@@ -227,7 +259,7 @@ $this->registerJs($js); // Register the JavaScript code
                                 <td title='Blind Quiz' style='width:35px;color:lightgrey'>BL</td>
                                 <td title='IP Check' style='width:35px;color:lightgrey'>IP</td>
                                  <td title='Random' style='width:35px;color:lightgrey'>Rd</td>
-                                <td style='width:600px;color:lightgrey'>Actions</td>
+                                <td style='width:300px;color:lightgrey'>Actions</td>
                             </tr>";
                     endif;
                     ?>
@@ -270,17 +302,26 @@ $this->registerJs($js); // Register the JavaScript code
                             <?= $quiz['random'] ? "&#10003;" : "-" ?>
                         </td>
                         <td>
-                            <?= Html::a('✏️ Edit', ['/quiz/update', 'id' => $quiz['id']], ['class' => 'btn quiz-button-small', 'title' => 'Edit Quiz']) ?>
-                            <?= Html::a('👁️ View', ['/question/list', 'quiz_id' => $quiz['id']], ['class' => 'btn quiz-button-small', 'title' => 'View Questions']) ?>
-                            <?= Html::a('📄 PDF', ['/question/pdf', 'quiz_id' => $quiz['id']], ['class' => 'btn quiz-button-small', 'title' => 'Generate PDF']) ?>
-                            <?= Html::a('❌ Delete', ['/quiz/delete', 'id' => $quiz['id']], [
-                                'class' => 'btn quiz-button-small',
-                                'title' => 'Delete Quiz',
-                                'data-confirm' => 'Are you sure you want to delete this quiz?',
-                                'data-method' => 'post',
-                            ]) ?>
                             <?= Html::a('❓ Questions', ['question/index', 'quiz_id' => $quiz['id']], ['class' => 'btn quiz-button-small', 'title' => 'Show Questions']) ?>
-                            <?= Html::a('📊 Results', ['/submission', 'quiz_id' => $quiz['id']], ['class' => 'btn quiz-button-small', 'title' => 'Show Results/Progress']) ?>
+                            <?= Html::a('✏️ Edit', ['/quiz/update', 'id' => $quiz['id']], ['class' => 'btn quiz-button-small', 'title' => 'Edit Quiz']) ?>
+                            <div class="btn-group" style="display: inline-block;">
+                                <button type="button" class="btn quiz-button-small dropdown-toggle" data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                                    ⋮ More
+                                </button>
+                                <div class="dropdown-menu" aria-labelledby="dropdownMenuButton">
+                                    <?= Html::a('👁️ View', ['/question/list', 'quiz_id' => $quiz['id']], ['class' => 'dropdown-item', 'title' => 'View Questions']) ?>
+                                    <?= Html::a('📊 Results', ['/submission', 'quiz_id' => $quiz['id']], ['class' => 'dropdown-item', 'title' => 'Show Results/Progress']) ?>
+                                    <?= Html::a('🏷️ Labels', ['/quiz/edit-labels', 'id' => $quiz['id']], ['class' => 'dropdown-item', 'title' => 'Edit Question Labels']) ?>
+                                    <?= Html::a('📄 PDF', ['/question/pdf', 'quiz_id' => $quiz['id']], ['class' => 'dropdown-item', 'title' => 'Generate PDF']) ?>
+                                    <div class="dropdown-divider"></div>
+                                    <?= Html::a('❌ Delete', ['/quiz/delete', 'id' => $quiz['id']], [
+                                        'class' => 'dropdown-item text-danger',
+                                        'title' => 'Delete Quiz',
+                                        'data-confirm' => 'Are you sure you want to delete this quiz?',
+                                        'data-method' => 'post',
+                                    ]) ?>
+                                </div>
+                            </div>
                         </td>
                     </tr>
                 <?php endforeach; ?>

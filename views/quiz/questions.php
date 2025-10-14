@@ -135,6 +135,12 @@ $this->registerJs($script);
                     ['quiz/copy', 'id' => $id], 
                     [ 'class' => 'btn btn-warning button-sm m-2'],
                 );
+            ?>&nbsp;
+            <?php
+                echo Html::a('🏷️ Edit Labels',
+                    ['quiz/edit-labels', 'id' => $id], 
+                    [ 'class' => 'btn btn-info button-sm m-2', 'title' => 'Bulk edit question labels'],
+                );
             ?>
         </td>
     </tr>

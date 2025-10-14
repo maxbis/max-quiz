@@ -95,5 +95,5 @@ $this->title = 'Output View';
 
 <?= Html::a('Cancel', Yii::$app->request->referrer, ['class' => 'btn btn-outline-primary quiz-button']); ?>
 <button id="copy-button" class='btn btn-outline-success quiz-button'>Copy all</button>
-<?= Html::a('import', ['import'], ['class' => 'btn btn-outline-secondary quiz-button', 'title' => '']);?>
+<?= Html::a('import', ['import', 'quiz_id' => Yii::$app->request->get('quiz_id')], ['class' => 'btn btn-outline-secondary quiz-button', 'title' => '']);?>
 <button id="remove-id-button" class='btn btn-outline-danger quiz-button' onclick="removeIDLines()">Remove IDs</button>
