@@ -82,10 +82,10 @@ if ($selectedRecords == null) {
         }
 
         .answer {
-            padding: 15px;
-            border: 2px solid #ddd;
-            background-color: #fbfbfd;
-            margin: 30px;
+            padding: 20px 25px;
+            border: 2px solid #e0e0e0;
+            background: linear-gradient(135deg, #ffffff 0%, #f8f9fa 100%);
+            margin: 20px;
             cursor: pointer;
             text-align: left;
             min-height: 3em;
@@ -93,28 +93,95 @@ if ($selectedRecords == null) {
             user-select: none;
             display: flex;
             justify-content: center;
+            align-items: center;
+            border-radius: 12px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .answer::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: linear-gradient(135deg, rgba(0, 123, 255, 0.1) 0%, rgba(0, 86, 179, 0.05) 100%);
+            opacity: 0;
+            transition: opacity 0.3s ease;
         }
 
         .long-answer {
             font-size: smaller;
             min-height: 7em;
-            margin-left: 0px;
-            margin-right: 0px;
-            padding-top: 10px;
-            padding-bottom: 5px;
+            margin-left: 10px;
+            margin-right: 10px;
+            padding-top: 15px;
+            padding-bottom: 10px;
         }
 
         .answer:not(.selected):hover {
-            background-color: #bbd7fc;
+            background: linear-gradient(135deg, #e3f2fd 0%, #bbdefb 100%);
+            border-color: #2196F3;
+            box-shadow: 0 6px 20px rgba(33, 150, 243, 0.25);
+            transform: translateY(-3px);
+        }
+
+        .answer:not(.selected):hover::before {
+            opacity: 1;
         }
 
         .answer:active {
-            background-color: #007bff;
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(33, 150, 243, 0.3);
         }
 
         .selected {
-            background-color: #007bff;
+            background: linear-gradient(135deg, #4CAF50 0%, #45a049 100%);
             color: white;
+            border-color: #4CAF50;
+            box-shadow: 0 8px 24px rgba(76, 175, 80, 0.35);
+            transform: translateY(-3px) scale(1.02);
+            animation: selectPulse 0.4s ease-out;
+        }
+
+        .selected::after {
+            content: '✓';
+            position: absolute;
+            top: 10px;
+            right: 15px;
+            font-size: 24px;
+            font-weight: bold;
+            color: white;
+            animation: checkmarkAppear 0.3s ease-out;
+        }
+
+        @keyframes selectPulse {
+            0% {
+                transform: translateY(-3px) scale(1);
+            }
+            50% {
+                transform: translateY(-3px) scale(1.05);
+            }
+            100% {
+                transform: translateY(-3px) scale(1.02);
+            }
+        }
+
+        @keyframes checkmarkAppear {
+            0% {
+                opacity: 0;
+                transform: scale(0) rotate(-45deg);
+            }
+            50% {
+                transform: scale(1.2) rotate(0deg);
+            }
+            100% {
+                opacity: 1;
+                transform: scale(1) rotate(0deg);
+            }
         }
 
         .question-block {
@@ -157,6 +224,22 @@ if ($selectedRecords == null) {
             .answer {
                 margin: 10px;
                 min-height: 3em;
+                padding: 15px 18px;
+                border-radius: 10px;
+            }
+
+            .answer:not(.selected):hover {
+                transform: translateY(-2px);
+            }
+
+            .selected {
+                transform: translateY(-2px) scale(1.01);
+            }
+
+            .selected::after {
+                font-size: 20px;
+                top: 8px;
+                right: 12px;
             }
 
             .question-title {
@@ -443,22 +526,47 @@ echo escapeHtmlExceptTags($question['question']);
 
 
             function selectAnswer(element, answer) {
-                // Remove 'selected' class from all answers
+                // Remove 'selected' class from all answers with fade-out effect
                 document.querySelectorAll('.answer').forEach(function (el) {
+                    if (el.classList.contains('selected')) {
+                        // Add a subtle fade-out animation
+                        el.style.transition = 'all 0.2s ease-out';
+                    }
                     el.classList.remove('selected');
                 });
 
-                // Add 'selected' class to clicked answer
-                element.classList.add('selected');
+                // Small delay before adding selected class for smoother transition
+                setTimeout(function() {
+                    // Add 'selected' class to clicked answer
+                    element.classList.add('selected');
+                }, 50);
 
                 // Set the value of the hidden input
                 document.getElementById('selectedAnswer').value = answer.substring(1);
 
-                // Enable submit button
-                document.getElementById('submitButton').className = "btn btn-danger";
-                document.getElementById('submitButton').title = "Click voor volgende vraag";
-                document.getElementById('submitButton').disabled = false;
+                // Enable submit button with smooth transition
+                const submitBtn = document.getElementById('submitButton');
+                submitBtn.style.transition = 'all 0.3s ease';
+                submitBtn.className = "btn btn-success";
+                submitBtn.title = "Click voor volgende vraag";
+                submitBtn.disabled = false;
+                
+                // Add a subtle pulse to the submit button
+                submitBtn.style.animation = 'buttonPulse 0.5s ease';
+                setTimeout(function() {
+                    submitBtn.style.animation = '';
+                }, 500);
             }
+
+            // Add button pulse animation
+            const style = document.createElement('style');
+            style.textContent = `
+                @keyframes buttonPulse {
+                    0%, 100% { transform: scale(1); }
+                    50% { transform: scale(1.05); }
+                }
+            `;
+            document.head.appendChild(style);
             document.getElementById('submitButton').addEventListener('click', function () {
                 this.disabled = true;
                 this.innerText = 'Submitting...';
