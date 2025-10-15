@@ -8,8 +8,8 @@ use yii\web\Controller;
 use yii\web\NotFoundHttpException;
 use yii\filters\VerbFilter;
 
-use app\models\question;
-use app\models\quizquestion;
+use app\models\Question;
+use app\models\Quizquestion;
 use yii\helpers\ArrayHelper;
 
 use yii\filters\AccessControl;
