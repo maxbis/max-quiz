@@ -15,6 +15,8 @@ $csrfToken = Yii::$app->request->getCsrfToken();
 $id = Yii::$app->request->get('id');
 
 $apiUrl = Url::toRoute(['/quiz-question/active']);
+$submissionBaseUrl = Url::toRoute(['/submission']);
+$questionIndexBaseUrl = Url::toRoute(['/question/index']);
 
 $js = <<<JS
 
@@ -55,6 +57,17 @@ $('input[name="active"]').on('change', function() {
     var quizId = $(this).val();
     var isActive = $(this).prop('checked');
     updateActiveStatus(quizId, isActive);
+    
+    // Update the quiz name link dynamically
+    var row = $('#quiz-row-' + quizId);
+    var link = row.find('.quiz-name-link');
+    if (isActive) {
+        link.attr('href', '$submissionBaseUrl' + '?quiz_id=' + quizId);
+        link.attr('title', 'Show Results');
+    } else {
+        link.attr('href', '$questionIndexBaseUrl' + '?quiz_id=' + quizId);
+        link.attr('title', 'Show Questions');
+    }
 });
 
 $(document).on('click', '.group-header', function() {
@@ -270,7 +283,13 @@ $this->registerJs($js); // Register the JavaScript code
                         </td>
                         <td class="quiz-name-cell" style="width:250px;<?= $quiz['active'] ? 'font-weight:bold;' : '' ?>">
                             <?php if ($quiz['active']) echo "<span class='active-dot' title='Active' style='color:#28a745;font-size:1.2em;margin-right:4px;'>●</span>"; ?>
-                            <?= Html::a($quiz['name'], Yii::$app->urlManager->createUrl(['submission', 'quiz_id' => $quiz['id']]), ['title' => 'Show Quiz']) ?>
+                            <?php 
+                                $url = $quiz['active'] 
+                                    ? Yii::$app->urlManager->createUrl(['submission', 'quiz_id' => $quiz['id']]) 
+                                    : Yii::$app->urlManager->createUrl(['question/index', 'quiz_id' => $quiz['id']]);
+                                $title = $quiz['active'] ? 'Show Results' : 'Show Questions';
+                            ?>
+                            <?= Html::a($quiz['name'], $url, ['title' => $title, 'class' => 'quiz-name-link']) ?>
                         </td>
                         <td class="highlight-column" _style='background-color:#f8f8f8;color:#d0d0e0;'>
                             <?= $quiz['password'] ?>
