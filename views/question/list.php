@@ -35,7 +35,7 @@ require_once Yii::getAlias('@app/views/include/functions.php');
             box-shadow: 3px 3px 5px #888888;
             margin-bottom: 40px;
             font-family: monospace;
-            font-size:24px;
+            font-size:22px;
         }
         .question-container pre {
             font-size: 26px;
@@ -105,7 +105,7 @@ require_once Yii::getAlias('@app/views/include/functions.php');
             left: 0;
             width: 100vw;
             height: 100vh;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            background: linear-gradient(135deg,rgb(220, 226, 255) 0%,rgb(116, 113, 135) 100%);
             z-index: 9999;
             display: none;
             flex-direction: column;
@@ -211,6 +211,12 @@ require_once Yii::getAlias('@app/views/include/functions.php');
             margin-top: auto;
             padding-top: 20px;
             border-top: 2px solid #e9ecef;
+            opacity: 0.1;
+            transition: opacity 0.3s ease;
+        }
+
+        .presentation-controls.visible {
+            opacity: 1;
         }
 
         .presentation-nav-btn {
@@ -457,6 +463,23 @@ require_once Yii::getAlias('@app/views/include/functions.php');
                             showAnswer();
                         }
                         break;
+                }
+            }
+        });
+
+        // Mouse movement for showing/hiding controls
+        document.addEventListener('mousemove', function(e) {
+            const modal = document.getElementById('presentationModal');
+            if (modal && modal.style.display === 'flex') {
+                const controls = modal.querySelector('.presentation-controls');
+                const windowHeight = window.innerHeight;
+                const mouseY = e.clientY;
+                
+                // Show controls when mouse is in bottom 20% of screen
+                if (mouseY > windowHeight * 0.8) {
+                    controls.classList.add('visible');
+                } else {
+                    controls.classList.remove('visible');
                 }
             }
         });
