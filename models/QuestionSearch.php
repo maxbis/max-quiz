@@ -44,14 +44,21 @@ class QuestionSearch extends Question
     {
         $query = Question::find();
 
-        // Always join with quizquestion to get order field
-        $query->select(['question.*', 'quizquestion.order as order']);
-        $query->joinWith(['quizquestion']);
-        
-        if ( $quiz_id ) {
-            $query->andWhere(['quizquestion.quiz_id' => $quiz_id]);
-            if ( $active == 1 || $active == 0 ) {
-                $query->andWhere(['quizquestion.active' => $active]);
+        if ( $active == -1 ) {
+            // Show ALL questions in database (including unassigned)
+            // Use LEFT JOIN to get order field for questions linked to current quiz
+            $query->select(['question.*', 'quizquestion.order as order']);
+            $query->leftJoin('quizquestion', 'quizquestion.question_id = question.id AND quizquestion.quiz_id = :quiz_id', [':quiz_id' => $quiz_id]);
+        } else {
+            // Show only questions linked to specific quiz (active or inactive)
+            $query->select(['question.*', 'quizquestion.order as order']);
+            $query->joinWith(['quizquestion']);
+            
+            if ( $quiz_id ) {
+                $query->andWhere(['quizquestion.quiz_id' => $quiz_id]);
+                if ( $active == 1 || $active == 0 ) {
+                    $query->andWhere(['quizquestion.active' => $active]);
+                }
             }
         }
 
