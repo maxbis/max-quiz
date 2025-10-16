@@ -213,7 +213,7 @@ class QuestionController extends Controller
      * @return string|\yii\web\Response
      * @throws NotFoundHttpException if the model cannot be found
      */
-    public function actionUpdate($id, $quiz_id = null)
+    public function actionUpdate($id, $quiz_id = null, $show_archived = 0)
     {
         $model = $this->findModel($id);
 
@@ -230,10 +230,14 @@ class QuestionController extends Controller
             $currentOrder = $result ? $result['order'] : 0;
         }
 
-        $sql = "select q.id, q.name, qq.active from quiz q
+        // Filter archived quizzes by default (show_archived = 0 means show only active quizzes)
+        $archiveFilter = $show_archived ? '' : ' WHERE q.archived = 0';
+        
+        $sql = "select q.id, q.name, qq.active, q.archived from quiz q
             left join quizquestion qq on qq.quiz_id = q.id 
-            and qq.active = 1 and qq.question_id=$id
-            order by q.name ASC";
+            and qq.active = 1 and qq.question_id=$id"
+            . $archiveFilter .
+            " order by q.name ASC";
         $questionLinks = Yii::$app->db->createCommand($sql)->queryAll();
 
         if ($this->request->isPost && $model->load($this->request->post())) {
@@ -285,6 +289,7 @@ class QuestionController extends Controller
             'questionLinks' => $questionLinks,
             'quiz_id' => $quiz_id,
             'currentOrder' => $currentOrder,
+            'show_archived' => $show_archived,
         ]);
     }
 

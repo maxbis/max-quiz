@@ -12,6 +12,7 @@ use Yii;
  * @property string $password
  * @property int $active
  * @property int|null $no_questions
+ * @property int $archived
  */
 class Quiz extends \yii\db\ActiveRecord
 {
@@ -30,9 +31,10 @@ class Quiz extends \yii\db\ActiveRecord
     {
         return [
             [['name', 'password', 'active'], 'required'],
-            [['active', 'no_questions', 'review', 'random', 'blind', 'ip_check'], 'integer'],
+            [['active', 'no_questions', 'review', 'random', 'blind', 'ip_check', 'archived'], 'integer'],
             [['name'], 'string', 'max' => 40],
             [['password'], 'string', 'max' => 20],
+            ['archived', 'default', 'value' => 0],
         ];
     }
 
@@ -51,6 +53,7 @@ class Quiz extends \yii\db\ActiveRecord
             'random' => 'Random',
             'blind' => 'Blind',
             'ip_check' => 'IP Check',
+            'archived' => 'Archived',
         ];
     }
 }

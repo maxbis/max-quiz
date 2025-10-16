@@ -12,6 +12,7 @@ $this->title = 'Quiz List';
 echo "<p style='color:#909090;font-size:16px;'>" . $this->title . '</p>';
 
 $csrfToken = Yii::$app->request->getCsrfToken();
+$showFilter = $showFilter ?? 'active';
 $id = Yii::$app->request->get('id');
 
 $apiUrl = Url::toRoute(['/quiz-question/active']);
@@ -21,8 +22,6 @@ $questionIndexBaseUrl = Url::toRoute(['/question/index']);
 $js = <<<JS
 
 function updateActiveStatus(id, active) {
-    console.log("id: "+id);
-    console.log("active: "+active);
     $.ajax({
         url: '$apiUrl',
         method: 'POST',
@@ -31,43 +30,50 @@ function updateActiveStatus(id, active) {
                 active: active ? 1 : 0
         },
         success: function(response) {
-            console.log('Update successful', response);
             var row = $('#quiz-row-' + id);
             var nameCell = row.find('.quiz-name-cell');
             if (active) {
                 row.css('background-color', '#e6ffe6');
-                if (nameCell.find('.active-dot').length === 0) {
-                    nameCell.prepend('<span class="active-dot" title="Active" style="color:#28a745;font-size:1.2em;margin-right:4px;">●</span>');
+                // Use visibility instead of adding/removing to prevent layout shift
+                var dot = nameCell.find('.active-dot');
+                if (dot.length === 0) {
+                    nameCell.prepend('<span class="active-dot" title="Active" style="color:#28a745;font-size:1.2em;margin-right:4px;visibility:hidden;">●</span>');
+                    dot = nameCell.find('.active-dot');
                 }
+                dot.css('visibility', 'visible');
                 nameCell.css('font-weight', 'bold');
             } else {
                 row.css('background-color', '');
-                nameCell.find('.active-dot').remove();
+                nameCell.find('.active-dot').css('visibility', 'hidden');
                 nameCell.css('font-weight', '');
             }
         },
         error: function(xhr, status, error) {
-            console.log('Update failed:', error);
         }
     });
 }
 
-// Handle the change event of the radio buttons for active status
-$('input[name="active"]').on('change', function() {
-    var quizId = $(this).val();
-    var isActive = $(this).prop('checked');
-    updateActiveStatus(quizId, isActive);
-    
-    // Update the quiz name link dynamically
-    var row = $('#quiz-row-' + quizId);
-    var link = row.find('.quiz-name-link');
-    if (isActive) {
-        link.attr('href', '$submissionBaseUrl' + '?quiz_id=' + quizId);
-        link.attr('title', 'Show Results');
-    } else {
-        link.attr('href', '$questionIndexBaseUrl' + '?quiz_id=' + quizId);
-        link.attr('title', 'Show Questions');
-    }
+// Handle the change event of the checkboxes for active status
+$(document).ready(function() {
+    $('input[name="active"]').on('change', function() {
+        var quizId = $(this).val();
+        var isActive = $(this).prop('checked');
+        var isDisabled = $(this).prop('disabled');
+        if (isDisabled) { return; }
+        
+        updateActiveStatus(quizId, isActive);
+        
+        // Update the quiz name link dynamically
+        var row = $('#quiz-row-' + quizId);
+        var link = row.find('.quiz-name-link');
+        if (isActive) {
+            link.attr('href', '$submissionBaseUrl' + '?quiz_id=' + quizId);
+            link.attr('title', 'Show Results');
+        } else {
+            link.attr('href', '$questionIndexBaseUrl' + '?quiz_id=' + quizId);
+            link.attr('title', 'Show Questions');
+        }
+    });
 });
 
 $(document).on('click', '.group-header', function() {
@@ -78,7 +84,6 @@ $(document).on('click', '.group-header', function() {
     var headerIndex = $('.group-header').index(header);
     var isCollapsed = header.hasClass('collapsed');
     localStorage.setItem('groupHeader_' + headerIndex, isCollapsed);
-    console.log('groupHeader_' + headerIndex, isCollapsed);
     if ( isCollapsed ) {
         header.find('td').css('color', 'lightgrey');
     } else {
@@ -244,10 +249,59 @@ $this->registerJs($js); // Register the JavaScript code
         margin-top: 0 !important;
         margin-bottom: 0 !important;
     }
-</style
+    
+    /* Archive filter styling */
+    .archive-filter {
+        margin-bottom: 15px;
+        padding: 10px;
+        background-color: #f8f9fa;
+        border-radius: 4px;
+    }
+    
+    .archive-filter label {
+        margin-right: 10px;
+        font-weight: 600;
+    }
+    
+    /* Archived quiz styling */
+    .archived-quiz {
+        opacity: 0.6;
+        background-color: #f5f5f5 !important;
+    }
+    
+    .archived-quiz:hover {
+        opacity: 0.8;
+        background-color: #ebebeb !important;
+    }
+    
+    .archived-badge {
+        display: inline-block;
+        background-color: #6c757d;
+        color: white;
+        padding: 2px 6px;
+        border-radius: 3px;
+        font-size: 10px;
+        margin-left: 5px;
+        vertical-align: middle;
+    }
+</style>
 
 <body>
     <div class="quiz-index">
+        <!-- Archive Filter -->
+        <div class="archive-filter">
+            <label>Show:</label>
+            <?= Html::a('Active Quizzes', ['index', 'show' => 'active'], [
+                'class' => 'btn btn-sm ' . ($showFilter === 'active' ? 'btn-primary' : 'btn-outline-primary'),
+            ]) ?>
+            <?= Html::a('Archived Quizzes', ['index', 'show' => 'archived'], [
+                'class' => 'btn btn-sm ' . ($showFilter === 'archived' ? 'btn-secondary' : 'btn-outline-secondary'),
+            ]) ?>
+            <?= Html::a('All Quizzes', ['index', 'show' => 'all'], [
+                'class' => 'btn btn-sm ' . ($showFilter === 'all' ? 'btn-info' : 'btn-outline-info'),
+            ]) ?>
+        </div>
+        
         <table class="main-table">
             <tbody>
                 <?php
@@ -276,13 +330,20 @@ $this->registerJs($js); // Register the JavaScript code
                             </tr>";
                     endif;
                     ?>
-                    <tr id="quiz-row-<?= $quiz['id'] ?>"<?= $quiz['active'] ? " style='background-color:#e6ffe6;'" : '' ?>>
+                    <tr id="quiz-row-<?= $quiz['id'] ?>" class="<?= (isset($quiz['archived']) && $quiz['archived']) ? 'archived-quiz' : '' ?>"<?= $quiz['active'] ? " style='background-color:#e6ffe6;'" : '' ?>>
                         <td style="color:#e0e0e0;width:15px;">•</td>
                         <td style='width:15px;'>
-                            <?= Html::checkbox('active', $quiz['active'], ['value' => $quiz['id'], 'class' => 'active-radio']) ?>
+                            <?php 
+                            $isArchived = isset($quiz['archived']) ? $quiz['archived'] : false;
+                            $checkboxOptions = ['value' => $quiz['id'], 'class' => 'active-radio'];
+                            if ($isArchived) {
+                                $checkboxOptions['disabled'] = true;
+                            }
+                            ?>
+                            <?= Html::checkbox('active', $quiz['active'], $checkboxOptions) ?>
                         </td>
                         <td class="quiz-name-cell" style="width:250px;<?= $quiz['active'] ? 'font-weight:bold;' : '' ?>">
-                            <?php if ($quiz['active']) echo "<span class='active-dot' title='Active' style='color:#28a745;font-size:1.2em;margin-right:4px;'>●</span>"; ?>
+                            <span class="active-dot" title="Active" style="color:#28a745;font-size:1.2em;margin-right:4px;<?= $quiz['active'] ? '' : 'visibility:hidden;' ?>">●</span>
                             <?php 
                                 $url = $quiz['active'] 
                                     ? Yii::$app->urlManager->createUrl(['submission', 'quiz_id' => $quiz['id']]) 
@@ -290,6 +351,7 @@ $this->registerJs($js); // Register the JavaScript code
                                 $title = $quiz['active'] ? 'Show Results' : 'Show Questions';
                             ?>
                             <?= Html::a($quiz['name'], $url, ['title' => $title, 'class' => 'quiz-name-link']) ?>
+                            <?php if (isset($quiz['archived']) && $quiz['archived']) echo "<span class='archived-badge'>ARCHIVED</span>"; ?>
                         </td>
                         <td class="highlight-column" _style='background-color:#f8f8f8;color:#d0d0e0;'>
                             <?= $quiz['password'] ?>
@@ -332,6 +394,20 @@ $this->registerJs($js); // Register the JavaScript code
                                     <?= Html::a('📊 Results', ['/submission', 'quiz_id' => $quiz['id']], ['class' => 'dropdown-item', 'title' => 'Show Results/Progress']) ?>
                                     <?= Html::a('🏷️ Labels', ['/quiz/edit-labels', 'id' => $quiz['id']], ['class' => 'dropdown-item', 'title' => 'Edit Question Labels']) ?>
                                     <?= Html::a('📄 PDF', ['/question/pdf', 'quiz_id' => $quiz['id']], ['class' => 'dropdown-item', 'title' => 'Generate PDF']) ?>
+                                    <div class="dropdown-divider"></div>
+                                    <?php if (isset($quiz['archived']) && $quiz['archived']): ?>
+                                        <?= Html::a('📤 Restore', ['/quiz/toggle-archive', 'id' => $quiz['id']], [
+                                            'class' => 'dropdown-item text-success',
+                                            'title' => 'Restore Quiz from Archive',
+                                            'data-method' => 'post',
+                                        ]) ?>
+                                    <?php else: ?>
+                                        <?= Html::a('📦 Archive', ['/quiz/toggle-archive', 'id' => $quiz['id']], [
+                                            'class' => 'dropdown-item text-warning',
+                                            'title' => 'Archive Quiz',
+                                            'data-method' => 'post',
+                                        ]) ?>
+                                    <?php endif; ?>
                                     <div class="dropdown-divider"></div>
                                     <?= Html::a('❌ Delete', ['/quiz/delete', 'id' => $quiz['id']], [
                                         'class' => 'dropdown-item text-danger',

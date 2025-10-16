@@ -17,6 +17,7 @@ $this->title = 'Update Question: ' . $model->id;
         'questionLinks' => $questionLinks,
         'quiz_id' => $quiz_id ?? null,
         'currentOrder' => $currentOrder ?? null,
+        'show_archived' => $show_archived ?? 0,
     ]) ?>
 
 </div>

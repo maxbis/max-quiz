@@ -71,7 +71,8 @@ CREATE TABLE `quiz` (
   `no_questions` int(11) DEFAULT NULL,
   `review` int(11) DEFAULT 0,
   `blind` int(11) NOT NULL DEFAULT 0,
-  `ip_check` int(11) NOT NULL DEFAULT 0
+  `ip_check` int(11) NOT NULL DEFAULT 0,
+  `archived` tinyint(1) NOT NULL DEFAULT 0
 ) ENGINE=InnoDB DEFAULT CHARSET=utf32 COLLATE=utf32_general_ci;
 
 -- --------------------------------------------------------

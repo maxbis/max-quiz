@@ -147,6 +147,25 @@ use yii\widgets\ActiveForm;
                         </button>
                         <button type="button" class="btn btn-outline-success btn-sm ms-2" onclick="toggleAllQuizzes(true)">✓ Select All</button>
                         <button type="button" class="btn btn-outline-danger btn-sm" onclick="toggleAllQuizzes(false)">✗ Deselect All</button>
+                        
+                        <?php 
+                        $showArchived = $show_archived ?? 0;
+                        $currentUrl = Yii::$app->request->url;
+                        $baseUrl = strtok($currentUrl, '?');
+                        $params = Yii::$app->request->queryParams;
+                        ?>
+                        
+                        <?php if ($showArchived): ?>
+                            <?= Html::a('📦 Hide Archived', array_merge(['question/update'], ['id' => $model->id], array_diff_key($params, ['show_archived' => '']), ['show_archived' => 0]), [
+                                'class' => 'btn btn-outline-secondary btn-sm ms-2',
+                                'title' => 'Show only active quizzes'
+                            ]) ?>
+                        <?php else: ?>
+                            <?= Html::a('📂 Show Archived', array_merge(['question/update'], ['id' => $model->id], $params, ['show_archived' => 1]), [
+                                'class' => 'btn btn-outline-info btn-sm ms-2',
+                                'title' => 'Show all quizzes including archived'
+                            ]) ?>
+                        <?php endif; ?>
                     </div>
                     
                     <div class="collapse" id="quizAssignments">
@@ -157,9 +176,13 @@ use yii\widgets\ActiveForm;
                             
                             <div class="quiz-assignments-list" style="max-height: 350px; overflow-y: auto;">
                                 <?php foreach ($questionLinks as $link): ?>
-                                    <div class="quiz-assignment-item border rounded p-2 mb-2" data-quiz-name="<?= strtolower($link['name']) ?>">
+                                    <?php 
+                                    $isArchived = isset($link['archived']) && $link['archived'];
+                                    $itemClass = $isArchived ? 'quiz-assignment-item quiz-assignment-archived border rounded p-2 mb-2' : 'quiz-assignment-item border rounded p-2 mb-2';
+                                    ?>
+                                    <div class="<?= $itemClass ?>" data-quiz-name="<?= strtolower($link['name']) ?>">
                                         <div class="form-check d-flex justify-content-between align-items-center">
-                                            <div class="d-flex align-items-center">
+                                            <div class="d-flex align-items-center flex-grow-1">
                                                 <?= Html::hiddenInput('questionLinks[' . $link['id'] . ']', 0) ?>
                                                 <?= Html::checkbox('questionLinks[' . $link['id'] . ']', $link['active'], [
                                                     'id' => 'quiz_assignment_' . $link['id'],
@@ -169,6 +192,9 @@ use yii\widgets\ActiveForm;
                                                 ]) ?>
                                                 <label class="form-check-label flex-grow-1" for="quiz_assignment_<?= $link['id'] ?>">
                                                     <strong><?= Html::encode($link['name']) ?></strong>
+                                                    <?php if ($isArchived): ?>
+                                                        <span class="badge bg-secondary ms-1" style="font-size: 9px;">ARCHIVED</span>
+                                                    <?php endif; ?>
                                                 </label>
                                             </div>
                                             <span class="badge <?= $link['active'] ? 'bg-success' : 'bg-secondary' ?> ms-2">
@@ -195,6 +221,22 @@ use yii\widgets\ActiveForm;
                 
                 .quiz-assignments-list {
                     background-color: #ffffff;
+                }
+                
+                /* Archived quiz styling */
+                .quiz-assignment-archived {
+                    opacity: 0.6;
+                    background-color: #f5f5f5 !important;
+                    border-color: #d0d0d0 !important;
+                }
+                
+                .quiz-assignment-archived:hover {
+                    opacity: 0.75;
+                    background-color: #ececec !important;
+                }
+                
+                .quiz-assignment-archived .form-check-label {
+                    color: #6c757d;
                 }
             </style>
 
