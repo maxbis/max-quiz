@@ -131,7 +131,7 @@ class QuestionController extends Controller
         ]);
     }
 
-    public function actionView($id)
+    public function actionView($id, $quiz_id = null)
     {
         $submission = [
             'id' => 0,
@@ -146,9 +146,14 @@ class QuestionController extends Controller
         $sql = "select * from question where id=" . $id;
         $question = Yii::$app->db->createCommand($sql)->queryOne();
 
-        $returnUrl = Yii::$app->request->referrer;
-        if (strpos($returnUrl, 'index') !== false) { // if the referrer is the view itself, back should not refer to the prev view  
-            Yii::$app->session->set('viewReturnUrl', $returnUrl);
+        // If quiz_id is provided, generate back URL to edit-labels page
+        if ($quiz_id !== null) {
+            $returnUrl = Yii::$app->urlManager->createUrl(['quiz/edit-labels', 'id' => $quiz_id]);
+        } else {
+            $returnUrl = Yii::$app->request->referrer;
+            if (strpos($returnUrl, 'index') !== false) { // if the referrer is the view itself, back should not refer to the prev view  
+                Yii::$app->session->set('viewReturnUrl', $returnUrl);
+            }
         }
 
         if (!$question) {
@@ -156,7 +161,13 @@ class QuestionController extends Controller
         }
 
         $this->layout = false;
-        return $this->render('/site/question', ['title' => 'Quiz [expl-adm]', 'question' => $question, 'submission' => $submission]);
+        return $this->render('/site/question', [
+            'title' => 'Quiz [expl-adm]', 
+            'question' => $question, 
+            'submission' => $submission, 
+            'returnUrl' => $returnUrl,
+            'quiz_id' => $quiz_id
+        ]);
     }
 
     /**

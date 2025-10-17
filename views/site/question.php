@@ -37,7 +37,10 @@ function hasLongAnswer($string, $maxLength = 60)
 }
 
 $selectedRecords = Yii::$app->session->get('selectedQuestionIds', []);
-$returnUrl = Yii::$app->session->get('viewReturnUrl', '');
+// $returnUrl is now passed from the controller, but fallback to session if not provided
+if (!isset($returnUrl) || empty($returnUrl)) {
+    $returnUrl = Yii::$app->session->get('viewReturnUrl', '');
+}
 
 if ($selectedRecords == null) {
     $prevRecordId = null;
@@ -433,46 +436,62 @@ echo escapeHtmlExceptTags($question['question']);
                     <button type="button" id="submitButton" class="btn btn-light" style="margin-bottom:10px;"
                         title="Click eerst op een antwoord" disabled>Volgende vraag >></button>
                 <?php } else {
-                    if ($nextRecordId !== null) {
-                        $url = Yii::$app->urlManager->createUrl(['/question/view', 'id' => $nextRecordId]);
-                        echo Html::a('<<', $url, [
-                            'id' => 'submitButton-org1',
-                            'title' => 'Prev Question',
+                    // Check if quiz_id is provided (coming from edit-labels page)
+                    if (isset($quiz_id) && $quiz_id !== null) {
+                        // Show only Edit and Back buttons when coming from edit-labels
+                        $url = Yii::$app->urlManager->createUrl(['/question/update', 'id' => $question['id']]);
+                        echo Html::a('Edit', $url, [
+                            'id' => 'submitButton-edit',
+                            'title' => 'Edit Question',
                             'class' => 'btn btn-outline-secondary quiz-button',
                         ]);
-                    }
-                    $url = Yii::$app->urlManager->createUrl(['/question/update', 'id' => $question['id']]);
-                    echo Html::a('Edit', $url, [
-                        'id' => 'submitButton-org1',
-                        'title' => 'Edit Question',
-                        'class' => 'btn btn-outline-secondary quiz-button',
-                    ]);
-                    $url = Yii::$app->urlManager->createUrl(['/question/copy', 'id' => $question['id']]);
-                    echo Html::a('Copy', $url, [
-                        'id' => 'submitButton-org2',
-                        'title' => 'Copy Question',
-                        'class' => 'btn btn-outline-secondary quiz-button',
-                    ]);
-                    $url = Yii::$app->urlManager->createUrl(['/question/alternative', 'question_id' => $question['id']]);
-                    echo Html::a('Alternative', $url, [
-                        'id' => 'submitButton-org2',
-                        'title' => 'Create alternative question',
-                        'class' => 'btn btn-outline-secondary quiz-button',
-                    ]);
-                    echo Html::a('Back', $returnUrl, [
-                        'id' => 'submitButton-org2',
-                        'title' => 'Back',
-                        'class' => 'btn btn-outline-secondary quiz-button',
-                    ]);
-                    if ($prevRecordId !== null) {
-                        $url = Yii::$app->urlManager->createUrl(['/question/view', 'id' => $prevRecordId]);
-                        echo Html::a('>>', $url, [
-                            'id' => 'submitButton-org1',
-                            'title' => 'Next Question',
+                        echo Html::a('Back', $returnUrl, [
+                            'id' => 'submitButton-back',
+                            'title' => 'Back to Edit Labels',
                             'class' => 'btn btn-outline-secondary quiz-button',
                         ]);
+                    } else {
+                        // Show all buttons for normal view
+                        if ($nextRecordId !== null) {
+                            $url = Yii::$app->urlManager->createUrl(['/question/view', 'id' => $nextRecordId]);
+                            echo Html::a('<<', $url, [
+                                'id' => 'submitButton-org1',
+                                'title' => 'Prev Question',
+                                'class' => 'btn btn-outline-secondary quiz-button',
+                            ]);
+                        }
+                        $url = Yii::$app->urlManager->createUrl(['/question/update', 'id' => $question['id']]);
+                        echo Html::a('Edit', $url, [
+                            'id' => 'submitButton-org1',
+                            'title' => 'Edit Question',
+                            'class' => 'btn btn-outline-secondary quiz-button',
+                        ]);
+                        $url = Yii::$app->urlManager->createUrl(['/question/copy', 'id' => $question['id']]);
+                        echo Html::a('Copy', $url, [
+                            'id' => 'submitButton-org2',
+                            'title' => 'Copy Question',
+                            'class' => 'btn btn-outline-secondary quiz-button',
+                        ]);
+                        $url = Yii::$app->urlManager->createUrl(['/question/alternative', 'question_id' => $question['id']]);
+                        echo Html::a('Alternative', $url, [
+                            'id' => 'submitButton-org2',
+                            'title' => 'Create alternative question',
+                            'class' => 'btn btn-outline-secondary quiz-button',
+                        ]);
+                        echo Html::a('Back', $returnUrl, [
+                            'id' => 'submitButton-org2',
+                            'title' => 'Back',
+                            'class' => 'btn btn-outline-secondary quiz-button',
+                        ]);
+                        if ($prevRecordId !== null) {
+                            $url = Yii::$app->urlManager->createUrl(['/question/view', 'id' => $prevRecordId]);
+                            echo Html::a('>>', $url, [
+                                'id' => 'submitButton-org1',
+                                'title' => 'Next Question',
+                                'class' => 'btn btn-outline-secondary quiz-button',
+                            ]);
+                        }
                     }
-
                 } ?>
             </form>
         </div>

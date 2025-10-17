@@ -99,6 +99,15 @@ $this->title = 'Edit Question Labels - ' . Html::encode($quiz['name']);
             height: 35px;
             font-size: 14px;
             align-self: center;
+            text-decoration: none;
+            cursor: pointer;
+            transition: background-color 0.2s, transform 0.2s;
+        }
+
+        .question-number:hover {
+            background-color: #45a049;
+            transform: scale(1.1);
+            box-shadow: 0 2px 6px rgba(76, 175, 80, 0.4);
         }
 
         .question-content {
@@ -364,9 +373,15 @@ $this->title = 'Edit Question Labels - ' . Html::encode($quiz['name']);
                     <div class="drag-handle" title="Drag to reorder">
                         ⋮⋮
                     </div>
-                    <div class="question-number">
-                        <?= ($index + 1) ?>
-                    </div>
+                    <?= Html::a(
+                        ($index + 1),
+                        ['question/view', 'id' => $question['id'], 'quiz_id' => $quiz['id']],
+                        [
+                            'class' => 'question-number',
+                            'title' => 'View question details',
+                            'target' => '_blank'
+                        ]
+                    ) ?>
                     <div class="question-content">
                         <div class="question-meta">
                             Question ID: <?= $question['id'] ?>
