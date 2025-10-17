@@ -260,6 +260,14 @@ if ($show == 0) {
                 $url = Yii::$app->urlManager->createUrl(['/question/list', 'quiz_id' => $quiz['id']]);
                 echo Html::a('👁️ View', $url, ['title' => 'View Questions', 'class' => 'btn btn-outline-success quiz-button',]);
                 ?>
+                 <?= Html::a(
+                    '🏷️ Labels',
+                    ['quiz/edit-labels', 'id' => $quiz['id']],
+                    [
+                        'class' => 'btn btn-outline-success quiz-button',
+                        'title' => 'Edit Question Labels',
+                    ]
+                ); ?>
                 <?= Html::a(
                     '📋 Copy',
                     ['quiz/copy',   'id' => $quiz['id']],
@@ -267,21 +275,6 @@ if ($show == 0) {
                         'class' => 'btn btn-outline-danger quiz-button',
                         'onclick' => 'return confirm("Are you sure you want to copy this quiz?");',
                     ],
-                ); ?>
-                <?php
-                $url = Yii::$app->urlManager->createUrl(['/submission', 'quiz_id' => $quiz['id']]);
-                echo Html::a('📊 Results', $url, [
-                    'title' => 'Show Results/Progress',
-                    'class' => 'btn btn-outline-dark quiz-button',
-                ]);
-                ?>
-                <?= Html::a(
-                    '🏷️ Labels',
-                    ['quiz/edit-labels', 'id' => $quiz['id']],
-                    [
-                        'class' => 'btn btn-outline-info quiz-button',
-                        'title' => 'Edit Question Labels',
-                    ]
                 ); ?>
                 <?= Html::a(
                     '📄 PDF',
@@ -291,6 +284,13 @@ if ($show == 0) {
                         'title' => 'Generate PDF with all questions for this quiz',
                     ]
                 ); ?>
+                  <?php
+                $url = Yii::$app->urlManager->createUrl(['/submission', 'quiz_id' => $quiz['id']]);
+                echo Html::a('📊 Results', $url, [
+                    'title' => 'Show Results/Progress',
+                    'class' => 'btn btn-outline-dark quiz-button',
+                ]);
+                ?>
             </div>
         </div>
     </div>

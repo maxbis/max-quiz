@@ -403,7 +403,7 @@ $this->registerJs($js); // Register the JavaScript code
                                         ]) ?>
                                     <?php else: ?>
                                         <?= Html::a('📦 Archive', ['/quiz/toggle-archive', 'id' => $quiz['id']], [
-                                            'class' => 'dropdown-item text-warning',
+                                            'class' => 'dropdown-item text-success',
                                             'title' => 'Archive Quiz',
                                             'data-method' => 'post',
                                         ]) ?>
