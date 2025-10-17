@@ -405,27 +405,53 @@ echo escapeHtmlExceptTags($question['question']);
             }
             ?>
 
-            <div class="col-md-6">
-                <!-- Answers Column 1, 3, 5 -->
-                <?php for ($i = 1; $i <= 5; $i += 2) { ?>
-                    <?php if ($noAnswers >= $i) { ?>
-                        <div class="answer <?= $style ?>" onclick="selectAnswer(this, '<?= $answers[($i - 1)] ?>')">
-                            <?= escapeHtmlExceptTags($question[$answers[$i - 1]], ['pre']) ?>
-                        </div>
-                    <?php } ?>
-                <?php } ?>
-            </div>
+            <!-- Row 1: Answers 1 and 2 -->
+            <?php if ($noAnswers >= 1) { ?>
+                <div class="col-md-6">
+                    <div class="answer <?= $style ?>" onclick="selectAnswer(this, '<?= $answers[0] ?>')">
+                        <?= escapeHtmlExceptTags($question[$answers[0]], ['pre']) ?>
+                    </div>
+                </div>
+            <?php } ?>
+            <?php if ($noAnswers >= 2) { ?>
+                <div class="col-md-6">
+                    <div class="answer <?= $style ?>" onclick="selectAnswer(this, '<?= $answers[1] ?>')">
+                        <?= escapeHtmlExceptTags($question[$answers[1]], ['pre']) ?>
+                    </div>
+                </div>
+            <?php } ?>
 
-            <div class="col-md-6">
-                <!-- Answers Column 2, 4, 6 -->
-                <?php for ($i = 2; $i <= 6; $i += 2) { ?>
-                    <?php if ($noAnswers >= $i) { ?>
-                        <div class="answer <?= $style ?>" onclick="selectAnswer(this, '<?= $answers[($i - 1)] ?>')">
-                            <?= escapeHtmlExceptTags($question[$answers[$i - 1]], ['pre']) ?>
-                        </div>
-                    <?php } ?>
-                <?php } ?>
-            </div>
+            <!-- Row 2: Answers 3 and 4 -->
+            <?php if ($noAnswers >= 3) { ?>
+                <div class="col-md-6">
+                    <div class="answer <?= $style ?>" onclick="selectAnswer(this, '<?= $answers[2] ?>')">
+                        <?= escapeHtmlExceptTags($question[$answers[2]], ['pre']) ?>
+                    </div>
+                </div>
+            <?php } ?>
+            <?php if ($noAnswers >= 4) { ?>
+                <div class="col-md-6">
+                    <div class="answer <?= $style ?>" onclick="selectAnswer(this, '<?= $answers[3] ?>')">
+                        <?= escapeHtmlExceptTags($question[$answers[3]], ['pre']) ?>
+                    </div>
+                </div>
+            <?php } ?>
+
+            <!-- Row 3: Answers 5 and 6 -->
+            <?php if ($noAnswers >= 5) { ?>
+                <div class="col-md-6">
+                    <div class="answer <?= $style ?>" onclick="selectAnswer(this, '<?= $answers[4] ?>')">
+                        <?= escapeHtmlExceptTags($question[$answers[4]], ['pre']) ?>
+                    </div>
+                </div>
+            <?php } ?>
+            <?php if ($noAnswers >= 6) { ?>
+                <div class="col-md-6">
+                    <div class="answer <?= $style ?>" onclick="selectAnswer(this, '<?= $answers[5] ?>')">
+                        <?= escapeHtmlExceptTags($question[$answers[5]], ['pre']) ?>
+                    </div>
+                </div>
+            <?php } ?>
 
 
             <form id="answer" class="mt-4" action="<?= Url::to(['site/answer']) ?>" method="POST">
