@@ -119,54 +119,58 @@ require_once Yii::getAlias('@app/views/include/functions.php');
             width: 96%;
             max-width: 1400px;
             height: 96%;
+            max-height: 96vh;
             background: rgba(255, 255, 255, 0.95);
             border-radius: 20px;
             padding: 40px;
             display: flex;
             flex-direction: column;
-            justify-content: center;
             color: #333;
             box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
             position: relative;
+            overflow-y: auto;
         }
 
         .presentation-question {
-            font-size: 1.5rem;
+            font-size: clamp(1rem, 2.5vh, 1.5rem);
             font-weight: bold;
-            margin-top: 40px;
-            margin-bottom: 40px;
+            margin-top: 20px;
+            margin-bottom: 20px;
             line-height: 1.4;
             text-align: left;
             color: #2c3e50;
-            flex-shrink: 0;
+            flex-shrink: 1;
             white-space: pre-wrap;
         }
 
         .presentation-question pre {
             margin-top: 20px;
-            margin-left: 60px;
-            font-size: 2rem;
+            margin-left: 20px;
+            font-size: clamp(1rem, 3vh, 2rem);
             color: darkblue;
             border-left: 4px solid lightgray;
             padding-left: 10px;
             text-align: left;
+            overflow-x: auto;
+            max-width: 100%;
+            white-space: pre-wrap;
+            word-wrap: break-word;
         }
 
         .presentation-answers {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
-            gap: 20px;
-            margin-bottom: 40px;
-            flex: 1;
-            align-content: center;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 15px;
+            margin-bottom: 20px;
+            flex-shrink: 1;
         }
 
         .presentation-answer {
             background: #f8f9fa;
             border: 2px solid #e9ecef;
             border-radius: 15px;
-            padding: 25px;
-            font-size:1.8rem;
+            padding: 20px;
+            font-size: clamp(0.9rem, 2.2vh, 1.8rem);
             line-height: 1.5;
             transition: all 0.3s ease;
             cursor: pointer;
@@ -174,12 +178,18 @@ require_once Yii::getAlias('@app/views/include/functions.php');
         }
 
         .presentation-answer pre {
-            margin-top: 20px;
+            margin-top: 10px;
+            margin-bottom: 10px;
+            font-size: clamp(0.8rem, 2vh, 1.3rem);
+            overflow-x: auto;
+            max-width: 100%;
+            white-space: pre-wrap;
+            word-wrap: break-word;
         }
 
         .presentation-answer pre pre {
-            margin-left: 30px;
-            font-size: 1.3rem;
+            margin-left: 20px;
+            font-size: clamp(0.8rem, 2vh, 1.3rem);
             color: darkblue;
             border-left: 2px solid lightgray;
             padding-left: 10px;
@@ -281,23 +291,76 @@ require_once Yii::getAlias('@app/views/include/functions.php');
             box-shadow: 5px 5px 15px #888888;
         }
 
+        /* Custom scrollbar for presentation mode */
+        .presentation-content::-webkit-scrollbar {
+            width: 10px;
+        }
+
+        .presentation-content::-webkit-scrollbar-track {
+            background: rgba(0, 0, 0, 0.1);
+            border-radius: 10px;
+        }
+
+        .presentation-content::-webkit-scrollbar-thumb {
+            background: rgba(0, 123, 255, 0.5);
+            border-radius: 10px;
+        }
+
+        .presentation-content::-webkit-scrollbar-thumb:hover {
+            background: rgba(0, 123, 255, 0.7);
+        }
+
+        .presentation-content {
+            scroll-behavior: smooth;
+        }
+
         @media (max-width: 768px) {
             .presentation-content {
                 width: 95%;
-                padding: 20px;
+                padding: 15px;
             }
             
             .presentation-question {
-                font-size: 1.8rem;
+                margin-top: 10px;
+                margin-bottom: 15px;
+            }
+
+            .presentation-question pre {
+                margin-left: 20px;
             }
             
             .presentation-answers {
                 grid-template-columns: 1fr;
+                gap: 10px;
             }
             
             .presentation-answer {
-                font-size: 1.2rem;
+                padding: 15px;
+            }
+
+            .presentation-nav-btn {
+                padding: 10px 15px;
+                font-size: 0.9rem;
+                min-width: 80px;
+            }
+        }
+
+        @media (max-height: 700px) {
+            .presentation-content {
                 padding: 20px;
+            }
+
+            .presentation-question {
+                margin-top: 10px;
+                margin-bottom: 15px;
+            }
+
+            .presentation-answers {
+                gap: 10px;
+            }
+
+            .presentation-answer {
+                padding: 15px;
             }
         }
     </style>
@@ -412,14 +475,25 @@ require_once Yii::getAlias('@app/views/include/functions.php');
             shuffledAnswers.forEach((answer, index) => {
                 const answerDiv = document.createElement('div');
                 answerDiv.className = 'presentation-answer';
-                answerDiv.innerHTML = `
-                    <div style="display: flex; align-items: center;">
-                        <span style="margin-right: 15px; font-weight: bold; color: #007bff;">
-                            ${String.fromCharCode(65 + index)})
-                        </span>
-                        <span>${answer.text}</span>
-                    </div>
-                `;
+                
+                // Create the container div
+                const containerDiv = document.createElement('div');
+                containerDiv.style.cssText = 'display: flex; align-items: flex-start; gap: 15px;';
+                
+                // Create the label span
+                const labelSpan = document.createElement('span');
+                labelSpan.style.cssText = 'font-weight: bold; color: #007bff; flex-shrink: 0; padding-top: 2px;';
+                labelSpan.textContent = `${String.fromCharCode(65 + index)})`;
+                
+                // Create the content div
+                const contentDiv = document.createElement('div');
+                contentDiv.style.cssText = 'flex: 1; overflow-wrap: break-word;';
+                contentDiv.innerHTML = answer.text; // Use innerHTML here to preserve <pre> tags
+                
+                // Assemble the structure
+                containerDiv.appendChild(labelSpan);
+                containerDiv.appendChild(contentDiv);
+                answerDiv.appendChild(containerDiv);
                 
                 // Add correct/wrong classes if answer is shown
                 if (answerShown) {
@@ -629,7 +703,89 @@ require_once Yii::getAlias('@app/views/include/functions.php');
 
     <script>
         // Initialize questions array for presentation mode
-        questions = <?= json_encode($questions) ?>;
+        // Escape HTML in questions and answers to prevent rendering issues
+        const rawQuestions = <?= json_encode($questions) ?>;
+        
+        // Function to escape HTML while preserving <pre> and <code> tags
+        function escapeHtmlPreserveCode(text) {
+            if (!text) return text;
+            
+            // First, handle PHP code blocks by removing PHP tags and wrapping in <pre>
+            let processedText = text;
+            
+            // Find PHP code blocks and remove the opening/closing tags
+            const phpPattern = /<\?php[\s\S]*?\?>/gi;
+            const phpMatches = processedText.match(phpPattern);
+            if (phpMatches) {
+                phpMatches.forEach((match, index) => {
+                    // Remove PHP tags and clean up whitespace
+                    let content = match.replace(/<\?php\s*/, '').replace(/\s*\?>/, '');
+                    // Remove excessive indentation (leading whitespace from each line)
+                    content = content.replace(/^\s+/gm, '');
+                    // Trim any remaining whitespace
+                    content = content.trim();
+                    const placeholder = `__PHPCODE_${index}__`;
+                    processedText = processedText.replace(match, placeholder);
+                    // Store the cleaned content wrapped in <pre>
+                    processedText = processedText.replace(placeholder, `<pre>${content}</pre>`);
+                });
+            }
+            
+            // Now temporarily replace <pre> and <code> tags with placeholders
+            const codeBlocks = [];
+            
+            // Handle existing <pre> tags
+            processedText = processedText.replace(/<pre[^>]*>[\s\S]*?<\/pre>/gi, (match) => {
+                const placeholder = `__PRETAG_${codeBlocks.length}__`;
+                codeBlocks.push(match);
+                return placeholder;
+            });
+            
+            // Handle existing <code> tags
+            processedText = processedText.replace(/<code[^>]*>[\s\S]*?<\/code>/gi, (match) => {
+                const placeholder = `__CODETAG_${codeBlocks.length}__`;
+                codeBlocks.push(match);
+                return placeholder;
+            });
+            
+            // Escape all remaining HTML
+            processedText = processedText
+                .replace(/&/g, '&amp;')
+                .replace(/</g, '&lt;')
+                .replace(/>/g, '&gt;')
+                .replace(/"/g, '&quot;')
+                .replace(/'/g, '&#39;');
+            
+            // Restore the code blocks
+            codeBlocks.forEach((block, index) => {
+                const placeholder = `__PRETAG_${index}__`;
+                processedText = processedText.replace(placeholder, block);
+            });
+            
+            codeBlocks.forEach((block, index) => {
+                const placeholder = `__CODETAG_${index}__`;
+                processedText = processedText.replace(placeholder, block);
+            });
+            
+            return processedText;
+        }
+        
+        questions = rawQuestions.map(question => {
+            const escapedQuestion = { ...question };
+            
+            // Escape HTML in question text while preserving code tags
+            if (escapedQuestion.question) {
+                escapedQuestion.question = escapeHtmlPreserveCode(escapedQuestion.question);
+            }
+            
+            // Escape HTML in all answer fields while preserving code tags
+            for (let i = 1; i <= 6; i++) {
+                if (escapedQuestion['a' + i]) {
+                    escapedQuestion['a' + i] = escapeHtmlPreserveCode(escapedQuestion['a' + i]);
+                }
+            }
+            return escapedQuestion;
+        });
     </script>
 
 </body>
