@@ -109,6 +109,16 @@ $(document).ready(function() {
             }
         }
     });
+    
+    // Enhanced filter button interactions
+    $('.filter-button-group .btn').on('click', function() {
+        // Add a subtle click animation
+        $(this).addClass('btn-clicked');
+        setTimeout(() => {
+            $(this).removeClass('btn-clicked');
+        }, 150);
+    });
+    
     $('.main-table').fadeIn('fast');
 });
 
@@ -252,15 +262,75 @@ $this->registerJs($js); // Register the JavaScript code
     
     /* Archive filter styling */
     .archive-filter {
-        margin-bottom: 15px;
-        padding: 10px;
-        background-color: #f8f9fa;
-        border-radius: 4px;
+        margin-bottom: 20px;
+        padding: 15px 20px;
+        background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+        border-radius: 8px;
+        border: 1px solid #dee2e6;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.05);
     }
     
     .archive-filter label {
-        margin-right: 10px;
+        margin-right: 15px;
         font-weight: 600;
+        color: #495057;
+        font-size: 14px;
+    }
+    
+    .filter-button-group {
+        display: inline-flex;
+        border-radius: 6px;
+        overflow: hidden;
+        box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+    }
+    
+    .filter-button-group .btn {
+        border-radius: 0;
+        border-right: 1px solid rgba(255,255,255,0.2);
+        position: relative;
+        transition: all 0.2s ease;
+        font-weight: 500;
+        font-size: 13px;
+        padding: 8px 16px;
+    }
+    
+    .filter-button-group .btn:first-child {
+        border-top-left-radius: 6px;
+        border-bottom-left-radius: 6px;
+    }
+    
+    .filter-button-group .btn:last-child {
+        border-top-right-radius: 6px;
+        border-bottom-right-radius: 6px;
+        border-right: none;
+    }
+    
+    .filter-button-group .btn:hover {
+        transform: translateY(-1px);
+        box-shadow: 0 2px 6px rgba(0,0,0,0.15);
+    }
+    
+    .filter-button-group .btn.active {
+        background: linear-gradient(135deg, #007bff 0%, #0056b3 100%);
+        border-color: #0056b3;
+        color: white;
+        box-shadow: inset 0 1px 3px rgba(0,0,0,0.2);
+    }
+    
+    .filter-button-group .btn:not(.active) {
+        background: linear-gradient(135deg, #ffffff 0%, #f8f9fa 100%);
+        border-color: #ced4da;
+        color: #6c757d;
+    }
+    
+    .filter-button-group .btn:not(.active):hover {
+        background: linear-gradient(135deg, #e9ecef 0%, #dee2e6 100%);
+        color: #495057;
+    }
+    
+    .filter-button-group .btn.btn-clicked {
+        transform: translateY(0) scale(0.98);
+        box-shadow: inset 0 2px 4px rgba(0,0,0,0.1);
     }
     
     /* Archived quiz styling */
@@ -291,15 +361,26 @@ $this->registerJs($js); // Register the JavaScript code
         <!-- Archive Filter -->
         <div class="archive-filter">
             <label>Show:</label>
-            <?= Html::a('Active Quizzes', ['index', 'show' => 'active'], [
-                'class' => 'btn btn-sm ' . ($showFilter === 'active' ? 'btn-primary' : 'btn-outline-primary'),
-            ]) ?>
-            <?= Html::a('Archived Quizzes', ['index', 'show' => 'archived'], [
-                'class' => 'btn btn-sm ' . ($showFilter === 'archived' ? 'btn-secondary' : 'btn-outline-secondary'),
-            ]) ?>
-            <?= Html::a('All Quizzes', ['index', 'show' => 'all'], [
-                'class' => 'btn btn-sm ' . ($showFilter === 'all' ? 'btn-info' : 'btn-outline-info'),
-            ]) ?>
+            <div class="filter-button-group" role="group" aria-label="Quiz filter options">
+                <?= Html::a('Active Quizzes', ['index', 'show' => 'active'], [
+                    'class' => 'btn ' . ($showFilter === 'active' ? 'active' : ''),
+                    'role' => 'button',
+                    'aria-pressed' => $showFilter === 'active' ? 'true' : 'false',
+                    'title' => 'Show only active quizzes'
+                ]) ?>
+                <?= Html::a('Archived Quizzes', ['index', 'show' => 'archived'], [
+                    'class' => 'btn ' . ($showFilter === 'archived' ? 'active' : ''),
+                    'role' => 'button',
+                    'aria-pressed' => $showFilter === 'archived' ? 'true' : 'false',
+                    'title' => 'Show only archived quizzes'
+                ]) ?>
+                <?= Html::a('All Quizzes', ['index', 'show' => 'all'], [
+                    'class' => 'btn ' . ($showFilter === 'all' ? 'active' : ''),
+                    'role' => 'button',
+                    'aria-pressed' => $showFilter === 'all' ? 'true' : 'false',
+                    'title' => 'Show all quizzes'
+                ]) ?>
+            </div>
         </div>
         
         <table class="main-table">
