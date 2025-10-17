@@ -379,7 +379,7 @@ $this->title = 'Edit Question Labels - ' . Html::encode($quiz['name']);
                         [
                             'class' => 'question-number',
                             'title' => 'View question details',
-                            'target' => '_blank'
+                            // 'target' => '_blank'
                         ]
                     ) ?>
                     <div class="question-content">
