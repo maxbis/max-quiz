@@ -200,7 +200,7 @@ class QuestionController extends Controller
         ]);
     }
 
-    public function actionCopy($id)
+    public function actionCopy($id, $quiz_id = null)
     {
         $model = $this->findModel($id);
 
@@ -209,8 +209,32 @@ class QuestionController extends Controller
         $newModel->question = "(Copy)\n" . $model->question;
 
         if ($newModel->save()) {
-            Yii::$app->session->setFlash('success', 'Question copied successfully.');
-            return $this->redirect(['update', 'id' => $newModel->primaryKey]);
+            // If quiz_id is provided, add the copied question to the current quiz
+            if ($quiz_id) {
+                // Get the maximum sort order for this quiz
+                $maxOrder = Quizquestion::find()
+                    ->where(['quiz_id' => $quiz_id])
+                    ->max('`order`');
+                
+                $nextOrder = ($maxOrder !== null) ? $maxOrder + 1 : 1;
+                
+                // Create the quiz-question relationship
+                $quizquestion = new Quizquestion();
+                $quizquestion->quiz_id = $quiz_id;
+                $quizquestion->question_id = $newModel->id;
+                $quizquestion->order = $nextOrder;
+                $quizquestion->active = 1;
+                
+                if ($quizquestion->save()) {
+                    Yii::$app->session->setFlash('success', "Question copied successfully and added to quiz with sort order {$nextOrder}.");
+                } else {
+                    Yii::$app->session->setFlash('warning', 'Question copied but failed to add to quiz.');
+                }
+            } else {
+                Yii::$app->session->setFlash('success', 'Question copied successfully.');
+            }
+            
+            return $this->redirect(['update', 'id' => $newModel->primaryKey, 'quiz_id' => $quiz_id]);
         } else {
             Yii::$app->session->setFlash('error', 'There was an error copying the question.');
             return $this->redirect(['view', 'id' => $id]);
