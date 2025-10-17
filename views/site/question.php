@@ -407,49 +407,55 @@ echo escapeHtmlExceptTags($question['question']);
 
             <!-- Row 1: Answers 1 and 2 -->
             <?php if ($noAnswers >= 1) { ?>
-                <div class="col-md-6">
-                    <div class="answer <?= $style ?>" onclick="selectAnswer(this, '<?= $answers[0] ?>')">
-                        <?= escapeHtmlExceptTags($question[$answers[0]], ['pre']) ?>
+                <div class="row w-100" style="align-items: stretch;">
+                    <div class="col-md-6 d-flex">
+                        <div class="answer <?= $style ?>" onclick="selectAnswer(this, '<?= $answers[0] ?>')" style="flex: 1;">
+                            <?= escapeHtmlExceptTags($question[$answers[0]], ['pre']) ?>
+                        </div>
                     </div>
-                </div>
-            <?php } ?>
-            <?php if ($noAnswers >= 2) { ?>
-                <div class="col-md-6">
-                    <div class="answer <?= $style ?>" onclick="selectAnswer(this, '<?= $answers[1] ?>')">
-                        <?= escapeHtmlExceptTags($question[$answers[1]], ['pre']) ?>
-                    </div>
+                    <?php if ($noAnswers >= 2) { ?>
+                        <div class="col-md-6 d-flex">
+                            <div class="answer <?= $style ?>" onclick="selectAnswer(this, '<?= $answers[1] ?>')" style="flex: 1;">
+                                <?= escapeHtmlExceptTags($question[$answers[1]], ['pre']) ?>
+                            </div>
+                        </div>
+                    <?php } ?>
                 </div>
             <?php } ?>
 
             <!-- Row 2: Answers 3 and 4 -->
             <?php if ($noAnswers >= 3) { ?>
-                <div class="col-md-6">
-                    <div class="answer <?= $style ?>" onclick="selectAnswer(this, '<?= $answers[2] ?>')">
-                        <?= escapeHtmlExceptTags($question[$answers[2]], ['pre']) ?>
+                <div class="row w-100" style="align-items: stretch;">
+                    <div class="col-md-6 d-flex">
+                        <div class="answer <?= $style ?>" onclick="selectAnswer(this, '<?= $answers[2] ?>')" style="flex: 1;">
+                            <?= escapeHtmlExceptTags($question[$answers[2]], ['pre']) ?>
+                        </div>
                     </div>
-                </div>
-            <?php } ?>
-            <?php if ($noAnswers >= 4) { ?>
-                <div class="col-md-6">
-                    <div class="answer <?= $style ?>" onclick="selectAnswer(this, '<?= $answers[3] ?>')">
-                        <?= escapeHtmlExceptTags($question[$answers[3]], ['pre']) ?>
-                    </div>
+                    <?php if ($noAnswers >= 4) { ?>
+                        <div class="col-md-6 d-flex">
+                            <div class="answer <?= $style ?>" onclick="selectAnswer(this, '<?= $answers[3] ?>')" style="flex: 1;">
+                                <?= escapeHtmlExceptTags($question[$answers[3]], ['pre']) ?>
+                            </div>
+                        </div>
+                    <?php } ?>
                 </div>
             <?php } ?>
 
             <!-- Row 3: Answers 5 and 6 -->
             <?php if ($noAnswers >= 5) { ?>
-                <div class="col-md-6">
-                    <div class="answer <?= $style ?>" onclick="selectAnswer(this, '<?= $answers[4] ?>')">
-                        <?= escapeHtmlExceptTags($question[$answers[4]], ['pre']) ?>
+                <div class="row w-100" style="align-items: stretch;">
+                    <div class="col-md-6 d-flex">
+                        <div class="answer <?= $style ?>" onclick="selectAnswer(this, '<?= $answers[4] ?>')" style="flex: 1;">
+                            <?= escapeHtmlExceptTags($question[$answers[4]], ['pre']) ?>
+                        </div>
                     </div>
-                </div>
-            <?php } ?>
-            <?php if ($noAnswers >= 6) { ?>
-                <div class="col-md-6">
-                    <div class="answer <?= $style ?>" onclick="selectAnswer(this, '<?= $answers[5] ?>')">
-                        <?= escapeHtmlExceptTags($question[$answers[5]], ['pre']) ?>
-                    </div>
+                    <?php if ($noAnswers >= 6) { ?>
+                        <div class="col-md-6 d-flex">
+                            <div class="answer <?= $style ?>" onclick="selectAnswer(this, '<?= $answers[5] ?>')" style="flex: 1;">
+                                <?= escapeHtmlExceptTags($question[$answers[5]], ['pre']) ?>
+                            </div>
+                        </div>
+                    <?php } ?>
                 </div>
             <?php } ?>
 
