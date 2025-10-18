@@ -104,11 +104,12 @@ $this->registerJs($script);
 $script = <<<JS
     $(document).ready(function() {
         $('.grid-view tbody tr').click(function(e) {
-            // Don't trigger if clicking on checkbox, delete button, or other interactive elements
+            // Don't trigger if clicking on checkbox, delete button, view icon, or other interactive elements
             if (e.target.type === 'checkbox' || 
                 $(e.target).hasClass('status-checkbox') || 
                 $(e.target).hasClass('delete-question-btn') ||
-                $(e.target).closest('a[href*="delete"]').length > 0) {
+                $(e.target).closest('a[href*="delete"]').length > 0 ||
+                $(e.target).closest('a[href*="view"]').length > 0) {
                 return;
             }
             
@@ -579,11 +580,16 @@ if ($show == 0) {
             ],
             [
                 'label' => 'Actions',
-                'headerOptions' => ['style' => 'width:60px;'],
+                'headerOptions' => ['style' => 'width:80px;'],
                 'contentOptions' => ['style' => 'text-align: center;'],
                 'format' => 'raw',
                 'value' => function ($model) use ($quiz_id) {
-                return Html::button('🗑️', [
+                $viewUrl = Url::toRoute(['view', 'id' => $model->id, 'quiz_id' => $quiz_id, 'returnUrl' => 'index']);
+                $viewIcon = Html::a('👁️', $viewUrl, [
+                    'title' => 'View this question',
+                    'style' => 'color: #0d6efd; text-decoration: none; font-size: 16px; margin-right: 8px;',
+                ]);
+                $deleteButton = Html::button('🗑️', [
                     'title' => 'Delete this question',
                     'style' => 'color: #dc3545; text-decoration: none; font-size: 16px; background: none; border: none; cursor: pointer;',
                     'class' => 'delete-question-btn',
@@ -591,6 +597,7 @@ if ($show == 0) {
                     'data-quiz-id' => $quiz_id,
                     'data-question-text' => mb_substr(strip_tags($model->question), 0, 50) . '...'
                 ]);
+                return $viewIcon . $deleteButton;
             },
             ],
         ],

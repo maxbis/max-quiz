@@ -453,7 +453,7 @@ echo escapeHtmlExceptTags($question['question']);
             <?php } ?>
 
 
-            <form id="answer" class="mt-4" action="<?= Url::to(['site/answer']) ?>" method="POST">
+            <form id="answer" class="mt-4 mb-4" action="<?= Url::to(['site/answer']) ?>" method="POST">
                 <input type="hidden" id="selectedAnswer" name="selectedAnswer">
                 <input type="hidden" id="no_answered" name="no_answered" value="<?= $submission['no_answered']; ?>">
                 <input type="hidden" name="<?= $csrfTokenName ?>" value="<?= $csrfToken ?>">
@@ -461,8 +461,11 @@ echo escapeHtmlExceptTags($question['question']);
                     <button type="button" id="submitButton" class="btn btn-light" style="margin-bottom:10px;"
                         title="Click eerst op een antwoord" disabled>Volgende vraag >></button>
                 <?php } else {
-                    // Check if quiz_id is provided (coming from edit-labels page)
-                    if (isset($quiz_id) && $quiz_id !== null) {
+                    // Check returnUrlParam to determine which view we came from
+                    $isFromEditLabels = isset($returnUrlParam) && $returnUrlParam === 'edit-labels';
+                    $isFromIndex = isset($returnUrlParam) && $returnUrlParam === 'index';
+                    
+                    if ($isFromEditLabels) {
                         // Show only Edit and Back buttons when coming from edit-labels
                         $url = Yii::$app->urlManager->createUrl(['/question/update', 'id' => $question['id']]);
                         echo Html::a('Edit', $url, [
@@ -470,13 +473,26 @@ echo escapeHtmlExceptTags($question['question']);
                             'title' => 'Edit Question',
                             'class' => 'btn btn-outline-secondary quiz-button',
                         ]);
-                        echo Html::a('Back', $returnUrl, [
+                        echo Html::a('← Back to Edit Labels', $returnUrl, [
                             'id' => 'submitButton-back',
                             'title' => 'Back to Edit Labels',
+                            'class' => 'btn btn-outline-primary quiz-button',
+                        ]);
+                    } elseif ($isFromIndex) {
+                        // Show Edit and Back when coming from question index
+                        $url = Yii::$app->urlManager->createUrl(['/question/update', 'id' => $question['id']]);
+                        echo Html::a('Edit', $url, [
+                            'id' => 'submitButton-edit',
+                            'title' => 'Edit Question',
                             'class' => 'btn btn-outline-secondary quiz-button',
                         ]);
+                        echo Html::a('← Back to Question Index', $returnUrl, [
+                            'id' => 'submitButton-back',
+                            'title' => 'Back to Question Index',
+                            'class' => 'btn btn-outline-primary quiz-button',
+                        ]);
                     } else {
-                        // Show all buttons for normal view
+                        // Show all buttons for normal view (legacy behavior)
                         if ($nextRecordId !== null) {
                             $url = Yii::$app->urlManager->createUrl(['/question/view', 'id' => $nextRecordId]);
                             echo Html::a('<<', $url, [

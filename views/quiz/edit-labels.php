@@ -528,7 +528,7 @@ $this->title = 'Edit Question Labels - ' . Html::encode($quiz['name']);
                     </div>
                     <?= Html::a(
                         ($index + 1),
-                        ['question/view', 'id' => $question['id'], 'quiz_id' => $quiz['id']],
+                        ['question/view', 'id' => $question['id'], 'quiz_id' => $quiz['id'], 'returnUrl' => 'edit-labels'],
                         [
                             'class' => 'question-number',
                             'title' => 'View question details',

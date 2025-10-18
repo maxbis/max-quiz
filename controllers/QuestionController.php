@@ -124,7 +124,7 @@ class QuestionController extends Controller
      * @return string
      * @throws NotFoundHttpException if the model cannot be found
      */
-    public function actionView($id, $quiz_id = null)
+    public function actionView($id, $quiz_id = null, $returnUrl = null)
     {
         $submission = [
             'id' => 0,
@@ -139,13 +139,16 @@ class QuestionController extends Controller
         $sql = "select * from question where id=" . $id;
         $question = Yii::$app->db->createCommand($sql)->queryOne();
 
-        // If quiz_id is provided, generate back URL to edit-labels page
-        if ($quiz_id !== null) {
-            $returnUrl = Yii::$app->urlManager->createUrl(['quiz/edit-labels', 'id' => $quiz_id]);
+        // Determine the return URL based on returnUrl parameter
+        if ($returnUrl === 'edit-labels' && $quiz_id !== null) {
+            $backUrl = Yii::$app->urlManager->createUrl(['quiz/edit-labels', 'id' => $quiz_id]);
+        } elseif ($returnUrl === 'index' && $quiz_id !== null) {
+            $backUrl = Yii::$app->urlManager->createUrl(['question/index', 'id' => $quiz_id]);
         } else {
-            $returnUrl = Yii::$app->request->referrer;
-            if (strpos($returnUrl, 'index') !== false) { // if the referrer is the view itself, back should not refer to the prev view  
-                Yii::$app->session->set('viewReturnUrl', $returnUrl);
+            // Fallback to referrer-based logic
+            $backUrl = Yii::$app->request->referrer;
+            if (strpos($backUrl, 'index') !== false) { // if the referrer is the view itself, back should not refer to the prev view  
+                Yii::$app->session->set('viewReturnUrl', $backUrl);
             }
         }
 
@@ -158,7 +161,8 @@ class QuestionController extends Controller
             'title' => 'Quiz [expl-adm]', 
             'question' => $question, 
             'submission' => $submission, 
-            'returnUrl' => $returnUrl,
+            'returnUrl' => $backUrl,
+            'returnUrlParam' => $returnUrl,
             'quiz_id' => $quiz_id
         ]);
     }
