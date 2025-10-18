@@ -663,7 +663,6 @@ class QuestionController extends Controller
 
     public function actionBulkDelete($quiz_id)
     {
-        _dd('Not available, only for testing');
         $sql = "delete from question where id in (
                     select q.id from question q
                     join quizquestion qq on qq.question_id = q.id
@@ -680,7 +679,8 @@ class QuestionController extends Controller
                 )";
         Yii::$app->db->createCommand($sql)->execute();
 
-        return $this->redirect(['/quiz']);
+        Yii::$app->session->setFlash('success', 'All linked questions have been deleted successfully.');
+        return $this->redirect(['question/index', 'quiz_id' => $quiz_id]);
     }
 
     public function actionDeleteMultiple()

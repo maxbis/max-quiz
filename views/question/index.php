@@ -21,7 +21,8 @@ $headerStatus = ['A', 'X', '&#x2713'];
 # When navigating to the next status, determine the next URL
 # the show parameter circles through 1,0,-1
 $nextShow = $show - 1;
-if ($nextShow < -1) $nextShow = 1;
+if ($nextShow < -1)
+    $nextShow = 1;
 $params['show'] = $nextShow;
 $clickedOnHeader = Url::toRoute(array_merge([$currentRoute], $params));
 
@@ -29,7 +30,7 @@ $csrfToken = Yii::$app->request->getCsrfToken();
 $apiUrl = Url::toRoute(['/quiz-question/connect']);
 $id = Yii::$app->request->get('id');
 
-$script = <<< JS
+$script = <<<JS
 ajaxActive=0;
 $('.status-checkbox').change(function() {
     var questionId = $(this).attr('question-id'); 
@@ -80,7 +81,7 @@ JS;
 $this->registerJs($script);
 
 // Yii places the function outside of the scope of the HTML page, therefor we attach it to the window object
-$script = <<< JS
+$script = <<<JS
     window.checkAllCheckboxes = function checkAllCheckboxes(thisValue) {
         if (confirm("This can not be undone, proceed?")) {
             $('input[type="checkbox"]').each(function() {
@@ -91,7 +92,7 @@ $script = <<< JS
 JS;
 $this->registerJs($script);
 
-$script = <<< JS
+$script = <<<JS
     window.headerCheckbox = function headerCheckbox(show) {
         console.log('$clickedOnHeader');
         window.location.href='$clickedOnHeader';
@@ -100,7 +101,7 @@ JS;
 $this->registerJs($script);
 
 // Make entire table rows clickable
-$script = <<< JS
+$script = <<<JS
     $(document).ready(function() {
         $('.grid-view tbody tr').click(function(e) {
             // Don't trigger if clicking on checkbox, delete button, or other interactive elements
@@ -125,10 +126,13 @@ $quizId = $quiz['id'];
 $quizActive = $quiz['active'];
 $activateApiUrl = Url::to(['quiz-question/active']);
 
-$script = <<< JS
+$script = <<<JS
     $(document).ready(function() {
+        // Make quizIsActive global so it can be updated by the toggle dot
+        window.quizIsActive = {$quizActive};
+        
         $('#test-quiz-button').click(function() {
-            var quizIsActive = {$quizActive};
+            var quizIsActive = window.quizIsActive;
             var quizId = {$quizId};
             
             // Prepare message based on quiz active status
@@ -158,7 +162,13 @@ $script = <<< JS
                             },
                             success: function(response) {
                                 // Update the UI to show quiz is now active
+                                window.quizIsActive = 1;
                                 quizIsActive = true;
+                                
+                                // Update the dot appearance as well
+                                $('#quiz-status-dot').removeClass('dot-red').addClass('dot-green');
+                                $('#quiz-status-dot').attr('title', 'Quiz is active - Click to deactivate');
+                                $('#quiz-status-dot').data('active', 1);
                                 
                                 // Now start the test quiz
                                 $('#modalMessage').html('Starting test quiz in new tab...<br><small>This may take a few seconds</small>');
@@ -230,12 +240,19 @@ if ($show == 0) {
     }
 
     .dot {
-        height: 10px;
-        width: 10px;
+        height: 16px;
+        width: 16px;
         border-radius: 50%;
         display: inline-block;
-        margin-bottom: 5px;
+        margin-top: 6px;
         margin-right: 5px;
+        cursor: pointer;
+        transition: transform 0.2s ease, box-shadow 0.2s ease;
+    }
+
+    .dot:hover {
+        transform: scale(1.3);
+        box-shadow: 0 0 8px rgba(0, 0, 0, 0.8);
     }
 
     .dot-red {
@@ -336,42 +353,50 @@ if ($show == 0) {
     </div>
 </div>
 
-<div class="quiz-card" style="max-width:750px;border: 1px solid #ddd; padding: 15px; margin-bottom: 20px; border-radius: 5px; box-shadow: 0 2px 5px rgba(0,0,0,0.2);">
+<div class="quiz-card"
+    style="max-width:750px;border: 1px solid #ddd; padding: 15px; margin-bottom: 20px; border-radius: 5px; box-shadow: 0 2px 5px rgba(0,0,0,0.2);">
     <div class="container">
         <div class="row">
             <div class="col-md-12">
                 <?php
                 $statusClass = $quiz['active'] == 1 ? 'dot-green' : 'dot-red';
-                $statusHelp = $quiz['active'] == 1 ? 'active' : 'inactive';
+                $statusHelp = $quiz['active'] == 1 ? 'Quiz is active - Click to deactivate' : 'Quiz is inactive - Click to activate';
                 ?>
-                <h2 style="font-size:2.1em; font-weight: bold; margin-bottom: 0.2em; display: flex; align-items: center;">
-                    <span title="<?=$statusHelp?>" class="dot <?= $statusClass ?>" style="margin-right:10px;"></span>
+                <h2
+                    style="font-size:2.1em; font-weight: bold; margin-bottom: 0.2em; display: flex; align-items: center;">
+                    <span id="quiz-status-dot" title="<?= $statusHelp ?>" class="dot <?= $statusClass ?>"
+                        data-quiz-id="<?= $quiz['id'] ?>" data-active="<?= $quiz['active'] ?>"
+                        style="margin-right:10px;"></span>
                     <span><?= $quiz['name'] ?></span>
                 </h2>
             </div>
         </div>
         <div class="row">
             <div class="col-md-12">
-                <div style="display: flex; gap: 30px; align-items: center; background: #f8f9fa; border-radius: 6px; padding: 10px 18px; margin: 12px 0 18px 0; box-shadow: 0 1px 4px rgba(0,0,0,0.03); font-size: 1.1em;">
+                <div
+                    style="display: flex; gap: 30px; align-items: center; background: #f8f9fa; border-radius: 6px; padding: 10px 18px; margin: 12px 0 18px 0; box-shadow: 0 1px 4px rgba(0,0,0,0.03); font-size: 1.1em;">
                     <span style="display: flex; align-items: center; color: #888;">
                         <span style="font-size:1.3em; margin-right: 7px;">🔒</span>
-                        <span style="font-weight: 500;">Password:</span> <span style="margin-left: 5px; color: #404080; font-family: monospace;"> <?= Html::encode($quiz['password']) ?> </span>
+                        <span style="font-weight: 500;">Password:</span> <span
+                            style="margin-left: 5px; color: #404080; font-family: monospace;">
+                            <?= Html::encode($quiz['password']) ?> </span>
                     </span>
                     <span style="display: flex; align-items: center; color: #888;">
                         <span style="font-size:1.3em; margin-right: 7px;">❓</span>
-                        <span style="font-weight: 500;">Questions:</span> <span id="countDisplay" style="margin-left: 5px; color: #404080;"> <?= count($questionIds); ?> </span>
+                        <span style="font-weight: 500;">Questions:</span> <span id="countDisplay"
+                            style="margin-left: 5px; color: #404080;"> <?= count($questionIds); ?> </span>
                     </span>
                 </div>
             </div>
         </div>
         <div class="row">
             <div class="col-md-12 d-flex align-items-end">
-                <?= Html::a('✏️ Edit', ['quiz/update', 'id' => $quiz['id']], ['class' => 'btn btn-outline-primary quiz-button'],) ?>
+                <?= Html::a('✏️ Edit', ['quiz/update', 'id' => $quiz['id']], ['class' => 'btn btn-outline-primary quiz-button'], ) ?>
                 <?php
                 $url = Yii::$app->urlManager->createUrl(['/question/list', 'quiz_id' => $quiz['id']]);
                 echo Html::a('👁️ View', $url, ['title' => 'View Questions', 'class' => 'btn btn-outline-success quiz-button',]);
                 ?>
-                 <?= Html::a(
+                <?= Html::a(
                     '🏷️ Sort',
                     ['quiz/edit-labels', 'id' => $quiz['id']],
                     [
@@ -381,10 +406,12 @@ if ($show == 0) {
                 ); ?>
                 <?= Html::a(
                     '📋 Copy',
-                    ['quiz/copy',   'id' => $quiz['id']],
+                    '#',
                     [
-                        'class' => 'btn btn-outline-danger quiz-button',
-                        'onclick' => 'return confirm("Are you sure you want to copy this quiz?");',
+                        'class' => 'btn btn-outline-danger quiz-button copy-quiz-btn',
+                        'id' => 'copy-quiz-button',
+                        'data-quiz-id' => $quiz['id'],
+                        'data-quiz-name' => $quiz['name'],
                     ],
                 ); ?>
                 <?= Html::a(
@@ -397,7 +424,7 @@ if ($show == 0) {
                         'data-quiz-name' => $quiz['name']
                     ]
                 ); ?>
-                  <?php
+                <?php
                 $url = Yii::$app->urlManager->createUrl(['/submission', 'quiz_id' => $quiz['id']]);
                 echo Html::a('📊 Results', $url, [
                     'title' => 'Show Results/Progress',
@@ -418,7 +445,8 @@ if ($show == 0) {
 </div>
 
 <!-- Hidden form for test quiz submission -->
-<form id="test-quiz-form" action="<?= Yii\helpers\Url::to(['/submission/start']) ?>" method="POST" target="_blank" style="display: none;">
+<form id="test-quiz-form" action="<?= Yii\helpers\Url::to(['/submission/start']) ?>" method="POST" target="_blank"
+    style="display: none;">
     <input type="hidden" name="<?= Yii::$app->request->csrfParam ?>" value="<?= Yii::$app->request->getCsrfToken() ?>">
     <input type="hidden" name="first_name" value="Test">
     <input type="hidden" name="last_name" value="Test">
@@ -491,35 +519,35 @@ if ($show == 0) {
                 'label' => '',
                 'format' => 'raw', // to render raw HTML
                 'value' => function ($model) use ($questionIds, $quiz_id) {
-                    $isChecked = in_array($model->id, $questionIds);
-                    $status = $isChecked ? 'Unlink this question from the quiz' : 'Link this question to the quiz';
-                    return Html::checkbox('status[]', $isChecked, [
-                        'class' => 'status-checkbox',
-                        'question-id' => $model->id,
-                        'quiz-id' => $quiz_id,
-                        'title' => $status,
-                        'aria-label' => $status,
-                    ]);
-                },
+                $isChecked = in_array($model->id, $questionIds);
+                $status = $isChecked ? 'Unlink this question from the quiz' : 'Link this question to the quiz';
+                return Html::checkbox('status[]', $isChecked, [
+                    'class' => 'status-checkbox',
+                    'question-id' => $model->id,
+                    'quiz-id' => $quiz_id,
+                    'title' => $status,
+                    'aria-label' => $status,
+                ]);
+            },
             ],
             [
                 'attribute' => 'question',
                 'label' => $QuestionLabelText,
                 'format' => 'raw',
                 'value' => function ($model) use ($quiz_id) {
-                    $pattern = '/<pre>(.*?)<\/pre>(.*)/s';
-                    if (preg_match($pattern, $model->question, $matches)) {
-                        $questionText = '...' . $matches[1] . $matches[2];
-                    } else {
-                        $questionText = $model->question;
-                    }
-                    $truncatedText = mb_substr($questionText, 0, 100) . (mb_strlen($questionText) > 100 ? '...' : '');
-                    $editUrl = Url::toRoute(['update', 'id' => $model->id, 'quiz_id' => $quiz_id]);
-                    return Html::a($truncatedText, $editUrl, [
-                        'style' => 'color: #0a58ca; text-decoration: none; cursor: pointer;',
-                        'title' => 'Click to edit this question'
-                    ]);
-                },
+                $pattern = '/<pre>(.*?)<\/pre>(.*)/s';
+                if (preg_match($pattern, $model->question, $matches)) {
+                    $questionText = '...' . $matches[1] . $matches[2];
+                } else {
+                    $questionText = $model->question;
+                }
+                $truncatedText = mb_substr($questionText, 0, 100) . (mb_strlen($questionText) > 100 ? '...' : '');
+                $editUrl = Url::toRoute(['update', 'id' => $model->id, 'quiz_id' => $quiz_id]);
+                return Html::a($truncatedText, $editUrl, [
+                    'style' => 'color: #0a58ca; text-decoration: none; cursor: pointer;',
+                    'title' => 'Click to edit this question'
+                ]);
+            },
             ],
             [
                 'attribute' => 'label',
@@ -533,20 +561,20 @@ if ($show == 0) {
                 'headerOptions' => ['style' => 'width:60px;'],
                 'contentOptions' => ['style' => 'color: #404080;'],
                 'value' => function ($model) {
-                    return $model->order === null ? '' : $model->order;
-                },
+                return $model->order === null ? '' : $model->order;
+            },
             ],
             [
                 'attribute' => 'id',
                 'label' => 'id',
                 'headerOptions' => ['style' => 'width:30px;'],
                 'contentOptions' => function ($model) {
-                    return [
-                        'class' => 'multiline-tooltip',
-                        'style' => 'color: #404080;',
-                        'data-tooltip' =>  $model->question,
-                    ];
-                },
+                return [
+                    'class' => 'multiline-tooltip',
+                    'style' => 'color: #404080;',
+                    'data-tooltip' => $model->question,
+                ];
+            },
             ],
             [
                 'label' => 'Actions',
@@ -554,13 +582,13 @@ if ($show == 0) {
                 'contentOptions' => ['style' => 'text-align: center;'],
                 'format' => 'raw',
                 'value' => function ($model) use ($quiz_id) {
-                    $deleteUrl = Url::toRoute(['delete', 'id' => $model->id, 'quiz_id' => $quiz_id]);
-                    return Html::a('🗑️', $deleteUrl, [
-                        'title' => 'Delete this question',
-                        'style' => 'color: #dc3545; text-decoration: none; font-size: 16px;',
-                        'onclick' => 'return confirm("Are you sure you want to delete this question? This action cannot be undone.");'
-                    ]);
-                },
+                $deleteUrl = Url::toRoute(['delete', 'id' => $model->id, 'quiz_id' => $quiz_id]);
+                return Html::a('🗑️', $deleteUrl, [
+                    'title' => 'Delete this question',
+                    'style' => 'color: #dc3545; text-decoration: none; font-size: 16px;',
+                    'onclick' => 'return confirm("Are you sure you want to delete this question? This action cannot be undone.");'
+                ]);
+            },
             ],
         ],
     ]); ?>
@@ -606,6 +634,9 @@ if ($show == 0) {
             'title' => 'Export all questions for this quiz',
             'aria-label' => 'Export questions',
         ]);
+        ?>
+        <span style="margin-left:50px;"> </span>
+        <?php
         echo Html::a('📄 PDF', '#', [
             'class' => 'btn btn-outline-primary quiz-button pdf-download-btn',
             'title' => 'Generate PDF with all questions for this quiz',
@@ -613,6 +644,9 @@ if ($show == 0) {
             'data-quiz-id' => $quiz['id'],
             'data-quiz-name' => $quiz['name']
         ]);
+        ?>
+        <span style="margin-left:50px;"> </span>
+        <?php
         echo Html::a('✏️ Multi Edit', ['multiple-update', 'quiz_id' => $quiz['id']], [
             'class' => 'btn btn-outline-secondary quiz-button',
             'title' => 'Edit multiple questions at once',
@@ -620,19 +654,21 @@ if ($show == 0) {
         ]);
         ?>
         <span style="margin-left:50px;"> </span>
-        <?php
-        // if ($show == 1) {
-        //     echo Html::a(
-        //         '❌ Delete All',
-        //         ['bulk-delete', 'quiz_id' => $quiz['id']],
-        //         [
-        //             'class' => 'btn btn-outline-danger quiz-button',
-        //             'title' => 'Delete all linked',
-        //             'onclick' => 'return confirm("Are you sure you want to delete all linked items? This cannot be UNDONE!");',
-        //         ]
-        //     );
-        // }
-        ?>
+        <!-- <?php
+        if ($show == 1) {
+            echo Html::a(
+                '❌ Bulk Delete Questions',
+                '#',
+                [
+                    'class' => 'btn btn-outline-danger quiz-button delete-all-btn',
+                    'id' => 'delete-all-questions-btn',
+                    'title' => 'Delete all linked questions',
+                    'data-quiz-id' => $quiz['id'],
+                    'data-quiz-name' => $quiz['name'],
+                ]
+            );
+        }
+        ?> -->
     </p>
 </div>
 
@@ -673,4 +709,122 @@ $(document).on('click', '.pdf-download-btn', function(e) {
 JS;
 
 $this->registerJs($pdfScript);
+
+// Handle quiz status dot click to toggle active/inactive
+$toggleStatusScript = <<<JS
+$(document).ready(function() {
+    $('#quiz-status-dot').click(function(e) {
+        e.preventDefault();
+        e.stopPropagation();
+        
+        var dot = $(this);
+        var quizId = dot.data('quiz-id');
+        var currentActive = parseInt(dot.data('active'));
+        var newActive = currentActive === 1 ? 0 : 1;
+        var statusText = newActive === 1 ? 'active' : 'inactive';
+            
+        // Make AJAX call to toggle status
+        $.ajax({
+            url: '$activateApiUrl',
+            type: 'POST',
+            data: {
+                _csrf: '$csrfToken',
+                id: quizId,
+                active: newActive
+            },
+            success: function(response) {
+                // Update the dot's appearance
+                dot.data('active', newActive);
+                
+                if (newActive === 1) {
+                    dot.removeClass('dot-red').addClass('dot-green');
+                    dot.attr('title', 'Quiz is active - Click to deactivate');
+                } else {
+                    dot.removeClass('dot-green').addClass('dot-red');
+                    dot.attr('title', 'Quiz is inactive - Click to activate');
+                }
+                
+                // Update the global quizIsActive variable for test quiz button
+                if (typeof window.quizIsActive !== 'undefined') {
+                    window.quizIsActive = newActive;
+                }
+                
+                // Hide loading indicator
+                $('#modalOverlay').hide();
+                $('#modalMessage').text('Please wait...');
+                
+                // Show success message (optional)
+                console.log('Quiz status updated to: ' + statusText);
+                
+                // Optional: You can also reload the page to reflect changes everywhere
+                // location.reload();
+            },
+            error: function(xhr, status, error) {
+                $('#modalOverlay').hide();
+                $('#modalMessage').text('Please wait...');
+                alert('Error updating quiz status: ' + error);
+                console.error('Error:', error);
+            }
+        });
+    });
+});
+JS;
+
+$this->registerJs($toggleStatusScript);
+
+// Handle copy quiz button click with custom dialog
+$copyUrl = Url::to(['quiz/copy', 'id' => $quiz['id']]);
+$copyQuizScript = <<<JS
+$(document).ready(function() {
+    $('#copy-quiz-button').click(function(e) {
+        e.preventDefault();
+        
+        var quizId = $(this).data('quiz-id');
+        var quizName = $(this).data('quiz-name');
+        
+        window.showCustomDialog(
+            '📋 Copy Quiz',
+            'Are you sure you want to copy the quiz "<strong>' + quizName + '</strong>"?<br><br>This will create a duplicate with all its questions.',
+            function() {
+                // Show loading message
+                $('#modalMessage').html('Copying quiz...<br><small>Please wait</small>');
+                $('#modalOverlay').show();
+                
+                // Redirect to the copy action
+                window.location.href = '$copyUrl';
+            }
+        );
+    });
+});
+JS;
+
+$this->registerJs($copyQuizScript);
+
+// Handle delete all questions button click with custom dialog
+$deleteAllUrl = Url::to(['question/bulk-delete', 'quiz_id' => $quiz['id']]);
+$deleteAllScript = <<<JS
+$(document).ready(function() {
+    $('#delete-all-questions-btn').click(function(e) {
+        e.preventDefault();
+        
+        var quizId = $(this).data('quiz-id');
+        var quizName = $(this).data('quiz-name');
+        
+        window.showCustomDialog(
+            '❌ BULK Delete All Questions',
+            'Are you sure you want to delete <strong>ALL active quiz questions</strong> for the quiz "<strong>' + quizName + '</strong>"?<br><br><span style="color:#dc3545;font-size:1.1em;">⚠️ WARNING: This action cannot be undone!<br>All questions associated with this quiz will be permanently deleted.</span>',
+            function() {
+                // Show loading message
+                $('#modalMessage').html('Deleting all questions...<br><small>Please wait</small>');
+                $('#modalOverlay').show();
+                
+                // Redirect to the delete action
+                window.location.href = '$deleteAllUrl';
+            }
+        );
+    });
+});
+JS;
+
+$this->registerJs($deleteAllScript);
 ?>

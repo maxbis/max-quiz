@@ -175,6 +175,46 @@ JS;
 
 $this->registerJs($pdfScript);
 
+// Handle delete quiz button click with custom dialog
+$csrfParam = Yii::$app->request->csrfParam;
+$deleteBaseUrl = Url::to(['quiz/delete']);
+$deleteScript = <<<JS
+
+// Handle delete quiz with custom dialog
+$(document).on('click', '.delete-quiz-btn', function(e) {
+    e.preventDefault();
+    
+    var btn = $(this);
+    var quizId = btn.data('quiz-id');
+    var quizName = btn.data('quiz-name');
+    
+    window.showCustomDialog(
+        '❌ Delete Quiz',
+        'Are you sure you want to delete the quiz "<strong>' + quizName + '</strong>"?<br><br><span style="color:#dc3545;">⚠️ Warning: This action cannot be undone! All associated data will be permanently deleted.</span>',
+        function() {
+            // Create a hidden form to submit the POST request
+            var form = $('<form>', {
+                'method': 'POST',
+                'action': '$deleteBaseUrl' + '?id=' + quizId
+            });
+            
+            // Add CSRF token
+            form.append($('<input>', {
+                'type': 'hidden',
+                'name': '$csrfParam',
+                'value': '$csrfToken'
+            }));
+            
+            // Append to body and submit
+            form.appendTo('body').submit();
+        }
+    );
+});
+
+JS;
+
+$this->registerJs($deleteScript);
+
 ?>
 
 <!-- Include the reusable custom dialog component -->
@@ -605,11 +645,11 @@ $this->registerJs($pdfScript);
                                         ]) ?>
                                     <?php endif; ?>
                                     <div class="dropdown-divider"></div>
-                                    <?= Html::a('❌ Delete', ['/quiz/delete', 'id' => $quiz['id']], [
-                                        'class' => 'dropdown-item text-danger',
+                                    <?= Html::a('❌ Delete', '#', [
+                                        'class' => 'dropdown-item text-danger delete-quiz-btn',
                                         'title' => 'Delete Quiz',
-                                        'data-confirm' => 'Are you sure you want to delete this quiz?',
-                                        'data-method' => 'post',
+                                        'data-quiz-id' => $quiz['id'],
+                                        'data-quiz-name' => $quiz['name'],
                                     ]) ?>
                                 </div>
                             </div>
