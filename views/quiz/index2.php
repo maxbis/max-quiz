@@ -8,8 +8,8 @@ use yii\web\JsExpression;
 /* @var $this yii\web\View */
 /* @var $dataProvider yii\data\ActiveDataProvider */
 
-$this->title = 'Quiz List';
-echo "<p style='color:#909090;font-size:16px;'>" . $this->title . '</p>';
+// $this->title = 'Quiz List';
+// echo "<p style='color:#909090;font-size:12px;margin-top:10px;'>" . $this->title . '</p>';
 
 $csrfToken = Yii::$app->request->getCsrfToken();
 $showFilter = $showFilter ?? 'active';
@@ -133,26 +133,6 @@ $this->registerJs($js); // Register the JavaScript code
         display: none;
     }
 
-    .quiz-button-small {
-        font-size: 12px;
-        color: #a0a0a0;
-        padding: 0px 2px;
-        min-width: 55px;
-        margin-left: 5px;
-        margin-right: 5px;
-    }
-
-    .quiz-button-small:hover {
-        background-color: lightskyblue;
-    }
-
-    .quiz-button {
-        font-size: 14px;
-        padding: 2px 5px;
-        min-width: 55px;
-        margin-left: 5px;
-        margin-right: 5px;
-    }
 
     .group-header .triangle {
         color: red;
@@ -237,32 +217,10 @@ $this->registerJs($js); // Register the JavaScript code
         background-color: #f8d7da;
     }
     
-    /* Fix vertical alignment of action buttons */
-    .quiz-button-small {
-        vertical-align: top !important;
-        display: inline-flex !important;
-        align-items: center !important;
-        line-height: 1 !important;
-        margin-top: 0 !important;
-        margin-bottom: 0 !important;
-        font-size: 12px !important;
-        padding: 2px 4px !important;
-    }
-    
-    .btn-group {
-        vertical-align: top !important;
-        display: inline-block !important;
-    }
-    
-    .btn-group .quiz-button-small {
-        vertical-align: top !important;
-        margin-top: 0 !important;
-        margin-bottom: 0 !important;
-    }
-    
     /* Archive filter styling */
     .archive-filter {
         margin-bottom: 20px;
+        margin-top: 20px;
         padding: 15px 20px;
         background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
         border-radius: 8px;

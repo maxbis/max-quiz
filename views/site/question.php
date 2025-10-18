@@ -306,13 +306,6 @@ if ($selectedRecords == null) {
             margin-right: 20px;
         }
 
-        .quiz-button {
-            font-size: 12px;
-            padding: 2px 5px;
-            min-width: 55px;
-            margin: 5px;
-        }
-
         .alert-error {
             padding: 35px;
             margin: 40px;

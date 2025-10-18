@@ -35,17 +35,24 @@ $this->registerLinkTag(['rel' => 'icon', 'type' => 'image/x-icon', 'href' => Yii
         <?php
         if ( $this->title!='Error' ) {
             NavBar::begin([
-                'brandLabel' => Yii::$app->name,
-                'brandUrl' => Yii::$app->homeUrl,
-                'options' => ['class' => 'navbar-expand-md navbar-light fixed-top', 'style' => 'background-color:#ebf1fa;']
+                'options' => [
+                    'class' => 'navbar-expand-md navbar-light fixed-top', 
+                    'style' => 'background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%); border-bottom: 1px solid #dee2e6; box-shadow: 0 2px 4px rgba(0,0,0,0.1);'
+                ]
             ]);
+            
+            // Add custom logo
+            echo '<a class="navbar-brand mq-logo" href="' . Yii::$app->homeUrl . '">
+                <div class="mq-logo-icon"></div>
+                <span class="mq-logo-text">Quiz</span>
+            </a>';
             echo Nav::widget([
                 'options' => ['class' => 'navbar-nav'],
                 'items' => [
-                    ['label' => 'Student', 'url' => ['/submission/create']],
-                    ['label' => 'Quiz', 'url' => ['/quiz']],
+                    ['label' => 'Quizzes', 'url' => ['/quiz']],
                     // ['label' => 'Questions', 'url' => ['/question?show=-1']],
                     ['label' => 'Questions', 'url' => ['/question/index-raw']],
+                    ['label' => 'Student View', 'url' => ['/submission/create']],
                     // ['label' => 'Progress', 'url' => ['/submission']],
                     Yii::$app->user->isGuest
                         ? ['label' => 'Login', 'url' => ['/site/login']]
@@ -82,6 +89,31 @@ $this->registerLinkTag(['rel' => 'icon', 'type' => 'image/x-icon', 'href' => Yii
             </div>
         </div>
     </footer>
+
+    <script>
+    // Auto-highlight current page in navigation
+    $(document).ready(function() {
+        var currentPath = window.location.pathname;
+        
+        $('.navbar-nav .nav-link').each(function() {
+            var linkPath = $(this).attr('href');
+            if (linkPath && currentPath.includes(linkPath.replace(/^\//, ''))) {
+                $(this).addClass('active');
+            }
+        });
+        
+        // Special handling for specific routes
+        if (currentPath.includes('/question/index-raw')) {
+            $('.navbar-nav .nav-link[href*="question"]').addClass('active');
+        }
+        if (currentPath.includes('/quiz')) {
+            $('.navbar-nav .nav-link[href*="quiz"]').addClass('active');
+        }
+        if (currentPath.includes('/submission/create')) {
+            $('.navbar-nav .nav-link[href*="submission/create"]').addClass('active');
+        }
+    });
+    </script>
 
     <?php $this->endBody() ?>
 </body>

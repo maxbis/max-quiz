@@ -207,40 +207,6 @@ $this->title = 'Edit Question Labels - ' . Html::encode($quiz['name']);
             border-color: #4CAF50;
         }
 
-
-        .btn-submit {
-            background-color: #4CAF50;
-            color: white;
-            padding: 10px 25px;
-            border: none;
-            border-radius: 5px;
-            font-size: 14px;
-            font-weight: bold;
-            cursor: pointer;
-            transition: background-color 0.3s;
-        }
-
-        .btn-submit:hover {
-            background-color: #45a049;
-        }
-
-        .btn-back {
-            background-color: #666;
-            color: white;
-            padding: 10px 25px;
-            border: none;
-            border-radius: 5px;
-            font-size: 14px;
-            cursor: pointer;
-            margin-left: 15px;
-            text-decoration: none;
-            display: inline-block;
-        }
-
-        .btn-back:hover {
-            background-color: #555;
-        }
-
         .flash-message {
             padding: 15px;
             border-radius: 5px;
@@ -276,22 +242,6 @@ $this->title = 'Edit Question Labels - ' . Html::encode($quiz['name']);
             display: flex;
             justify-content: space-between;
             align-items: center;
-        }
-
-        .btn-sort-labels {
-            background-color: #2196F3;
-            color: white;
-            padding: 8px 20px;
-            border: none;
-            border-radius: 5px;
-            font-size: 14px;
-            font-weight: bold;
-            cursor: pointer;
-            transition: background-color 0.3s;
-        }
-
-        .btn-sort-labels:hover {
-            background-color: #0b7dda;
         }
 
         /* Modal styles */
@@ -467,34 +417,6 @@ $this->title = 'Edit Question Labels - ' . Html::encode($quiz['name']);
             display: flex;
             justify-content: flex-end;
             gap: 10px;
-        }
-
-        .btn-modal {
-            padding: 10px 25px;
-            border: none;
-            border-radius: 5px;
-            font-size: 14px;
-            font-weight: bold;
-            cursor: pointer;
-            transition: background-color 0.3s;
-        }
-
-        .btn-modal-primary {
-            background-color: #4CAF50;
-            color: white;
-        }
-
-        .btn-modal-primary:hover {
-            background-color: #45a049;
-        }
-
-        .btn-modal-secondary {
-            background-color: #e0e0e0;
-            color: #333;
-        }
-
-        .btn-modal-secondary:hover {
-            background-color: #d0d0d0;
         }
 
         .no-labels-message {

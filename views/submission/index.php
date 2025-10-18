@@ -44,13 +44,6 @@ $params = Yii::$app->request->getQueryParams();
         border-bottom: none;
     }
 
-    .quiz-button {
-        font-size: 10px;
-        padding: 2px 5px;
-        min-width: 65px;
-        margin: 5px;
-    }
-
     .delete-button {
         text-decoration: none;
         cursor: pointer;

@@ -8,13 +8,6 @@ $quiz_id = Yii::$app->request->get('quiz_id', null);
 ?>
 
 <style>
-    .quiz-button {
-        font-size: 10px;
-        padding: 2px 5px;
-        min-width: 55px;
-        margin: 5px;
-    }
-
     .container {
         display: flex;
     }

@@ -203,22 +203,6 @@ use yii\widgets\ActiveForm;
         flex-wrap: wrap;
     }
     
-    .quiz-button {
-        font-size: 14px;
-        padding: 10px 20px;
-        min-width: 120px;
-        margin: 5px;
-        border-radius: 6px;
-        font-weight: 500;
-        transition: all 0.3s ease;
-        border: 2px solid transparent;
-    }
-    
-    .quiz-button:hover {
-        transform: translateY(-2px);
-        box-shadow: 0 4px 12px rgba(0,0,0,0.15);
-    }
-    
     .btn-success {
         background: linear-gradient(135deg, #28a745 0%, #20c997 100%);
         border-color: #28a745;

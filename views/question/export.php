@@ -23,13 +23,6 @@ $this->title = 'Output View';
         /* Wrap text within <pre> tag */
         margin: 0;
     }
-
-    .quiz-button {
-        font-size: 10px;
-        padding: 2px 5px;
-        min-width: 55px;
-        margin: 5px;
-    }
 </style>
 
 <script>

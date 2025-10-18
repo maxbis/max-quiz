@@ -67,22 +67,6 @@ $this->registerJs($js);
 ?>
 
 <style>
-    .quiz-button-small {
-        font-size: 12px;
-        padding: 0px 2px;
-        min-width: 55px;
-        margin-left: 5px;
-        margin-right: 5px;
-    }
-
-    .quiz-button {
-        font-size: 14px;
-        padding: 2px 5px;
-        min-width: 55px;
-        margin-left: 5px;
-        margin-right: 5px;
-    }
-
     .group-header .triangle {
         cursor: pointer;
         display: inline-block;

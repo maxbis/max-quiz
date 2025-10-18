@@ -162,14 +162,6 @@ if ($show == 0) {
         background-color: lightgreen;
     }
 
-    .quiz-button {
-        font-size: 12px;
-        padding: 2px 5px;
-        min-width: 75px;
-        margin: 5px;
-    }
-
-
     .modal-overlay {
         position: fixed;
         top: 0;

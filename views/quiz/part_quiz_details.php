@@ -20,12 +20,6 @@ use yii\helpers\Html;
     .dot-green {
         background-color: lightgreen;
     }
-    .quiz-button {
-        font-size: 12px;
-        padding: 2px 5px;
-        min-width: 75px;
-        margin: 5px;
-    }
 </style>
 
 <div class="quiz-card"

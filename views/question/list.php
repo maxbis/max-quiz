@@ -70,13 +70,6 @@ require_once Yii::getAlias('@app/views/include/functions.php');
             padding-left: 10px;
         }
 
-        .quiz-button {
-            font-size: 10px;
-            padding: 2px 5px;
-            margin-left: 10px;
-            min-width: 55px;
-        }
-
         .stats {
             color: darkblue;
             display: none;
