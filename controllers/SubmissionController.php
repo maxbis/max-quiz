@@ -256,8 +256,7 @@ class SubmissionController extends Controller
         $this->findModel($id)->delete();
 
         if (Yii::$app->request->isAjax) {
-            Yii::$app->response->format = \yii\web\Response::FORMAT_JSON;
-            return ['success' => true];
+            return $this->asJson(['success' => true]);
         }
 
         return $this->redirect(['index']);
@@ -265,11 +264,24 @@ class SubmissionController extends Controller
 
     public function actionDeleteUnfinished($quiz_id)
     {
+        // Only allow POST requests for security
+        if (!Yii::$app->request->isPost) {
+            throw new \yii\web\MethodNotAllowedHttpException('Only POST requests are allowed.');
+        }
+
         $sql = "DELETE FROM submission
                 WHERE last_updated < NOW() - INTERVAL 2 HOUR
                 and (finished is null or finished = 0)
                 and quiz_id = $quiz_id";
-        Yii::$app->db->createCommand($sql)->execute();
+        $deletedCount = Yii::$app->db->createCommand($sql)->execute();
+
+        // Set a flash message to show the result
+        Yii::$app->session->setFlash('success', "Cleaned $deletedCount unfinished submissions.");
+
+        // Handle AJAX requests differently
+        if (Yii::$app->request->isAjax) {
+            return $this->asJson(['success' => true, 'deletedCount' => $deletedCount]);
+        }
 
         return $this->redirect(['/submission', 'quiz_id' => $quiz_id]);
     }
@@ -304,7 +316,7 @@ class SubmissionController extends Controller
         ]);
     }
 
-    public function actionExport($quiz_id)
+    public function actionExport($quiz_id, $filename = null)
     {
         $sql = "select q.name, student_nr, first_name, last_name, class,
                 CASE 
@@ -368,11 +380,11 @@ class SubmissionController extends Controller
                 'Eind Tijd' => 'end_time',
                 'Aantal minuten' => 'duration'
             ];
-            return $this->exportExcel($submissions, $columns);
+            return $this->exportExcel($submissions, $columns, $filename);
     }
 
     // WIP: stats over this quiz
-    public function actionExportStats($quiz_id)
+    public function actionExportStats($quiz_id, $filename = null)
     {
         $sql = "
             SELECT
@@ -399,15 +411,23 @@ class SubmissionController extends Controller
                 'Correct' => 'correct',
                 'Percentag Correct' => 'perc',
             ];
-            return $this->exportExcel($submissions, $columns);
+            return $this->exportExcel($submissions, $columns, $filename);
 
     }
 
 
-    private function exportExcel($data, $columns)
+    private function exportExcel($data, $columns, $filename = null)
     {
+        // Generate default filename if none provided
+        if ($filename === null) {
+            $filename = 'max-quiz-export' . date('YmdHi');
+        }
+        
+        // Sanitize filename (remove invalid characters)
+        $filename = preg_replace('/[^a-zA-Z0-9_-]/', '_', $filename);
+        
         header('Content-type: text/csv; charset=utf-8');
-        header('Content-Disposition: attachment; filename="max-quiz-export' . date('YmdHi') . '.csv"');
+        header('Content-Disposition: attachment; filename="' . $filename . '.csv"');
         header("Pragma: no-cache");
         header("Expires: 0");
         header('Content-Transfer-Encoding: binary');

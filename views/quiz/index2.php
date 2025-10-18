@@ -171,6 +171,7 @@ $this->registerJs($js); // Register the JavaScript code
         border-bottom: 1px solid #ddd;
         padding: 4px;
         text-align: left;
+        vertical-align: middle;
     }
 
     .highlight-column {
@@ -196,6 +197,17 @@ $this->registerJs($js); // Register the JavaScript code
         white-space: nowrap;
         overflow: hidden;
         text-overflow: ellipsis;
+        vertical-align: middle;
+    }
+    
+    .active-radio {
+        vertical-align: middle;
+        margin: 0;
+    }
+    
+    .active-dot {
+        vertical-align: middle;
+        display: inline-block;
     }
     .group-header {
         background: #e3e8f0 !important;
@@ -370,8 +382,8 @@ $this->registerJs($js); // Register the JavaScript code
                     endif;
                     ?>
                     <tr id="quiz-row-<?= $quiz['id'] ?>" class="<?= (isset($quiz['archived']) && $quiz['archived']) ? 'archived-quiz' : '' ?>"<?= $quiz['active'] ? " style='background-color:#e6ffe6;'" : '' ?>>
-                        <td style="color:#e0e0e0;width:15px;">•</td>
-                        <td style='width:15px;'>
+                        <td style="color:#e0e0e0;width:15px;vertical-align:middle;">•</td>
+                        <td style='width:15px; vertical-align: middle;'>
                             <?php 
                             $isArchived = isset($quiz['archived']) ? $quiz['archived'] : false;
                             $checkboxOptions = ['value' => $quiz['id'], 'class' => 'active-radio'];
@@ -381,8 +393,8 @@ $this->registerJs($js); // Register the JavaScript code
                             ?>
                             <?= Html::checkbox('active', $quiz['active'], $checkboxOptions) ?>
                         </td>
-                        <td class="quiz-name-cell" style="width:250px;<?= $quiz['active'] ? 'font-weight:bold;' : '' ?>">
-                            <span class="active-dot" title="Active" style="color:#28a745;font-size:1.2em;margin-right:4px;<?= $quiz['active'] ? '' : 'visibility:hidden;' ?>">●</span>
+                        <td class="quiz-name-cell" style="width:250px; vertical-align: middle;<?= $quiz['active'] ? 'font-weight:bold;' : '' ?>">
+                            <span class="active-dot" title="Active" style="color:#28a745;font-size:1.2em;margin-right:4px;vertical-align:middle;<?= $quiz['active'] ? '' : 'visibility:hidden;' ?>">●</span>
                             <?php 
                                 $url = $quiz['active'] 
                                     ? Yii::$app->urlManager->createUrl(['submission', 'quiz_id' => $quiz['id']]) 
