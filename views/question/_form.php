@@ -108,7 +108,7 @@ use yii\widgets\ActiveForm;
     .answer-field.correct-answer::before {
         content: "✓";
         position: absolute;
-        top: 10px;
+        top: 40px;
         right: 10px;
         color: #28a745;
         font-weight: bold;
