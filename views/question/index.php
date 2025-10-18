@@ -543,7 +543,7 @@ if ($show == 0) {
                 }
                 $truncatedText = mb_substr($questionText, 0, 100) . (mb_strlen($questionText) > 100 ? '...' : '');
                 $editUrl = Url::toRoute(['update', 'id' => $model->id, 'quiz_id' => $quiz_id]);
-                return Html::a($truncatedText, $editUrl, [
+                return Html::a(Html::encode($truncatedText), $editUrl, [
                     'style' => 'color: #0a58ca; text-decoration: none; cursor: pointer;',
                     'title' => 'Click to edit this question'
                 ]);
