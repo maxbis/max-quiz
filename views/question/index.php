@@ -296,7 +296,7 @@ if ($show == 0) {
                 echo Html::a('👁️ View', $url, ['title' => 'View Questions', 'class' => 'btn btn-outline-success quiz-button',]);
                 ?>
                  <?= Html::a(
-                    '🏷️ Labels',
+                    '🏷️ Sort',
                     ['quiz/edit-labels', 'id' => $quiz['id']],
                     [
                         'class' => 'btn btn-outline-success quiz-button',

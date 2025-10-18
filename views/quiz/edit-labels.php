@@ -207,24 +207,14 @@ $this->title = 'Edit Question Labels - ' . Html::encode($quiz['name']);
             border-color: #4CAF50;
         }
 
-        .submit-container {
-            position: sticky;
-            bottom: 0;
-            background-color: #fff;
-            padding: 20px;
-            border-top: 2px solid #ddd;
-            margin-top: 30px;
-            text-align: center;
-            box-shadow: 0 -2px 10px rgba(0,0,0,0.1);
-        }
 
         .btn-submit {
             background-color: #4CAF50;
             color: white;
-            padding: 15px 40px;
+            padding: 10px 25px;
             border: none;
             border-radius: 5px;
-            font-size: 16px;
+            font-size: 14px;
             font-weight: bold;
             cursor: pointer;
             transition: background-color 0.3s;
@@ -278,7 +268,7 @@ $this->title = 'Edit Question Labels - ' . Html::encode($quiz['name']);
 
         .question-counter {
             background-color: #f0f0f0;
-            padding: 10px 15px;
+            padding: 15px 20px;
             border-radius: 5px;
             margin-bottom: 20px;
             font-size: 14px;
@@ -587,9 +577,15 @@ $this->title = 'Edit Question Labels - ' . Html::encode($quiz['name']);
                 Total Questions: <strong><?= count($questions) ?></strong> | 
                 <span style="color: #4CAF50;">💡 Tip: Drag questions to reorder them</span>
             </div>
-            <button type="button" class="btn-sort-labels" onclick="openLabelSortDialog()">
-                🔤 Sort by Labels
-            </button>
+            <div style="display: flex; gap: 10px; align-items: center;">
+                <button type="submit" form="labelsForm" class="btn-submit" style="margin: 0;">
+                    💾 Save
+                </button>
+                <?= Html::a('Cancel', ['index'], ['class' => 'btn-back', 'style' => 'margin: 0;']) ?>
+                <button type="button" class="btn-sort-labels" onclick="openLabelSortDialog()">
+                    🔤 Sort by Labels
+                </button>
+            </div>
         </div>
 
         <div id="orderSavedNotice" class="order-saved-notice">
@@ -599,6 +595,7 @@ $this->title = 'Edit Question Labels - ' . Html::encode($quiz['name']);
         <?php $form = ActiveForm::begin([
             'method' => 'post',
             'action' => ['edit-labels', 'id' => $quiz['id']],
+            'id' => 'labelsForm',
         ]); ?>
 
             <div id="questionsList">
@@ -642,12 +639,6 @@ $this->title = 'Edit Question Labels - ' . Html::encode($quiz['name']);
             <?php endforeach; ?>
             </div>
 
-            <div class="submit-container">
-                <button type="submit" class="btn-submit">
-                    💾 Save All Labels
-                </button>
-                <?= Html::a('Cancel', ['index'], ['class' => 'btn-back']) ?>
-            </div>
 
         <?php ActiveForm::end(); ?>
     <?php endif; ?>
