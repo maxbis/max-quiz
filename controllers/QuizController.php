@@ -52,22 +52,6 @@ class QuizController extends Controller
         );
     }
 
-    /**
-     * Lists all Quiz models.
-     *
-     * @return string
-     */
-    // public function actionIndex2()
-    // {
-    //     $searchModel = new QuizSearch();
-    //     $dataProvider = $searchModel->search($this->request->queryParams);
-
-    //     return $this->render('index', [
-    //         'searchModel' => $searchModel,
-    //         'dataProvider' => $dataProvider,
-    //     ]);
-    // }
-
     private function updateQuestionNumbers()
     {
         $sql = "UPDATE quiz
@@ -160,9 +144,6 @@ class QuizController extends Controller
         $model = $this->findModel($id);
 
         if ($this->request->isPost && $model->load($this->request->post())) {
-            // if ( $model->active == 1 ) {
-            //     Quiz::updateAll(['active' => 0], ['!=', 'id', $model->id]);
-            // }
             try {
                 if ($model->save()) {
                     return $this->redirect(['index', 'id' => $model->id]);

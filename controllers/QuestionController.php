@@ -124,13 +124,6 @@ class QuestionController extends Controller
      * @return string
      * @throws NotFoundHttpException if the model cannot be found
      */
-    public function actionViewOld($id)
-    {
-        return $this->render('view', [
-            'model' => $this->findModel($id),
-        ]);
-    }
-
     public function actionView($id, $quiz_id = null)
     {
         $submission = [
@@ -337,10 +330,6 @@ class QuestionController extends Controller
      */
     public function actionDelete($id, $show = null)
     {
-
-        // $sql = "delete from quizquestion where question_id=$id";
-        // Yii::$app->db->createCommand($sql)->execute();
-
         $sql = "SELECT count(*) count FROM quizquestion where active = 1 and question_id = $id";
         $result = Yii::$app->db->createCommand($sql)->queryOne();
 
@@ -388,8 +377,6 @@ class QuestionController extends Controller
                 order by COALESCE(qq.order, 0) ASC, id ASC";
         $questions = Yii::$app->db->createCommand($sql)->queryAll();
 
-        // $sql = "select question_id id, sum(answer_no) answer, sum(correct) correct from log where quiz_id = $quiz_id group by 1";
-
         $sql = "select l.question_id id, sum(1) answer, sum(l.correct) correct
                 from log l
                 join submission s on s.id = l.submission_id
@@ -398,7 +385,6 @@ class QuestionController extends Controller
         $log = Yii::$app->db->createCommand($sql)->queryAll();
 
         $logItems = [];
-
         foreach ($log as $item) {
             $logItems[$item['id']] = [
                 'answer' => $item['answer'],
@@ -434,15 +420,13 @@ class QuestionController extends Controller
         $answerIndex = 1;
 
         $trimEmptyLines = function ($text) {
-            $trimmedText = preg_replace('/^\h*\v+/m', '', $text); // Remove empty lines from the beginning of the text
-            $trimmedText = preg_replace('/\v+\h*$/m', '', $trimmedText); // Remove empty lines from the end of the text
+            $trimmedText = preg_replace('/^\h*\v+/m', '', $text);
+            $trimmedText = preg_replace('/\v+\h*$/m', '', $trimmedText);
             return $trimmedText;
         };
 
         foreach ($lines as $line) {
-            # $line = chop($line);
             $token = substr($line, 0, 2);
-            // _d(['Newline token, line, currentQuestion, curretnData, currentKey',$token, $line, $thisQuestion, $currentData, $currentKey]);
             if ($token == 'QQ') {
                 if ($currentKey && $currentData) {
                     $thisQuestion[$currentKey] = $trimEmptyLines($currentData);
@@ -478,7 +462,6 @@ class QuestionController extends Controller
                 $currentKey = "id";
                 $currentData = "";
             } else {
-                // remove empty lines if token <> QQ
                 if ($currentKey <> "question") {
                     $currentData .= rtrim($line, "\n\r");
                 } else {
@@ -489,9 +472,8 @@ class QuestionController extends Controller
         if ($currentData) {
             $thisQuestion[$currentKey] = $trimEmptyLines($currentData);
         }
-        array_push($questions, $thisQuestion); // save the last question
+        array_push($questions, $thisQuestion);
 
-        // dd($questions);
         return $questions;
     }
 
@@ -531,12 +513,6 @@ class QuestionController extends Controller
         }
         if ($question === null) { // nothing to update
             $questionText = rtrim($questionData['question'], "\r\n");
-
-            // Check for duplicate - oops sometimes questions are the same!
-            // $existingQuestion = Question::find()->where(['like', 'question', $questionText . '%', false])->one();
-            // if ($existingQuestion !== null) {
-            //     return -1;
-            // }
             $question = new Question();
         }
 
@@ -554,12 +530,9 @@ class QuestionController extends Controller
             $question->label = $questionData['label'] ?? 'Imported';
         }
 
-        // dd($question);
-
         if ($question->save()) {
             $succes++;
             if ($quiz_id) {
-                // connect question to quiz
                 $exists = Quizquestion::findOne(['quiz_id' => $quiz_id, 'question_id' => $question->id]);
                 if ($exists === null) {
                     $quizQuestion = new Quizquestion();
@@ -589,11 +562,6 @@ class QuestionController extends Controller
                 }
             }
         }
-
-
-        // ToDO select only quetions for this quiz, join with quizquestion
-        // $sql = "select * from question";
-        // where qq.quiz_id=$quiz_id and qq.active=1
 
         $sql = "select
                 q.id id, question question, a1, a2, a3, a4, a5, a6, correct, label, qq.order
@@ -768,13 +736,10 @@ class QuestionController extends Controller
         $results = $this->openAI($prompt);
 
         return $this->render('import', ['input' => $results, 'quiz' => null]);
-        dd($response->data);
-
     }
+
     private function openAI($prompt)
     {
-        //$apiKey = Yii::$app->params['openApiKey'];
-
         $secret = require __DIR__ . '/../config/secret.php';
         $apiKey = $secret['openApiKey'];
 
@@ -805,7 +770,7 @@ class QuestionController extends Controller
             ->send();
 
             if (! isset($response->data['choices'][0]['message']['content'])) {
-               dd($$response->data);
+               dd($response->data);
             } 
         
         return $response->data['choices'][0]['message']['content'];

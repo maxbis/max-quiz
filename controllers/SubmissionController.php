@@ -151,11 +151,7 @@ class SubmissionController extends Controller
             return $this->redirect(['/submission/create']);
         }
 
-        // if (strlen($first_name) < 2 || strlen($last_name) < 2) {
-        //     return $this->redirect(Yii::$app->request->referrer);
-        // }
-
-        if (strtolower($user_agent) == "max-quiz" && $password == "") { // if user_agent is quiz client (max-quiz) and there''s only one quiz active, start that quiz.
+        if (strtolower($user_agent) == "max-quiz" && $password == "") {
             $sql = "select * from quiz where active = 1";
             $quiz = Yii::$app->db->createCommand($sql)->queryAll();
             if (count($quiz) != 1) {
@@ -164,10 +160,8 @@ class SubmissionController extends Controller
             $password = $quiz[0]['password'];
         }
 
-        $sql = "select * from quiz where password='$password' and active = 1"; // password is same as quiz code
+        $sql = "select * from quiz where password='$password' and active = 1";
         $quiz = Yii::$app->db->createCommand($sql)->queryOne();
-        // echo "<pre>";print_r($quiz);
-        // exit();
         if (!$quiz) {
             return $this->redirect(Yii::$app->request->referrer);
         }
@@ -180,7 +174,6 @@ class SubmissionController extends Controller
         $quiz_id = $quiz['id'];
         $token = $this->generateRandomToken();
 
-        // Get all questions connected, shuffle and create space seprated string
         $sql = "select qq.question_id 
                 from quizquestion qq 
                 join question q on qq.question_id = q.id 
@@ -189,7 +182,6 @@ class SubmissionController extends Controller
         $result = Yii::$app->db->createCommand($sql)->queryAll();
         $questionIds = array_column($result, 'question_id');
 
-        // if no questions, quiz cannot be started
         if (count($questionIds) == 0) {
             return $this->redirect(Yii::$app->request->referrer);
         }
@@ -197,12 +189,12 @@ class SubmissionController extends Controller
         if ($quiz['random']==1) {
             shuffle($questionIds);
         }
-        if ($quiz['no_questions']) { // if quiz had question number limit, take first only
+        if ($quiz['no_questions']) {
             $limitArrayToN = fn(array $array, int $N) => ($N >= count($array)) ? $array : array_slice($array, 0, $N);
             $questionIds = $limitArrayToN($questionIds, $quiz['no_questions']);
         }
         $no_questions = count($questionIds);
-        $question_order = implode(" ", $questionIds); // serialize questions (questin ids seperated by spaces)
+        $question_order = implode(" ", $questionIds);
 
         $ip_address = Yii::$app->request->userIP;
 
@@ -219,7 +211,6 @@ class SubmissionController extends Controller
 
         writeLog($msg = "Quiz Started for $first_name $last_name $class with token: $token");
 
-        // redirect to question page
         return $this->redirect(['site/question']);
 
     }
@@ -242,9 +233,8 @@ class SubmissionController extends Controller
         $model = $this->findModel($id);
 
         if ($this->request->isPost && $model->load($this->request->post()) && $model->save()) {
-            $returnUrl = Yii::$app->user->returnUrl ?: ['update', 'id' => $model->id]; // if not saved go to default      
+            $returnUrl = Yii::$app->user->returnUrl ?: ['update', 'id' => $model->id];
             return $this->redirect($returnUrl);
-            // return $this->redirect(['update', 'id' => $model->id]);
         }
 
         Yii::$app->user->returnUrl = Yii::$app->request->referrer;
@@ -335,9 +325,6 @@ class SubmissionController extends Controller
         $correctAnswersIndexed = ArrayHelper::map($correctAnswers, 'id', 'correct');
         ksort($correctAnswersIndexed);
 
-        // _d($correctAnswersIndexed);
-
-        // merge the two (serialized) list to one ass. array (f.e. 252 253 312 and 1 2 1 will become ['252'=>'1','253'=>'2','312'=>'1'])
         foreach ($submissions as &$submission) {
             $resultArray = [];
             $ids = $this->list2Array($submission['question_order']);
@@ -357,20 +344,15 @@ class SubmissionController extends Controller
 
             ksort($resultArray);
 
-            // _d($resultArray);
-
-            $counter = 1; // Initialize the counter
+            $counter = 1;
             foreach ($resultArray as $key => &$subArray) {
-                // array_unshift($subArray, $counter); // Add the counter at the beginning of each sub-array
                 $subArray[0] = $counter;
-                $counter++; // Increment the counter for the next sub-array
+                $counter++;
             }
-            unset($subArray); // Break the reference with the last element
+            unset($subArray);
 
             $submission['questions-answers'] = $resultArray;
         }
-
-        // _dd($submissions);
 
         if ($submissions)
             $columns = [
@@ -458,7 +440,6 @@ class SubmissionController extends Controller
                     $output .= $value . $separator;
                 }
             }
-            // If there's nested data like 'questions-answers', handle it here
             if (isset($line['questions-answers']) && is_array($line['questions-answers'])) {
                 foreach ($line['questions-answers'] as $key => $value) {
                     $output .= $value[0] . '-' . $key . $separator . $value[1] . $separator . $value[2] . $separator;
@@ -470,61 +451,6 @@ class SubmissionController extends Controller
         return $output;
     }
 
-    private function exportExcelOldWeg($data)
-    {
-        header('Content-type: text/csv; charset=utf-8');
-        header('Content-Disposition: attachment; filename="max-quiz-export' . date('YmdHi') . '.csv"');
-        header("Pragma: no-cache");
-        header("Expires: 0");
-        header('Content-Transfer-Encoding: binary');
-        echo "\xEF\xBB\xBF";
-
-        $output = "";
-
-        $seperator = ";"; // NL version, use , for EN
-
-        $output .= 'Cursus' . $seperator;
-        $output .= 'Student' . $seperator;
-        $output .= 'Klas' . $seperator;
-        $output .= 'Score' . $seperator;
-        $output .= 'Aantal Vraegn' . $seperator;
-        $output .= 'Aantal Antwoorden' . $seperator;
-        $output .= 'Aantal Correct' . $seperator;
-        $output .= 'Start Tijd' . $seperator;
-        $output .= 'Eind Tijd' . $seperator;
-        $output .= 'Aantal minuten' . $seperator;
-        // foreach ( $data[0]['questions-answers'] as  $index => $value ) {
-        //     $output .= $index.$seperator.'Goed'.$seperator;
-        // }
-        $output .= "\n";
-
-        foreach ($data as $line) {
-            // foreach ($line as $key => $value) {
-            //     $output .= preg_replace('/[\s+,;]/', ' ', $value) . $seperator;
-            //     // echo "\"" . $value . "\"" . $seperator;
-            // }
-            $output .= $line['name'] . $seperator;
-            $output .= $line['first_name'] . ' ' . $line['last_name'] . $seperator;
-            $output .= $line['class'] . $seperator;
-            $output .= $line['score'] . $seperator;
-            $output .= $line['no_questions'] . $seperator;
-            $output .= $line['no_answered'] . $seperator;
-            $output .= $line['no_correct'] . $seperator;
-            $output .= $line['start_time'] . $seperator;
-            $output .= $line['end_time'] . $seperator;
-            $output .= $line['duration'] . $seperator;
-            foreach ($line['questions-answers'] as $key => $value) {
-                $output .= $value[0] . '-' . $key . $seperator . $value[1] . $seperator . $value[2] . $seperator;
-            }
-            $output .= "\n";
-        }
-
-        // _dd($output);
-        return $output;
-    }
-
-    // used in export function to convert question_order and answer_order to array
-    // and remove space from front of each item in array (if any)
     private function list2Array($list)
     {
         if (substr($list, 0, 1) === ' ') {
