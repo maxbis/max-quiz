@@ -275,13 +275,40 @@ require_once Yii::getAlias('@app/views/include/functions.php');
         }
 
         .question-container {
-            cursor: pointer;
             transition: transform 0.2s ease;
         }
 
         .question-container:hover {
             transform: translateY(-2px);
             box-shadow: 5px 5px 15px #888888;
+        }
+
+        .clickable-question {
+            cursor: pointer;
+            transition: all 0.2s ease;
+            padding: 10px;
+            border-radius: 8px;
+            position: relative;
+        }
+
+        .clickable-question:hover {
+            background-color: rgba(0, 123, 255, 0.1);
+            border: 2px solid rgba(0, 123, 255, 0.3);
+            transform: translateY(-1px);
+        }
+
+        .clickable-question::after {
+            content: "📺";
+            position: absolute;
+            top: 5px;
+            right: 10px;
+            font-size: 16px;
+            opacity: 0;
+            transition: opacity 0.2s ease;
+        }
+
+        .clickable-question:hover::after {
+            opacity: 1;
         }
 
         /* Custom scrollbar for presentation mode */
@@ -597,15 +624,15 @@ require_once Yii::getAlias('@app/views/include/functions.php');
             </div>
         </div>
 
-        <div class="question-container row" onclick="openPresentationMode(<?= $index ?>)">
+        <div class="question-container row">
             <div class="_col">
                 <form class="answers">
-                    <div class="question" id="question<?= $question['id'] ?>">
+                    <div class="question clickable-question" id="question<?= $question['id'] ?>" onclick="openPresentationMode(<?= $index ?>)" title="Click to open presentation mode">
 <?= escapeHtmlExceptTags($question['question'] ); ?>
                     </div>
             </div>
 
-            <div class="_col" style="border-top:1px dashed gray;margin-top:80px;">
+            <div class="_col" style="border-top:1px dashed gray;margin-top:80px;" onclick="event.stopPropagation();">
 
                 <?php
                 $array = ['1','2','3','4','5','6'];

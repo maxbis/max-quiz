@@ -296,7 +296,7 @@ $id = Yii::$app->request->get('id');
         <div class="action-buttons">
             <?= Html::submitButton('💾 Save', ['class' => 'btn btn-success quiz-button']) ?>
             <?= Html::a('⬅️ Back', Yii::$app->request->referrer, ['class' => 'btn btn-primary quiz-button']); ?>
-            <?= Html::a('👁️ Preview', ['/quiz/view', 'id' => $model->id], ['class' => 'btn btn-warning quiz-button', 'target' => '_blank']); ?>
+            <?= Html::a('👁️ View', ['/question/list', 'quiz_id' => $model->id], ['class' => 'btn btn-warning quiz-button', 'target' => '_blank']); ?>
             <?= Html::a('📄 PDF', ['/question/pdf', 'quiz_id' => $model->id], ['class' => 'btn btn-danger quiz-button', 'target' => '_blank']); ?>
         </div>
 
