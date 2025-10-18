@@ -766,87 +766,76 @@ require_once Yii::getAlias('@app/views/include/functions.php');
 
     <script>
         // Initialize questions array for presentation mode
-        // Escape HTML in questions and answers to prevent rendering issues
         const rawQuestions = <?= json_encode($questions) ?>;
         
-        // Function to escape HTML while preserving <pre> and <code> tags
-        function escapeHtmlPreserveCode(text) {
-            if (!text) return text;
+        /**
+         * JavaScript equivalent of PHP escapeHtmlExceptTags() function
+         * Escapes ALL HTML tags for security, then selectively un-escapes allowed formatting tags
+         * 
+         * This matches the exact algorithm used in views/include/functions.php:
+         * 1. Remove unwanted tags (if specified)
+         * 2. Escape ALL HTML using htmlspecialchars equivalent
+         * 3. Un-escape ONLY allowed tags (pre, code, i, b by default)
+         * 
+         * @param {string} html - The HTML string to process
+         * @param {array} deleteTags - Tags to remove completely (optional)
+         * @param {array} allowedTags - Tags that should be rendered as HTML (default: pre, code, i, b)
+         * @returns {string} Safely escaped HTML with allowed tags preserved
+         */
+        function escapeHtmlExceptTags(html, deleteTags = [], allowedTags = ['pre', 'code', 'i', 'b']) {
+            if (!html) return html;
             
-            // First, handle PHP code blocks by removing PHP tags and wrapping in <pre>
-            let processedText = text;
-            
-            // Find PHP code blocks and remove the opening/closing tags
-            const phpPattern = /<\?php[\s\S]*?\?>/gi;
-            const phpMatches = processedText.match(phpPattern);
-            if (phpMatches) {
-                phpMatches.forEach((match, index) => {
-                    // Remove PHP tags and clean up whitespace
-                    let content = match.replace(/<\?php\s*/, '').replace(/\s*\?>/, '');
-                    // Remove excessive indentation (leading whitespace from each line)
-                    content = content.replace(/^\s+/gm, '');
-                    // Trim any remaining whitespace
-                    content = content.trim();
-                    const placeholder = `__PHPCODE_${index}__`;
-                    processedText = processedText.replace(match, placeholder);
-                    // Store the cleaned content wrapped in <pre>
-                    processedText = processedText.replace(placeholder, `<pre>${content}</pre>`);
-                });
-            }
-            
-            // Now temporarily replace <pre> and <code> tags with placeholders
-            const codeBlocks = [];
-            
-            // Handle existing <pre> tags
-            processedText = processedText.replace(/<pre[^>]*>[\s\S]*?<\/pre>/gi, (match) => {
-                const placeholder = `__PRETAG_${codeBlocks.length}__`;
-                codeBlocks.push(match);
-                return placeholder;
+            // Step 1: Remove unwanted tags completely
+            deleteTags.forEach(tag => {
+                const startTagRegex = new RegExp('<' + tag + '>', 'gi');
+                const endTagRegex = new RegExp('</' + tag + '>', 'gi');
+                html = html.replace(startTagRegex, '').replace(endTagRegex, '');
             });
             
-            // Handle existing <code> tags
-            processedText = processedText.replace(/<code[^>]*>[\s\S]*?<\/code>/gi, (match) => {
-                const placeholder = `__CODETAG_${codeBlocks.length}__`;
-                codeBlocks.push(match);
-                return placeholder;
-            });
-            
-            // Escape all remaining HTML
-            processedText = processedText
-                .replace(/&/g, '&amp;')
+            // Step 2: Escape ALL HTML characters (equivalent to PHP's htmlspecialchars)
+            // This makes everything safe by default - even malicious scripts become harmless text
+            let escapedHtml = html
+                .replace(/&/g, '&amp;')     // Must be first!
                 .replace(/</g, '&lt;')
                 .replace(/>/g, '&gt;')
                 .replace(/"/g, '&quot;')
                 .replace(/'/g, '&#39;');
             
-            // Restore the code blocks
-            codeBlocks.forEach((block, index) => {
-                const placeholder = `__PRETAG_${index}__`;
-                processedText = processedText.replace(placeholder, block);
+            // Step 3: Un-escape ONLY the allowed tags so they render as actual HTML
+            // For each allowed tag, replace the escaped version back to real HTML
+            allowedTags.forEach(tag => {
+                const escapedStartTag = '&lt;' + tag + '&gt;';
+                const escapedEndTag = '&lt;/' + tag + '&gt;';
+                // Use global replacement to handle multiple occurrences
+                const startTagRegex = new RegExp(escapedStartTag, 'gi');
+                const endTagRegex = new RegExp(escapedEndTag, 'gi');
+                escapedHtml = escapedHtml.replace(startTagRegex, '<' + tag + '>');
+                escapedHtml = escapedHtml.replace(endTagRegex, '</' + tag + '>');
             });
             
-            codeBlocks.forEach((block, index) => {
-                const placeholder = `__CODETAG_${index}__`;
-                processedText = processedText.replace(placeholder, block);
-            });
-            
-            return processedText;
+            return escapedHtml;
         }
         
+        // Process all questions using the same algorithm as the PHP view
         questions = rawQuestions.map(question => {
             const escapedQuestion = { ...question };
             
-            // Escape HTML in question text while preserving code tags
+            // Escape HTML in question text
+            // Allows: <pre>, <code>, <i>, <b> for formatting
+            // Blocks: <script>, <iframe>, and all other HTML tags
             if (escapedQuestion.question) {
-                escapedQuestion.question = escapeHtmlPreserveCode(escapedQuestion.question);
+                escapedQuestion.question = escapeHtmlExceptTags(escapedQuestion.question);
             }
             
-            // Escape HTML in all answer fields while preserving code tags
+            // Escape HTML in all answer fields
+            // For answers, we delete <pre> tags to prevent nested code blocks
+            // But still allow code formatting via the parent function
             for (let i = 1; i <= 6; i++) {
                 if (escapedQuestion['a' + i]) {
-                    escapedQuestion['a' + i] = escapeHtmlPreserveCode(escapedQuestion['a' + i]);
+                    escapedQuestion['a' + i] = escapeHtmlExceptTags(escapedQuestion['a' + i], ['pre']);
                 }
             }
+            
             return escapedQuestion;
         });
     </script>
