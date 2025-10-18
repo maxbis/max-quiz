@@ -8,6 +8,9 @@ use yii\grid\GridView;
 
 use yii\widgets\Pjax;
 
+// Register the custom dialog asset bundle
+app\assets\CustomDialogAsset::register($this);
+
 $this->title = 'Results for ' . $quizName;
 // echo "<p style='color:#909090;font-size:16px;'>".$this->title.'</p>';
 $params = Yii::$app->request->getQueryParams();
@@ -116,172 +119,8 @@ $statusClass = $quizActive == 1 ? 'dot-green' : 'dot-red';
     </div>
 </div>
 
-<!-- Modern Dialog Modal -->
-<div id="customDialog" class="custom-dialog-overlay" style="display: none;">
-    <div class="custom-dialog">
-        <div class="custom-dialog-header">
-            <h4 id="dialogTitle">Confirm Action</h4>
-            <button type="button" class="custom-dialog-close" id="dialogCloseBtn">&times;</button>
-        </div>
-        <div class="custom-dialog-body">
-            <p id="dialogMessage">Are you sure you want to proceed?</p>
-            <div id="dialogInputContainer" style="display: none;">
-                <label for="dialogInput">Filename (without extension):</label>
-                <input type="text" id="dialogInput" class="form-control" placeholder="Enter filename...">
-            </div>
-        </div>
-        <div class="custom-dialog-footer">
-            <button type="button" class="btn btn-secondary" id="dialogCancelBtn">Cancel</button>
-            <button type="button" class="btn btn-primary" id="dialogConfirmBtn">Confirm</button>
-        </div>
-    </div>
-</div>
-
-<style>
-.custom-dialog-overlay {
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    background-color: rgba(0, 0, 0, 0.5);
-    z-index: 9999;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    backdrop-filter: blur(2px);
-}
-
-.custom-dialog {
-    background: white;
-    border-radius: 12px;
-    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
-    max-width: 500px;
-    width: 90%;
-    max-height: 90vh;
-    overflow: hidden;
-    animation: dialogSlideIn 0.3s ease-out;
-}
-
-@keyframes dialogSlideIn {
-    from {
-        opacity: 0;
-        transform: translateY(-30px) scale(0.95);
-    }
-    to {
-        opacity: 1;
-        transform: translateY(0) scale(1);
-    }
-}
-
-.custom-dialog-header {
-    padding: 20px 24px 16px;
-    border-bottom: 1px solid #e9ecef;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
-}
-
-.custom-dialog-header h4 {
-    margin: 0;
-    color: #495057;
-    font-weight: 600;
-    font-size: 1.25rem;
-}
-
-.custom-dialog-close {
-    background: none;
-    border: none;
-    font-size: 24px;
-    color: #6c757d;
-    cursor: pointer;
-    padding: 0;
-    width: 30px;
-    height: 30px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    border-radius: 50%;
-    transition: all 0.2s ease;
-}
-
-.custom-dialog-close:hover {
-    background-color: #e9ecef;
-    color: #495057;
-}
-
-.custom-dialog-body {
-    padding: 24px;
-}
-
-.custom-dialog-body p {
-    margin: 0 0 16px 0;
-    color: #495057;
-    line-height: 1.5;
-}
-
-.custom-dialog-body label {
-    display: block;
-    margin-bottom: 8px;
-    font-weight: 500;
-    color: #495057;
-}
-
-.custom-dialog-body input {
-    width: 100%;
-    padding: 10px 12px;
-    border: 2px solid #e9ecef;
-    border-radius: 6px;
-    font-size: 14px;
-    transition: border-color 0.2s ease;
-}
-
-.custom-dialog-body input:focus {
-    outline: none;
-    border-color: #007bff;
-    box-shadow: 0 0 0 3px rgba(0, 123, 255, 0.1);
-}
-
-.custom-dialog-footer {
-    padding: 16px 24px 24px;
-    display: flex;
-    justify-content: flex-end;
-    gap: 12px;
-    background-color: #f8f9fa;
-}
-
-.custom-dialog-footer .btn {
-    padding: 8px 20px;
-    border-radius: 6px;
-    font-weight: 500;
-    transition: all 0.2s ease;
-}
-
-.custom-dialog-footer .btn-secondary {
-    background-color: #6c757d;
-    border-color: #6c757d;
-    color: white;
-}
-
-.custom-dialog-footer .btn-secondary:hover {
-    background-color: #5a6268;
-    border-color: #545b62;
-    transform: translateY(-1px);
-}
-
-.custom-dialog-footer .btn-primary {
-    background-color: #007bff;
-    border-color: #007bff;
-    color: white;
-}
-
-.custom-dialog-footer .btn-primary:hover {
-    background-color: #0056b3;
-    border-color: #004085;
-    transform: translateY(-1px);
-}
-</style>
+<!-- Include the reusable custom dialog component -->
+<?= $this->render('@app/views/include/_custom-dialog.php') ?>
 
 <div>
 
@@ -551,74 +390,9 @@ $statusClass = $quizActive == 1 ? 'dot-green' : 'dot-red';
 
         $script = <<<JS
 
-            // Modern Dialog Functions
-            window.showCustomDialog = function(title, message, onConfirm, showInput, defaultValue) {
-                showInput = showInput || false;
-                defaultValue = defaultValue || '';
-                
-                $('#dialogTitle').text(title);
-                $('#dialogMessage').text(message);
-                
-                if (showInput) {
-                    $('#dialogInputContainer').show();
-                    $('#dialogInput').val(defaultValue);
-                    setTimeout(function() {
-                        $('#dialogInput').focus();
-                    }, 100);
-                } else {
-                    $('#dialogInputContainer').hide();
-                }
-                
-                $('#customDialog').show();
-                
-                // Store the confirm callback
-                window.currentDialogCallback = onConfirm;
-            };
-
-            window.closeCustomDialog = function() {
-                $('#customDialog').hide();
-                window.currentDialogCallback = null;
-            };
-
-            // Handle dialog close button (X)
-            $('#dialogCloseBtn').on('click', function() {
-                window.closeCustomDialog();
-            });
-
-            // Handle dialog cancel button
-            $('#dialogCancelBtn').on('click', function() {
-                window.closeCustomDialog();
-            });
-
-            // Handle dialog confirm button
-            $('#dialogConfirmBtn').on('click', function() {
-                if (window.currentDialogCallback) {
-                    window.currentDialogCallback();
-                }
-                window.closeCustomDialog();
-            });
-
-            // Handle dialog input enter key
-            $('#dialogInput').on('keypress', function(e) {
-                if (e.which === 13) { // Enter key
-                    e.preventDefault();
-                    $('#dialogConfirmBtn').click();
-                }
-            });
-
-            // Handle dialog overlay click to close
-            $('#customDialog').on('click', function(e) {
-                if (e.target === this) {
-                    window.closeCustomDialog();
-                }
-            });
-
-            // Handle escape key to close dialog
-            $(document).on('keydown', function(e) {
-                if (e.key === 'Escape' && $('#customDialog').is(':visible')) {
-                    window.closeCustomDialog();
-                }
-            });
+            // Page-specific button handlers for the submission index page
+            // Note: The dialog functions (showCustomDialog, closeCustomDialog) are now
+            // loaded from custom-dialog.js via the CustomDialogAsset bundle
 
             $(document).on('click', '.ajax-delete', function (e) {
                 e.preventDefault();

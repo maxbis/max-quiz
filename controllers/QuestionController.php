@@ -588,7 +588,7 @@ class QuestionController extends Controller
         return $this->render('export', ['output' => $output]);
     }
 
-    public function actionPdf($quiz_id)
+    public function actionPdf($quiz_id, $filename = null)
     {
         if ($quiz_id == "") {
             $sql = "SELECT max(id) id FROM quiz WHERE active = 1";
@@ -646,8 +646,17 @@ class QuestionController extends Controller
         // Write HTML to PDF
         $mpdf->WriteHTML($html);
 
-        // Output PDF
-        $filename = 'quiz_' . $quiz_id . '_' . date('Ymd_His') . '.pdf';
+        // Output PDF with custom or default filename
+        if ($filename === null || trim($filename) === '') {
+            $filename = 'quiz_' . $quiz_id . '_' . date('Ymd_His');
+        }
+        // Sanitize filename (remove invalid characters)
+        $filename = preg_replace('/[^a-zA-Z0-9_-]/', '_', $filename);
+        // Add .pdf extension if not present
+        if (substr($filename, -4) !== '.pdf') {
+            $filename .= '.pdf';
+        }
+        
         $mpdf->Output($filename, 'D'); // 'D' for download
         exit;
     }

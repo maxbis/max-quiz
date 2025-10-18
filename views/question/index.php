@@ -6,6 +6,9 @@ use yii\helpers\Url;
 use yii\grid\ActionColumn;
 use yii\grid\GridView;
 
+// Register the custom dialog asset bundle
+app\assets\CustomDialogAsset::register($this);
+
 // $this->title = 'Quiz Details';
 // $this->params['breadcrumbs'][] = $this->title;
 // echo "<p style='color:#909090;font-size:16px;'>" . $this->title . '</p>';
@@ -117,27 +120,82 @@ $script = <<< JS
 JS;
 $this->registerJs($script);
 
-// Handle test quiz button click
+// Handle test quiz button click with custom dialog
+$quizId = $quiz['id'];
+$quizActive = $quiz['active'];
+$activateApiUrl = Url::to(['quiz-question/active']);
+
 $script = <<< JS
     $(document).ready(function() {
         $('#test-quiz-button').click(function() {
-            if (confirm('Start quiz with test data (First Name: Test, Last Name: Test, Student Number: 99999, Class: 99)?')) {
-                // Update message and show loading overlay
-                $('#modalMessage').html('Starting test quiz in new tab...<br><small>This may take a few seconds</small>');
-                $('#modalOverlay').show();
-                
-                // Submit form to new tab after brief delay
-                setTimeout(function() {
-                    $('#test-quiz-form').submit();
-                    
-                    // Hide loading overlay after form is submitted
-                    setTimeout(function() {
-                        $('#modalOverlay').hide();
-                        // Reset message for other uses
-                        $('#modalMessage').text('Please wait...');
-                    }, 1500);
-                }, 300);
+            var quizIsActive = {$quizActive};
+            var quizId = {$quizId};
+            
+            // Prepare message based on quiz active status
+            var message = 'Start quiz with test data (First Name: Test, Last Name: Test, Student Number: 99999, Class: 99)?';
+            if (!quizIsActive) {
+                message += '<br><br><strong>Note:</strong> This quiz is currently inactive and will be set to ACTIVE.';
             }
+            
+            window.showCustomDialog(
+                '🧪 Test Quiz',
+                message,
+                function() {
+                    // If quiz is not active, activate it first
+                    if (!quizIsActive) {
+                        // Show loading message
+                        $('#modalMessage').html('Activating quiz...<br><small>Please wait</small>');
+                        $('#modalOverlay').show();
+                        
+                        // Make AJAX call to activate the quiz
+                        $.ajax({
+                            url: '$activateApiUrl',
+                            type: 'POST',
+                            data: {
+                                _csrf: '$csrfToken',
+                                id: quizId,
+                                active: 1
+                            },
+                            success: function(response) {
+                                // Update the UI to show quiz is now active
+                                quizIsActive = true;
+                                
+                                // Now start the test quiz
+                                $('#modalMessage').html('Starting test quiz in new tab...<br><small>This may take a few seconds</small>');
+                                
+                                setTimeout(function() {
+                                    $('#test-quiz-form').submit();
+                                    
+                                    setTimeout(function() {
+                                        $('#modalOverlay').hide();
+                                        $('#modalMessage').text('Please wait...');
+                                        
+                                        // Refresh the page to show updated active status
+                                        location.reload();
+                                    }, 1500);
+                                }, 300);
+                            },
+                            error: function(xhr, status, error) {
+                                $('#modalOverlay').hide();
+                                alert('Error activating quiz: ' + error);
+                            }
+                        });
+                    } else {
+                        // Quiz is already active, just start it
+                        $('#modalMessage').html('Starting test quiz in new tab...<br><small>This may take a few seconds</small>');
+                        $('#modalOverlay').show();
+                        
+                        setTimeout(function() {
+                            $('#test-quiz-form').submit();
+                            
+                            setTimeout(function() {
+                                $('#modalOverlay').hide();
+                                $('#modalMessage').text('Please wait...');
+                            }, 1500);
+                        }, 300);
+                    }
+                }
+            );
         });
     });
 JS;
@@ -331,10 +389,12 @@ if ($show == 0) {
                 ); ?>
                 <?= Html::a(
                     '📄 PDF',
-                    ['pdf', 'quiz_id' => $quiz['id']],
+                    '#',
                     [
-                        'class' => 'btn btn-outline-secondary quiz-button',
+                        'class' => 'btn btn-outline-secondary quiz-button pdf-download-btn',
                         'title' => 'Generate PDF with all questions for this quiz',
+                        'data-quiz-id' => $quiz['id'],
+                        'data-quiz-name' => $quiz['name']
                     ]
                 ); ?>
                   <?php
@@ -546,10 +606,12 @@ if ($show == 0) {
             'title' => 'Export all questions for this quiz',
             'aria-label' => 'Export questions',
         ]);
-        echo Html::a('📄 PDF', ['pdf', 'quiz_id' => $quiz['id']], [
-            'class' => 'btn btn-outline-primary quiz-button',
+        echo Html::a('📄 PDF', '#', [
+            'class' => 'btn btn-outline-primary quiz-button pdf-download-btn',
             'title' => 'Generate PDF with all questions for this quiz',
             'aria-label' => 'Generate PDF',
+            'data-quiz-id' => $quiz['id'],
+            'data-quiz-name' => $quiz['name']
         ]);
         echo Html::a('✏️ Multi Edit', ['multiple-update', 'quiz_id' => $quiz['id']], [
             'class' => 'btn btn-outline-secondary quiz-button',
@@ -573,3 +635,42 @@ if ($show == 0) {
         ?>
     </p>
 </div>
+
+<!-- Include the reusable custom dialog component -->
+<?= $this->render('@app/views/include/_custom-dialog.php') ?>
+
+<?php
+// Add PDF download handler with custom dialog
+$pdfUrl = Url::to(['question/pdf']);
+$pdfScript = <<<JS
+
+// Handle PDF download with filename dialog
+$(document).on('click', '.pdf-download-btn', function(e) {
+    e.preventDefault();
+    
+    var quizId = $(this).data('quiz-id');
+    var quizName = $(this).data('quiz-name');
+    var defaultFilename = 'quiz-' + quizId + '-' + quizName.replace(/[^a-zA-Z0-9]/g, '-') + '-' + new Date().toISOString().slice(0,10);
+    
+    window.showCustomDialog(
+        'Generate PDF',
+        'Enter filename for the PDF (without extension):',
+        function() {
+            var filename = $('#dialogInput').val().trim();
+            if (filename !== '') {
+                // Trigger PDF download
+                var url = '$pdfUrl?quiz_id=' + quizId + '&filename=' + encodeURIComponent(filename);
+                window.location.href = url;
+            } else {
+                alert('Please enter a filename');
+            }
+        },
+        true,              // showInput = true
+        defaultFilename    // defaultValue
+    );
+});
+
+JS;
+
+$this->registerJs($pdfScript);
+?>

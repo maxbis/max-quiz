@@ -5,6 +5,9 @@ use yii\helpers\Html;
 use yii\helpers\Url;
 use yii\web\JsExpression;
 
+// Register the custom dialog asset bundle
+app\assets\CustomDialogAsset::register($this);
+
 /* @var $this yii\web\View */
 /* @var $dataProvider yii\data\ActiveDataProvider */
 
@@ -138,7 +141,44 @@ JS;
 
 $this->registerJs($js); // Register the JavaScript code
 
+// Add PDF download handler with custom dialog
+$pdfUrl = Url::to(['question/pdf']);
+$pdfScript = <<<JS
+
+// Handle PDF download with filename dialog
+$(document).on('click', '.pdf-download-btn', function(e) {
+    e.preventDefault();
+    
+    var quizId = $(this).data('quiz-id');
+    var quizName = $(this).data('quiz-name');
+    var defaultFilename = 'quiz-' + quizId + '-' + quizName.replace(/[^a-zA-Z0-9]/g, '-') + '-' + new Date().toISOString().slice(0,10);
+    
+    window.showCustomDialog(
+        'Generate PDF',
+        'Enter filename for the PDF (without extension):',
+        function() {
+            var filename = $('#dialogInput').val().trim();
+            if (filename !== '') {
+                // Trigger PDF download
+                var url = '$pdfUrl?quiz_id=' + quizId + '&filename=' + encodeURIComponent(filename);
+                window.location.href = url;
+            } else {
+                alert('Please enter a filename');
+            }
+        },
+        true,              // showInput = true
+        defaultFilename    // defaultValue
+    );
+});
+
+JS;
+
+$this->registerJs($pdfScript);
+
 ?>
+
+<!-- Include the reusable custom dialog component -->
+<?= $this->render('@app/views/include/_custom-dialog.php') ?>
 
 <style>
     .main-table {
@@ -544,7 +584,12 @@ $this->registerJs($js); // Register the JavaScript code
                                     <?= Html::a('👁️ View', ['/question/list', 'quiz_id' => $quiz['id']], ['class' => 'dropdown-item', 'title' => 'View Questions']) ?>
                                     <?= Html::a('📊 Results', ['/submission', 'quiz_id' => $quiz['id']], ['class' => 'dropdown-item', 'title' => 'Show Results/Progress']) ?>
                                     <?= Html::a('🏷️ Labels/Sort', ['/quiz/edit-labels', 'id' => $quiz['id']], ['class' => 'dropdown-item', 'title' => 'Edit Question Labels']) ?>
-                                    <?= Html::a('📄 PDF', ['/question/pdf', 'quiz_id' => $quiz['id']], ['class' => 'dropdown-item', 'title' => 'Generate PDF']) ?>
+                                    <?= Html::a('📄 PDF', '#', [
+                                        'class' => 'dropdown-item pdf-download-btn',
+                                        'title' => 'Generate PDF',
+                                        'data-quiz-id' => $quiz['id'],
+                                        'data-quiz-name' => $quiz['name']
+                                    ]) ?>
                                     <div class="dropdown-divider"></div>
                                     <?php if (isset($quiz['archived']) && $quiz['archived']): ?>
                                         <?= Html::a('📤 Restore', ['/quiz/toggle-archive', 'id' => $quiz['id']], [
