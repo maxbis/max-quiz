@@ -334,6 +334,12 @@ require_once Yii::getAlias('@app/views/include/functions.php');
             scroll-behavior: smooth;
         }
 
+        h1 a:hover {
+            color: #0a58ca !important;
+            text-decoration: underline !important;
+            cursor: pointer;
+        }
+
         @media (max-width: 768px) {
             .presentation-content {
                 width: 95%;
@@ -599,7 +605,10 @@ require_once Yii::getAlias('@app/views/include/functions.php');
 
 <body>
     <h1>
-        <?= $quiz['name']; ?>
+        <?= Html::a($quiz['name'], ['question/index', 'quiz_id' => $quiz['id']], [
+            'style' => 'color: inherit; text-decoration: none;',
+            'title' => 'Go to quiz questions overview'
+        ]); ?>
     </h1>
 
 

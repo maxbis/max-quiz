@@ -396,7 +396,7 @@ class QuestionController extends Controller
             ];
         }
 
-        $sql = "select name from quiz where id=$quiz_id";
+        $sql = "select id, name from quiz where id=$quiz_id";
         $quiz = Yii::$app->db->createCommand($sql)->queryOne();
 
         return $this->render($view, [
