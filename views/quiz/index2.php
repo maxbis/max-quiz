@@ -37,7 +37,7 @@ function updateActiveStatus(id, active) {
                 // Use visibility instead of adding/removing to prevent layout shift
                 var dot = nameCell.find('.active-dot');
                 if (dot.length === 0) {
-                    nameCell.prepend('<span class="active-dot" title="Active" style="color:#28a745;font-size:1.2em;margin-right:4px;visibility:hidden;">●</span>');
+                    nameCell.prepend('<span class="active-dot" title="Active" style="color:#28a745;font-size:1.2em;margin-right:4px;vertical-align:middle;display:inline-block;visibility:hidden;">●</span>');
                     dot = nameCell.find('.active-dot');
                 }
                 dot.css('visibility', 'visible');
@@ -304,8 +304,10 @@ $this->registerJs($js); // Register the JavaScript code
     }
     
     .active-dot {
-        vertical-align: middle;
         display: inline-block;
+        line-height: 1;
+        margin-bottom: 12px;
+        position: relative;
     }
     .group-header {
         background: #e3e8f0 !important;

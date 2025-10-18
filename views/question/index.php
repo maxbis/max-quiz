@@ -6,9 +6,9 @@ use yii\helpers\Url;
 use yii\grid\ActionColumn;
 use yii\grid\GridView;
 
-$this->title = 'Quiz Details';
+// $this->title = 'Quiz Details';
 // $this->params['breadcrumbs'][] = $this->title;
-echo "<p style='color:#909090;font-size:16px;'>" . $this->title . '</p>';
+// echo "<p style='color:#909090;font-size:16px;'>" . $this->title . '</p>';
 
 $currentRoute = Yii::$app->controller->getRoute();
 $params = Yii::$app->request->getQueryParams();
