@@ -80,7 +80,7 @@ $statusClass = $quizActive == 1 ? 'dot-green' : 'dot-red';
 ?>
 
 <div class="row">
-    <div class="col-md-9">
+    <div class="col-md-8">
         <p style='color:#909090;font-size:16px;'>
         <h3>
             <div class="dot <?= $statusClass ?>"></div>
@@ -88,24 +88,30 @@ $statusClass = $quizActive == 1 ? 'dot-green' : 'dot-red';
         </h3>
         </p>
     </div>
-    <div class="col-md-2 d-flex align-items-end">
+    <div class="col-md-4 d-flex align-items-center justify-content-end pe-0">
 
         <?php
         $url = Yii::$app->urlManager->createUrl(['/submission/delete-unfinished', 'quiz_id' => $params['quiz_id']]);
-        echo Html::a('❌ Clean', $url, [
+        echo Html::a('❌&nbsp;Clean', $url, [
             'title' => 'Delete Old Unfinished',
-            'class' => 'btn btn-outline-dark quiz-button',
+            'class' => 'btn btn-outline-dark btn-sm me-2',
+            'style' => 'min-width: 80px; padding: 6px 12px;',
             'data-confirm' => 'All unfinshed submissions that are inactive for more than 2 hours will be deleted, OK?',
             'data-method' => 'post',
         ]);
 
-        if (isset($params['quiz_id'])) { ?>
-        <span style="margin-left:20px;"></span>
-            <a href="<?= Url::to(['submission/export', 'quiz_id' => $params['quiz_id']]) ?>"
-                class="btn btn-outline-dark quiz-button" title="Export all results per student">📊&nbsp;Results</a>
-            <a href="<?= Url::to(['submission/export-stats', 'quiz_id' => $params['quiz_id']]) ?>"
-                class="btn btn-outline-dark quiz-button" title="Export the stats per question">📊 Stats</a>
-        <?php } ?>
+        if (isset($params['quiz_id'])) { 
+            echo Html::a('📊&nbsp;Results', ['submission/export', 'quiz_id' => $params['quiz_id']], [
+                'class' => 'btn btn-outline-dark btn-sm me-2',
+                'style' => 'min-width: 80px; padding: 6px 12px;',
+                'title' => 'Export all results per student'
+            ]);
+            echo Html::a('📊&nbsp;Stats', ['submission/export-stats', 'quiz_id' => $params['quiz_id']], [
+                'class' => 'btn btn-outline-dark btn-sm',
+                'style' => 'min-width: 80px; padding: 6px 12px;',
+                'title' => 'Export the stats per question'
+            ]);
+        } ?>
 
     </div>
 </div>
