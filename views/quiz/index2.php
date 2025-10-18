@@ -135,6 +135,114 @@ $(document).ready(function() {
     });
     
     $('.main-table').fadeIn('fast');
+    
+    // Apply alternating row colors
+    function applyRowColors() {
+        var quizRowCount = 0;
+        $('tbody tr').each(function() {
+            var row = $(this);
+            if (!row.hasClass('group-header')) {
+                // Remove existing row classes
+                row.removeClass('quiz-row-even quiz-row-odd');
+                // Add appropriate class based on quiz row count
+                if (quizRowCount % 2 === 0) {
+                    row.addClass('quiz-row-even');
+                } else {
+                    row.addClass('quiz-row-odd');
+                }
+                quizRowCount++;
+            }
+        });
+    }
+    
+    // Apply alternating row colors for all visible quiz rows
+    function applyGroupedRowColors() {
+        // First, remove all existing row classes
+        $('tbody tr').removeClass('quiz-row-even quiz-row-odd');
+        
+        // Count only visible quiz rows (not group headers)
+        var visibleQuizRows = $('tbody tr:not(.group-header):visible');
+        var quizRowCount = 0;
+        
+        visibleQuizRows.each(function() {
+            var row = $(this);
+            if (quizRowCount % 2 === 0) {
+                row.addClass('quiz-row-even');
+            } else {
+                row.addClass('quiz-row-odd');
+            }
+            quizRowCount++;
+        });
+    }
+    
+    // Apply row colors on page load
+    applyGroupedRowColors();
+    
+    // Quiz filter functionality
+    var filterTimeout;
+    var filterInput = $('#quiz-filter');
+    var clearBtn = $('#clear-filter');
+    var allRows = $('tbody tr');
+    
+    // Function to perform real-time filtering
+    function performFilter() {
+        var filterTerm = filterInput.val().trim().toLowerCase();
+        
+        if (filterTerm === '') {
+            // Show all rows
+            allRows.show();
+            clearBtn.removeClass('show');
+        } else {
+            // Filter rows based on quiz name
+            allRows.each(function() {
+                var row = $(this);
+                var quizName = row.find('.quiz-name-link').text().toLowerCase();
+                
+                if (quizName.includes(filterTerm)) {
+                    row.show();
+                } else {
+                    row.hide();
+                }
+            });
+            
+            clearBtn.addClass('show');
+        }
+        
+        // Reapply row colors after filtering
+        applyGroupedRowColors();
+    }
+    
+    // Filter input event handlers
+    filterInput.on('input', function() {
+        var filterTerm = $(this).val().trim();
+        
+        // Show/hide clear button
+        if (filterTerm === '') {
+            clearBtn.removeClass('show');
+        } else {
+            clearBtn.addClass('show');
+        }
+        
+        // Debounce the filtering
+        clearTimeout(filterTimeout);
+        filterTimeout = setTimeout(performFilter, 200);
+    });
+    
+    // Clear filter button
+    clearBtn.on('click', function() {
+        filterInput.val('');
+        clearBtn.removeClass('show');
+        performFilter();
+        filterInput.focus();
+    });
+    
+    // Initial state
+    if (filterInput.val().trim() === '') {
+        clearBtn.removeClass('show');
+    } else {
+        clearBtn.addClass('show');
+        performFilter();
+    }
 });
 
 JS;
@@ -396,8 +504,27 @@ $this->registerJs($deleteScript);
         border-bottom: 2px solid #d0d7e5;
     }
 
+    /* Alternating row colors for quiz rows */
+    tbody tr.quiz-row-even {
+        background-color: #f8f9fa;
+    }
+    
+    tbody tr.quiz-row-odd {
+        background-color: #ffffff;
+    }
+
+    /* Active quiz highlighting - override alternating colors */
+    tbody tr[style*="background-color:#e6ffe6"] {
+        background-color: #e6ffe6 !important;
+    }
+
     tr:hover {
-        background: #e6f7ff;
+        background: #e6f7ff !important;
+    }
+    
+    /* Ensure group headers don't get hover effects */
+    .group-header:hover {
+        background: #e3e8f0 !important;
     }
 
     
@@ -418,6 +545,22 @@ $this->registerJs($deleteScript);
         border-radius: 8px;
         border: 1px solid #dee2e6;
         box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        flex-wrap: wrap;
+        gap: 15px;
+    }
+    
+    .filter-left {
+        display: flex;
+        align-items: center;
+        gap: 15px;
+    }
+    
+    .filter-right {
+        display: flex;
+        align-items: center;
     }
     
     .archive-filter label {
@@ -425,6 +568,83 @@ $this->registerJs($deleteScript);
         font-weight: 600;
         color: #495057;
         font-size: 14px;
+    }
+    
+    /* Quiz filter styling */
+    .quiz-filter-container {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+    }
+    
+    .quiz-filter-container label {
+        margin-right: 8px;
+        font-weight: 600;
+        color: #495057;
+        font-size: 14px;
+        white-space: nowrap;
+    }
+    
+    .quiz-filter-input-group {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        position: relative;
+    }
+    
+    .quiz-filter-input {
+        width: 250px;
+        padding: 8px 12px;
+        border: 1px solid #ced4da;
+        border-radius: 6px;
+        font-size: 14px;
+        transition: all 0.2s ease;
+    }
+    
+    .quiz-filter-input:focus {
+        outline: none;
+        border-color: #007bff;
+        box-shadow: 0 0 0 2px rgba(0, 123, 255, 0.25);
+    }
+    
+    .clear-filter-btn {
+        padding: 8px 12px;
+        border: 1px solid #ced4da;
+        background: white;
+        color: #6c757d;
+        border-radius: 6px;
+        cursor: pointer;
+        transition: all 0.2s ease;
+        font-size: 14px;
+        min-width: 40px;
+        display: none;
+    }
+    
+    .clear-filter-btn:hover {
+        background-color: #f8f9fa;
+        border-color: #adb5bd;
+        color: #495057;
+    }
+    
+    .clear-filter-btn.show {
+        display: inline-block;
+    }
+    
+    /* Responsive design */
+    @media (max-width: 768px) {
+        .archive-filter {
+            flex-direction: column;
+            align-items: stretch;
+        }
+        
+        .filter-left,
+        .filter-right {
+            justify-content: center;
+        }
+        
+        .quiz-filter-input {
+            width: 200px;
+        }
     }
     
     .filter-button-group {
@@ -510,26 +730,43 @@ $this->registerJs($deleteScript);
     <div class="quiz-index">
         <!-- Archive Filter -->
         <div class="archive-filter">
-            <label>Show:</label>
-            <div class="filter-button-group" role="group" aria-label="Quiz filter options">
-                <?= Html::a('Active Quizzes', ['index', 'show' => 'active'], [
-                    'class' => 'btn ' . ($showFilter === 'active' ? 'active' : ''),
-                    'role' => 'button',
-                    'aria-pressed' => $showFilter === 'active' ? 'true' : 'false',
-                    'title' => 'Show only active quizzes'
-                ]) ?>
-                <?= Html::a('Archived Quizzes', ['index', 'show' => 'archived'], [
-                    'class' => 'btn ' . ($showFilter === 'archived' ? 'active' : ''),
-                    'role' => 'button',
-                    'aria-pressed' => $showFilter === 'archived' ? 'true' : 'false',
-                    'title' => 'Show only archived quizzes'
-                ]) ?>
-                <?= Html::a('All Quizzes', ['index', 'show' => 'all'], [
-                    'class' => 'btn ' . ($showFilter === 'all' ? 'active' : ''),
-                    'role' => 'button',
-                    'aria-pressed' => $showFilter === 'all' ? 'true' : 'false',
-                    'title' => 'Show all quizzes'
-                ]) ?>
+            <div class="filter-left">
+                <label>Show:</label>
+                <div class="filter-button-group" role="group" aria-label="Quiz filter options">
+                    <?= Html::a('Active Quizzes', ['index', 'show' => 'active'], [
+                        'class' => 'btn ' . ($showFilter === 'active' ? 'active' : ''),
+                        'role' => 'button',
+                        'aria-pressed' => $showFilter === 'active' ? 'true' : 'false',
+                        'title' => 'Show only active quizzes'
+                    ]) ?>
+                    <?= Html::a('Archived Quizzes', ['index', 'show' => 'archived'], [
+                        'class' => 'btn ' . ($showFilter === 'archived' ? 'active' : ''),
+                        'role' => 'button',
+                        'aria-pressed' => $showFilter === 'archived' ? 'true' : 'false',
+                        'title' => 'Show only archived quizzes'
+                    ]) ?>
+                    <?= Html::a('All Quizzes', ['index', 'show' => 'all'], [
+                        'class' => 'btn ' . ($showFilter === 'all' ? 'active' : ''),
+                        'role' => 'button',
+                        'aria-pressed' => $showFilter === 'all' ? 'true' : 'false',
+                        'title' => 'Show all quizzes'
+                    ]) ?>
+                </div>
+            </div>
+            <div class="filter-right">
+                <div class="quiz-filter-container">
+                    <label for="quiz-filter">Filter:</label>
+                    <div class="quiz-filter-input-group">
+                        <input type="text" 
+                               id="quiz-filter" 
+                               class="form-control quiz-filter-input" 
+                               placeholder="Filter quiz names..." 
+                               autocomplete="off">
+                        <button type="button" id="clear-filter" class="btn btn-outline-secondary clear-filter-btn" title="Clear filter">
+                            ✕
+                        </button>
+                    </div>
+                </div>
             </div>
         </div>
         
