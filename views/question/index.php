@@ -117,6 +117,32 @@ $script = <<< JS
 JS;
 $this->registerJs($script);
 
+// Handle test quiz button click
+$script = <<< JS
+    $(document).ready(function() {
+        $('#test-quiz-button').click(function() {
+            if (confirm('Start quiz with test data (First Name: Test, Last Name: Test, Student Number: 99999, Class: 99)?')) {
+                // Update message and show loading overlay
+                $('#modalMessage').html('Starting test quiz in new tab...<br><small>This may take a few seconds</small>');
+                $('#modalOverlay').show();
+                
+                // Submit form to new tab after brief delay
+                setTimeout(function() {
+                    $('#test-quiz-form').submit();
+                    
+                    // Hide loading overlay after form is submitted
+                    setTimeout(function() {
+                        $('#modalOverlay').hide();
+                        // Reset message for other uses
+                        $('#modalMessage').text('Please wait...');
+                    }, 1500);
+                }, 300);
+            }
+        });
+    });
+JS;
+$this->registerJs($script);
+
 # $show = Yii::$app->request->get('show', 1);
 $QuestionLabelText = 'Active Quiz Questions';
 if ($show == 0) {
@@ -244,11 +270,11 @@ if ($show == 0) {
     }
 </style>
 
-<!-- This is the busy overlay, show as more than one quesstion is updated via AJAX -->
+<!-- This is the busy overlay, show as more than one question is updated via AJAX or when starting test quiz -->
 <div class="modal-overlay" id="modalOverlay">
     <div class="modal-dialog">
         <div class="loader"></div>
-        <p>Please wait... </p>
+        <p id="modalMessage">Please wait... </p>
     </div>
 </div>
 
@@ -318,10 +344,28 @@ if ($show == 0) {
                     'class' => 'btn btn-outline-dark quiz-button',
                 ]);
                 ?>
+                <?= Html::button(
+                    '🧪 Test',
+                    [
+                        'class' => 'btn btn-outline-info quiz-button',
+                        'title' => 'Test Quiz',
+                        'id' => 'test-quiz-button',
+                    ]
+                ); ?>
             </div>
         </div>
     </div>
 </div>
+
+<!-- Hidden form for test quiz submission -->
+<form id="test-quiz-form" action="<?= Yii\helpers\Url::to(['/submission/start']) ?>" method="POST" target="_blank" style="display: none;">
+    <input type="hidden" name="<?= Yii::$app->request->csrfParam ?>" value="<?= Yii::$app->request->getCsrfToken() ?>">
+    <input type="hidden" name="first_name" value="Test">
+    <input type="hidden" name="last_name" value="Test">
+    <input type="hidden" name="student_nr" value="99999">
+    <input type="hidden" name="class" value="99">
+    <input type="hidden" name="password" value="<?= Html::encode($quiz['password']) ?>">
+</form>
 
 
 <div class="question-index">
