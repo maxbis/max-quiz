@@ -127,7 +127,7 @@ class QuizController extends Controller
                     Quiz::updateAll(['active' => 0], ['!=', 'id', $model->id]);
                 }
                 if ($model->save()) {
-                    return $this->redirect(['index', 'id' => $model->id]);
+                    return $this->redirect(['question/index', 'quiz_id' => $model->id]);
                 }
             } else {
                 $model->loadDefaultValues();
