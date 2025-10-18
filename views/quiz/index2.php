@@ -101,6 +101,9 @@ $(document).on('click', '.group-header', function() {
 });
 
 $(document).ready(function() {
+    // Force scrollbar to always be visible
+    $('html, body').css('overflow-y', 'scroll');
+    
     // Collapse all by default
     $('.group-header.collapsed').nextUntil('.group-header').hide();
 
@@ -145,6 +148,12 @@ $this->registerJs($js); // Register the JavaScript code
     /* Prevent layout shift when content expands/collapses */
     body {
         overflow-x: hidden; /* Prevent horizontal scrollbar */
+        overflow-y: scroll !important; /* Force vertical scrollbar to stay visible */
+    }
+
+    /* Ensure scrollbar is always visible on this page */
+    html {
+        overflow-y: scroll !important;
     }
 
     /* Fix for the filter bar moving left/right */
@@ -171,6 +180,39 @@ $this->registerJs($js); // Register the JavaScript code
         position: relative;
         left: 0;
         right: 0;
+    }
+
+    /* Fix table column widths to prevent horizontal shifting */
+    table {
+        table-layout: fixed;
+        width: 100%;
+    }
+
+    /* Set specific column widths to prevent shifting */
+    table td:first-child {
+        width: 20px; /* Bullet point column */
+    }
+
+    table td:nth-child(2) {
+        width: 20px; /* Checkbox column */
+    }
+
+    table td:nth-child(3) {
+        width: 250px; /* Quiz name column */
+    }
+
+    /* Ensure checkboxes and dots don't cause width changes */
+    .active-radio {
+        width: 16px;
+        height: 16px;
+        margin: 0;
+    }
+
+    .active-dot {
+        width: 12px;
+        height: 12px;
+        display: inline-block;
+        text-align: center;
     }
 
 
