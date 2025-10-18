@@ -426,13 +426,6 @@ if ($show == 0) {
                         'data-quiz-name' => $quiz['name']
                     ]
                 ); ?>
-                <?php
-                $url = Yii::$app->urlManager->createUrl(['/submission', 'quiz_id' => $quiz['id']]);
-                echo Html::a('📊 Results', $url, [
-                    'title' => 'Show Results/Progress',
-                    'class' => 'btn btn-outline-dark quiz-button',
-                ]);
-                ?>
                 <?= Html::button(
                     '🧪 Test',
                     [
@@ -441,6 +434,14 @@ if ($show == 0) {
                         'id' => 'test-quiz-button',
                     ]
                 ); ?>
+                <?php
+                $url = Yii::$app->urlManager->createUrl(['/submission', 'quiz_id' => $quiz['id']]);
+                echo Html::a('📊 Results', $url, [
+                    'title' => 'Show Results/Progress',
+                    'class' => 'btn btn-outline-dark quiz-button',
+                ]);
+                ?>
+
             </div>
         </div>
     </div>

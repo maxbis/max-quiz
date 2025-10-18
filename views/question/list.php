@@ -340,6 +340,16 @@ require_once Yii::getAlias('@app/views/include/functions.php');
             cursor: pointer;
         }
 
+        /* Dim buttons by default, show on hover */
+        .question-buttons {
+            opacity: 0.2;
+            transition: opacity 0.3s ease;
+        }
+
+        .question-buttons:hover {
+            opacity: 1;
+        }
+
         @media (max-width: 768px) {
             .presentation-content {
                 width: 95%;
@@ -664,25 +674,49 @@ require_once Yii::getAlias('@app/views/include/functions.php');
             </div>
 
             <?php
+            // Create return URL for the View button
+            $returnUrl = Url::to(['question/list', 'quiz_id' => $quiz['id']]);
+            
+            // Create View button (left-aligned)
+            $viewUrl = Yii::$app->urlManager->createUrl([
+                '/question/view', 
+                'id' => $question['id'], 
+                'quiz_id' => $quiz['id'],
+                'returnUrl' => $returnUrl
+            ]);
+            $bView = Html::a('View', $viewUrl, [
+                'title' => 'View this question',
+                'class' => 'btn btn-outline-success quiz-button',
+            ]);
+            
+            // Create Edit button
             $url = Yii::$app->urlManager->createUrl(['/question/update', 'id' => $question['id']]);
             $b1 = Html::a('Edit', $url, [
                 'title' => 'Edit',
                 'class' => 'btn btn-outline-primary quiz-button',
             ]);
+            
+            // Create Answer button
             $b2 = Html::button('Answer', [
                 'id' => "answer-button" . $question['id'],
                 'class' => 'btn btn-outline-danger quiz-button',
                 'onclick' => "highlightCheckbox(" . $question['id'] . "," . $question['correct'] . ")",
             ]);
+            
             $b3 = Html::button('Test', [
                 'id' => "answer-button" . $question['id'],
                 'class' => 'btn btn-outline-danger quiz-button',
                 'onclick' => "editQuestion('" . addslashes($url) . "')",
             ]);
             ?>
-            <div style="display: flex; justify-content: flex-end; align-items: left;" onclick="event.stopPropagation();">
-                <?= $b1 ?>
-                <?= $b2 ?>
+            <div class="question-buttons" style="display: flex; justify-content: space-between; align-items: left;" onclick="event.stopPropagation();">
+                <div>
+                    <?= $bView ?>
+                </div>
+                <div>
+                    <?= $b1 ?>
+                    <?= $b2 ?>
+                </div>
             </div>
         </div>
     <?php 

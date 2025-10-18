@@ -111,7 +111,7 @@ $id = Yii::$app->request->get('id');
         display: flex;
         gap: 15px;
         justify-content: center;
-        padding: 30px;
+        padding: 15px;
         background: #f8f9fa;
         border-top: 1px solid #e9ecef;
     }
@@ -293,11 +293,12 @@ $id = Yii::$app->request->get('id');
         </div>
 
         <!-- Action Buttons -->
-        <div class="action-buttons">
-            <?= Html::submitButton('💾 Save', ['class' => 'btn btn-success quiz-button']) ?>
+        <div class="action-buttons" style="display: flex; justify-content: flex-end;">
+            
             <?= Html::a('⬅️ Back', Yii::$app->request->referrer, ['class' => 'btn btn-primary quiz-button']); ?>
-            <?= Html::a('👁️ View', ['/question/list', 'quiz_id' => $model->id], ['class' => 'btn btn-warning quiz-button', 'target' => '_blank']); ?>
-            <?= Html::a('📄 PDF', ['/question/pdf', 'quiz_id' => $model->id], ['class' => 'btn btn-danger quiz-button', 'target' => '_blank']); ?>
+            <!-- <?= Html::a('👁️ View', ['/question/list', 'quiz_id' => $model->id], ['class' => 'btn btn-warning quiz-button', 'target' => '_blank']); ?> -->
+            <!-- <?= Html::a('📄 PDF', ['/question/pdf', 'quiz_id' => $model->id], ['class' => 'btn btn-danger quiz-button', 'target' => '_blank']); ?> -->
+            <?= Html::submitButton('💾 Save', ['class' => 'btn btn-success quiz-button']) ?>
         </div>
 
         <?php ActiveForm::end(); ?>

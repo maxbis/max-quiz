@@ -501,24 +501,24 @@ echo escapeHtmlExceptTags($question['question']);
                                 'class' => 'btn btn-outline-secondary quiz-button',
                             ]);
                         }
-                        $url = Yii::$app->urlManager->createUrl(['/question/update', 'id' => $question['id']]);
-                        echo Html::a('Edit', $url, [
-                            'id' => 'submitButton-org1',
-                            'title' => 'Edit Question',
-                            'class' => 'btn btn-outline-secondary quiz-button',
-                        ]);
-                        $url = Yii::$app->urlManager->createUrl(['/question/copy', 'id' => $question['id']]);
-                        echo Html::a('Copy', $url, [
-                            'id' => 'submitButton-org2',
-                            'title' => 'Copy Question',
-                            'class' => 'btn btn-outline-secondary quiz-button',
-                        ]);
-                        $url = Yii::$app->urlManager->createUrl(['/question/alternative', 'question_id' => $question['id']]);
-                        echo Html::a('Alternative', $url, [
-                            'id' => 'submitButton-org2',
-                            'title' => 'Create alternative question',
-                            'class' => 'btn btn-outline-secondary quiz-button',
-                        ]);
+                        // $url = Yii::$app->urlManager->createUrl(['/question/update', 'id' => $question['id']]);
+                        // echo Html::a('Edit', $url, [
+                        //     'id' => 'submitButton-org1',
+                        //     'title' => 'Edit Question',
+                        //     'class' => 'btn btn-outline-secondary quiz-button',
+                        // ]);
+                        // $url = Yii::$app->urlManager->createUrl(['/question/copy', 'id' => $question['id']]);
+                        // echo Html::a('Copy', $url, [
+                        //     'id' => 'submitButton-org2',
+                        //     'title' => 'Copy Question',
+                        //     'class' => 'btn btn-outline-secondary quiz-button',
+                        // ]);
+                        // $url = Yii::$app->urlManager->createUrl(['/question/alternative', 'question_id' => $question['id']]);
+                        // echo Html::a('Alternative', $url, [
+                        //     'id' => 'submitButton-org2',
+                        //     'title' => 'Create alternative question',
+                        //     'class' => 'btn btn-outline-secondary quiz-button',
+                        // ]);
                         echo Html::a('Back', $returnUrl, [
                             'id' => 'submitButton-org2',
                             'title' => 'Back',

@@ -144,6 +144,9 @@ class QuestionController extends Controller
             $backUrl = Yii::$app->urlManager->createUrl(['quiz/edit-labels', 'id' => $quiz_id]);
         } elseif ($returnUrl === 'index' && $quiz_id !== null) {
             $backUrl = Yii::$app->urlManager->createUrl(['question/index', 'id' => $quiz_id]);
+        } elseif ($returnUrl !== null && $returnUrl !== '') {
+            // Use the provided returnUrl as-is (full URL)
+            $backUrl = $returnUrl;
         } else {
             // Fallback to referrer-based logic
             $backUrl = Yii::$app->request->referrer;

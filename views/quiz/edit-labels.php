@@ -463,6 +463,39 @@ $this->title = 'Edit Question Labels - ' . Html::encode($quiz['name']);
             from { opacity: 0; }
             to { opacity: 1; }
         }
+
+        /* Button styles matching quiz/update */
+        .btn {
+            display: inline-block;
+            padding: 8px 16px;
+            border-radius: 5px;
+            text-decoration: none;
+            font-weight: 500;
+            border: 2px solid;
+            transition: all 0.2s ease;
+            cursor: pointer;
+            text-align: center;
+        }
+
+        .btn-primary {
+            background-color: #007bff;
+            border-color: #007bff;
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background-color: #0056b3;
+            border-color: #0056b3;
+            color: white;
+            text-decoration: none;
+            transform: translateY(-1px);
+            box-shadow: 0 2px 6px rgba(0, 123, 255, 0.3);
+        }
+
+        .quiz-button {
+            font-size: 14px;
+            min-width: 80px;
+        }
     </style>
 </head>
 
@@ -491,7 +524,7 @@ $this->title = 'Edit Question Labels - ' . Html::encode($quiz['name']);
             No active questions found for this quiz.
         </div>
         <div style="text-align: center;">
-            <?= Html::a('Back to Quiz List', ['index'], ['class' => 'btn-back']) ?>
+            <?= Html::a('⬅️ Back', ['question/index', 'quiz_id' => $quiz['id']], ['class' => 'btn btn-primary quiz-button']) ?>
         </div>
     <?php else: ?>
         <div class="question-counter">
@@ -500,12 +533,12 @@ $this->title = 'Edit Question Labels - ' . Html::encode($quiz['name']);
                 <span style="color: #4CAF50;">💡 Tip: Drag questions to reorder them</span>
             </div>
             <div style="display: flex; gap: 10px; align-items: center;">
-                <button type="submit" form="labelsForm" class="btn-submit" style="margin: 0;">
-                    💾 Save
-                </button>
-                <?= Html::a('Cancel', ['index'], ['class' => 'btn-back', 'style' => 'margin: 0;']) ?>
+                <?= Html::a('⬅️ Back', ['question/index', 'quiz_id' => $quiz['id']], ['class' => 'btn btn-primary quiz-button', 'style' => 'margin: 0;']) ?>
                 <button type="button" class="btn-sort-labels" onclick="openLabelSortDialog()">
                     🔤 Sort by Labels
+                </button>
+                <button type="submit" form="labelsForm" class="btn-submit" style="margin: 0;">
+                    💾 Save
                 </button>
             </div>
         </div>
