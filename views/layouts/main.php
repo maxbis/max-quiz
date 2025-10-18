@@ -87,7 +87,9 @@ $this->registerLinkTag(['rel' => 'icon', 'type' => 'image/x-icon', 'href' => Yii
             <?php if (!empty($this->params['breadcrumbs'])) : ?>
                 <?= Breadcrumbs::widget(['links' => $this->params['breadcrumbs']]) ?>
             <?php endif ?>
-            <?= Alert::widget() ?>
+            <?php if (!isset($this->params['hide_flash_messages']) || !$this->params['hide_flash_messages']) : ?>
+                <?= Alert::widget() ?>
+            <?php endif ?>
             <?= $content ?>
         </div>
     </main>

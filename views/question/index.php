@@ -107,6 +107,7 @@ $script = <<<JS
             // Don't trigger if clicking on checkbox, delete button, or other interactive elements
             if (e.target.type === 'checkbox' || 
                 $(e.target).hasClass('status-checkbox') || 
+                $(e.target).hasClass('delete-question-btn') ||
                 $(e.target).closest('a[href*="delete"]').length > 0) {
                 return;
             }
@@ -582,11 +583,13 @@ if ($show == 0) {
                 'contentOptions' => ['style' => 'text-align: center;'],
                 'format' => 'raw',
                 'value' => function ($model) use ($quiz_id) {
-                $deleteUrl = Url::toRoute(['delete', 'id' => $model->id, 'quiz_id' => $quiz_id]);
-                return Html::a('🗑️', $deleteUrl, [
+                return Html::button('🗑️', [
                     'title' => 'Delete this question',
-                    'style' => 'color: #dc3545; text-decoration: none; font-size: 16px;',
-                    'onclick' => 'return confirm("Are you sure you want to delete this question? This action cannot be undone.");'
+                    'style' => 'color: #dc3545; text-decoration: none; font-size: 16px; background: none; border: none; cursor: pointer;',
+                    'class' => 'delete-question-btn',
+                    'data-question-id' => $model->id,
+                    'data-quiz-id' => $quiz_id,
+                    'data-question-text' => mb_substr(strip_tags($model->question), 0, 50) . '...'
                 ]);
             },
             ],
@@ -827,4 +830,43 @@ $(document).ready(function() {
 JS;
 
 $this->registerJs($deleteAllScript);
+
+// Handle delete question button click with custom dialog
+$csrfToken = Yii::$app->request->getCsrfToken();
+$deleteBaseUrl = Url::to(['question/delete']);
+$deleteQuestionScript = <<<JS
+$(document).ready(function() {
+    $('.delete-question-btn').on('click', function(e) {
+        e.preventDefault();
+        
+        var questionId = $(this).data('question-id');
+        var quizId = $(this).data('quiz-id');
+        var questionText = $(this).data('question-text');
+        
+        window.showCustomDialog(
+            '❌ Delete Question',
+            'Are you sure you want to delete this question?<br><br><strong>Question preview:</strong><br><em>' + questionText + '</em><br><br><span style="color:#dc3545;">⚠️ Warning: This action cannot be undone!</span>',
+            function() {
+                // Create a hidden form to submit the POST request
+                var form = $('<form>', {
+                    'method': 'POST',
+                    'action': '$deleteBaseUrl' + '?id=' + questionId + '&quiz_id=' + quizId
+                });
+                
+                // Add CSRF token
+                form.append($('<input>', {
+                    'type': 'hidden',
+                    'name': '_csrf',
+                    'value': '$csrfToken'
+                }));
+                
+                // Append to body and submit
+                form.appendTo('body').submit();
+            }
+        );
+    });
+});
+JS;
+
+$this->registerJs($deleteQuestionScript);
 ?>

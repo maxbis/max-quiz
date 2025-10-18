@@ -409,6 +409,71 @@ class QuestionController extends Controller
         return $this->render('import', ['input' => $input, 'quiz' => $quiz]);
     }
 
+    private function validateBulkInputSyntax($input)
+    {
+        $lines = explode("\n", $input);
+        $errors = [];
+        $questionCount = 0;
+        $currentQuestion = 0;
+        $hasQuestion = false;
+        $hasCorrectAnswer = false;
+        $hasAtLeastOneAnswer = false;
+        $currentSection = '';
+        $questionText = '';
+        
+        foreach ($lines as $lineNum => $line) {
+            $lineNum++; // Convert to 1-based line numbers
+            $token = substr($line, 0, 2);
+            
+            if ($token == 'QQ') {
+                $currentQuestion++;
+                $hasQuestion = false;
+                $hasCorrectAnswer = false;
+                $hasAtLeastOneAnswer = false;
+                $currentSection = 'question';
+                $questionText = '';
+            } elseif ($token == 'AC') {
+                $hasCorrectAnswer = true;
+                $hasAtLeastOneAnswer = true;
+                $currentSection = 'answer';
+            } elseif ($token == 'AA') {
+                $hasAtLeastOneAnswer = true;
+                $currentSection = 'answer';
+            } elseif ($token == 'LL' || $token == 'ID') {
+                $currentSection = 'label';
+            } else {
+                // This is content for the current section
+                if ($currentSection == 'question') {
+                    $questionText .= $line . "\n";
+                    if (!empty(trim($line))) {
+                        $hasQuestion = true;
+                    }
+                }
+                // Empty lines are allowed as content
+            }
+        }
+        
+        // Check if we have at least one question
+        if ($currentQuestion == 0) {
+            $errors[] = "No questions found. Each question must start with 'QQ' on a new line.";
+        }
+        
+        // Check if the last question is complete
+        if ($currentQuestion > 0 && !$hasQuestion) {
+            $errors[] = "Question $currentQuestion is missing question text after 'QQ'.";
+        }
+        
+        if ($currentQuestion > 0 && !$hasCorrectAnswer) {
+            $errors[] = "Question $currentQuestion is missing correct answer (must have 'AC' section).";
+        }
+        
+        if ($currentQuestion > 0 && !$hasAtLeastOneAnswer) {
+            $errors[] = "Question $currentQuestion must have at least one answer option.";
+        }
+        
+        return $errors;
+    }
+
     private function parseBulkInput($input)
     {
         $lines = explode("\n", $input);
@@ -484,8 +549,20 @@ class QuestionController extends Controller
             $bulkInput = Yii::$app->request->post('bulkInput');
             $action = Yii::$app->request->post('action', null);
             $quiz_id = Yii::$app->request->post('quiz_id');
-            $parsedQuestions = $this->parseBulkInput($bulkInput);
             $label = Yii::$app->request->post('label');
+
+            // First validate the syntax
+            $syntaxErrors = $this->validateBulkInputSyntax($bulkInput);
+            
+            if (!empty($syntaxErrors)) {
+                // Show syntax errors and return to import screen
+                $errorMessage = "Import syntax errors found:\n" . implode("\n", $syntaxErrors);
+                Yii::$app->session->setFlash('error', $errorMessage);
+                return $this->redirect(['import', 'quiz_id' => $quiz_id, 'input' => $bulkInput]);
+            }
+
+            // If syntax is valid, proceed with import
+            $parsedQuestions = $this->parseBulkInput($bulkInput);
 
             foreach ($parsedQuestions as $questionData) {
                 $no_succes += $this->insertQuestion($questionData, $action, $quiz_id, $label);
@@ -497,7 +574,7 @@ class QuestionController extends Controller
         }
         Yii::$app->session->setFlash('success', ' Question(s) imported: ' . $no_succes);
 
-        return $this->redirect(['/quiz/index']);
+        return $this->redirect(['index', 'quiz_id' => $quiz_id]);
     }
 
 

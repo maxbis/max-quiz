@@ -8,6 +8,9 @@ use yii\grid\GridView;
 use yii\grid\CheckboxColumn;
 use yii\widgets\ActiveForm;
 
+// Register the custom dialog asset bundle
+app\assets\CustomDialogAsset::register($this);
+
 /** @var yii\web\View $this */
 /** @var app\models\QuestionSearch $searchModel */
 /** @var yii\data\ActiveDataProvider $dataProvider */
@@ -21,7 +24,8 @@ $script = <<< JS
     $(document).ready(function() {
         $('.grid-view tbody tr').click(function(e) {
             // Don't trigger if clicking on delete button or other interactive elements
-            if ($(e.target).closest('a[href*="delete"]').length > 0) {
+            if ($(e.target).hasClass('delete-question-btn') ||
+                $(e.target).closest('a[href*="delete"]').length > 0) {
                 return;
             }
             
@@ -158,11 +162,12 @@ $this->registerJs($script);
                 'contentOptions' => ['style' => 'text-align: center;'],
                 'format' => 'raw',
                 'value' => function ($model) {
-                    $deleteUrl = Url::toRoute(['delete', 'id' => $model->id]);
-                    return Html::a('🗑️', $deleteUrl, [
+                    return Html::button('🗑️', [
                         'title' => 'Delete this question',
-                        'style' => 'color: #dc3545; text-decoration: none; font-size: 16px;',
-                        'onclick' => 'return confirm("Are you sure you want to delete this question? This action cannot be undone.");'
+                        'style' => 'color: #dc3545; text-decoration: none; font-size: 16px; background: none; border: none; cursor: pointer;',
+                        'class' => 'delete-question-btn',
+                        'data-question-id' => $model->id,
+                        'data-question-text' => mb_substr(strip_tags($model->question), 0, 50) . '...'
                     ]);
                 },
             ],
@@ -170,6 +175,48 @@ $this->registerJs($script);
     ]);
     ?>
 </div>
+
+<!-- Include the reusable custom dialog component -->
+<?= $this->render('@app/views/include/_custom-dialog.php') ?>
+
+<?php
+// Handle delete question button click with custom dialog
+$csrfToken = Yii::$app->request->getCsrfToken();
+$deleteQuestionScript = <<<JS
+$(document).ready(function() {
+    $('.delete-question-btn').on('click', function(e) {
+        e.preventDefault();
+        
+        var questionId = $(this).data('question-id');
+        var questionText = $(this).data('question-text');
+        
+        window.showCustomDialog(
+            '❌ Delete Question',
+            'Are you sure you want to delete this question?<br><br><strong>Question preview:</strong><br><em>' + questionText + '</em><br><br><span style="color:#dc3545;">⚠️ Warning: This action cannot be undone!</span>',
+            function() {
+                // Create a hidden form to submit the POST request
+                var form = $('<form>', {
+                    'method': 'POST',
+                    'action': '/question/delete?id=' + questionId
+                });
+                
+                // Add CSRF token
+                form.append($('<input>', {
+                    'type': 'hidden',
+                    'name': '_csrf',
+                    'value': '$csrfToken'
+                }));
+                
+                // Append to body and submit
+                form.appendTo('body').submit();
+            }
+        );
+    });
+});
+JS;
+
+$this->registerJs($deleteQuestionScript);
+?>
 
 <div id="button-bar" style="display:block;">
     <p>
