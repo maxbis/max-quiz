@@ -217,15 +217,31 @@ $this->registerJs($js); // Register the JavaScript code
 
 
     .group-header .triangle {
-        color: red;
+        color: #007bff;
         cursor: pointer;
         display: inline-block;
-        transition: transform 0.3s ease-in-out;
+        transition: all 0.3s ease-in-out;
+        font-size: 1.2em;
+        margin-right: 8px;
+        padding: 2px 4px;
+        border-radius: 3px;
+        background-color: rgba(0, 123, 255, 0.1);
+        user-select: none;
+    }
+
+    .group-header .triangle:hover {
+        color: #0056b3;
+        background-color: rgba(0, 123, 255, 0.2);
+        transform: scale(1.1);
     }
 
     .group-header.collapsed .triangle {
         transform: rotate(-90deg);
         /* Pointing right when collapsed */
+    }
+
+    .group-header.collapsed .triangle:hover {
+        transform: rotate(-90deg) scale(1.1);
     }
 
     .group-header td {
@@ -450,7 +466,7 @@ $this->registerJs($js); // Register the JavaScript code
                                 <td style='width:15px;'></td>
                                 <td style='width:15px;'></td>
                                 <td style='width:250px;'>
-                                    <div class='group-title'><span class='triangle'>&#9662;</span>&nbsp;{$groupTitle}</div>
+                                    <div class='group-title'><span class='triangle' title='Click to expand/collapse'>▼</span>&nbsp;{$groupTitle}</div>
                                 </td>
                                 <td style='width:200px;color:lightgrey'>Password</td>
                                 <td style='width:120px;color:lightgrey'>Questions</td>
