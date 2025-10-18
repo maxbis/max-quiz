@@ -36,7 +36,7 @@ function updateActiveStatus(id, active) {
             var row = $('#quiz-row-' + id);
             var nameCell = row.find('.quiz-name-cell');
             if (active) {
-                row.css('background-color', '#e6ffe6');
+                row.addClass('active-quiz');
                 // Use visibility instead of adding/removing to prevent layout shift
                 var dot = nameCell.find('.active-dot');
                 if (dot.length === 0) {
@@ -46,9 +46,11 @@ function updateActiveStatus(id, active) {
                 dot.css('visibility', 'visible');
                 nameCell.css('font-weight', 'bold');
             } else {
-                row.css('background-color', '');
+                row.removeClass('active-quiz');
                 nameCell.find('.active-dot').css('visibility', 'hidden');
                 nameCell.css('font-weight', '');
+                // Reapply alternating colors after removing active class
+                applyGroupedRowColors();
             }
         },
         error: function(xhr, status, error) {
@@ -166,10 +168,15 @@ $(document).ready(function() {
         
         visibleQuizRows.each(function() {
             var row = $(this);
-            if (quizRowCount % 2 === 0) {
-                row.addClass('quiz-row-even');
-            } else {
-                row.addClass('quiz-row-odd');
+            
+            // Don't apply alternating colors to active quizzes - they have their own styling
+            if (!row.hasClass('active-quiz')) {
+                // First row (index 0) should be even (light gray)
+                if (quizRowCount % 2 === 0) {
+                    row.addClass('quiz-row-even');
+                } else {
+                    row.addClass('quiz-row-odd');
+                }
             }
             quizRowCount++;
         });
@@ -376,17 +383,103 @@ $this->registerJs($deleteScript);
         width: 100%;
     }
 
-    /* Set specific column widths to prevent shifting */
-    table td:first-child {
-        width: 20px; /* Bullet point column */
+    /* Column width definitions */
+    .col-bullet {
+        width: 20px;
+        max-width: 20px;
+        min-width: 20px;
     }
 
-    table td:nth-child(2) {
-        width: 20px; /* Checkbox column */
+    .col-checkbox {
+        width: 20px;
+        max-width: 20px;
+        min-width: 20px;
     }
 
-    table td:nth-child(3) {
-        width: 250px; /* Quiz name column */
+    .col-quiz-name {
+        width: 250px;
+        max-width: 250px;
+        min-width: 150px;
+    }
+
+    .col-password {
+        width: 120px;
+        max-width: 120px;
+        min-width: 80px;
+    }
+
+    .col-questions {
+        width: 100px;
+        max-width: 100px;
+        min-width: 80px;
+    }
+
+    .col-taken {
+        width: 60px;
+        max-width: 60px;
+        min-width: 50px;
+    }
+
+    .col-status {
+        width: 35px;
+        max-width: 35px;
+        min-width: 30px;
+        text-align: center;
+    }
+
+    .col-actions {
+        width: 200px;
+        max-width: 200px;
+        min-width: 150px;
+    }
+
+    /* Text overflow handling */
+    .col-quiz-name {
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+    }
+
+    .col-password {
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+    }
+
+    .col-questions {
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+    }
+
+    /* Responsive adjustments */
+    @media (max-width: 1200px) {
+        .col-quiz-name {
+            width: 200px;
+            max-width: 200px;
+        }
+        
+        .col-actions {
+            width: 180px;
+            max-width: 180px;
+        }
+    }
+
+    @media (max-width: 992px) {
+        .col-quiz-name {
+            width: 150px;
+            max-width: 150px;
+        }
+        
+        .col-password {
+            width: 100px;
+            max-width: 100px;
+        }
+        
+        .col-actions {
+            width: 160px;
+            max-width: 160px;
+        }
     }
 
     /* Ensure checkboxes and dots don't cause width changes */
@@ -506,15 +599,15 @@ $this->registerJs($deleteScript);
 
     /* Alternating row colors for quiz rows */
     tbody tr.quiz-row-even {
-        background-color: #f8f9fa;
+        background-color: #f8f9fa !important;
     }
     
     tbody tr.quiz-row-odd {
-        background-color: #ffffff;
+        background-color: #ffffff !important;
     }
 
     /* Active quiz highlighting - override alternating colors */
-    tbody tr[style*="background-color:#e6ffe6"] {
+    tbody tr.active-quiz {
         background-color: #e6ffe6 !important;
     }
 
@@ -782,25 +875,25 @@ $this->registerJs($deleteScript);
                         $lastGroup = $currentGroup;
                         $groupTitle = $currentGroup ?: 'No Category';
                         echo "<tr class='group-header collapsed' style='background-color:#f0f0f9;color:darkblue;font-weight:350;font-style:italic;'>
-                                <td style='width:15px;'></td>
-                                <td style='width:15px;'></td>
-                                <td style='width:250px;'>
+                                <td class='col-bullet'></td>
+                                <td class='col-checkbox'></td>
+                                <td class='col-quiz-name'>
                                     <div class='group-title'><span class='triangle' title='Click to expand/collapse'>▼</span>&nbsp;{$groupTitle}</div>
                                 </td>
-                                <td style='width:200px;color:lightgrey'>Password</td>
-                                <td style='width:120px;color:lightgrey'>Questions</td>
-                                <td style='width:100px;color:lightgrey'>Taken</td>
-                                <td title='Review Quiz' style='width:35px;color:lightgrey'>RW</td>
-                                <td title='Blind Quiz' style='width:35px;color:lightgrey'>BL</td>
-                                <td title='IP Check' style='width:35px;color:lightgrey'>IP</td>
-                                 <td title='Random' style='width:35px;color:lightgrey'>Rd</td>
-                                <td style='width:300px;color:lightgrey'>Actions</td>
+                                <td class='col-password' style='color:lightgrey'>Password</td>
+                                <td class='col-questions' style='color:lightgrey'>Questions</td>
+                                <td class='col-taken' style='color:lightgrey'>Taken</td>
+                                <td class='col-status' title='Review Quiz' style='color:lightgrey'>RW</td>
+                                <td class='col-status' title='Blind Quiz' style='color:lightgrey'>BL</td>
+                                <td class='col-status' title='IP Check' style='color:lightgrey'>IP</td>
+                                <td class='col-status' title='Random' style='color:lightgrey'>Rd</td>
+                                <td class='col-actions' style='color:lightgrey'>Actions</td>
                             </tr>";
                     endif;
                     ?>
-                    <tr id="quiz-row-<?= $quiz['id'] ?>" class="<?= (isset($quiz['archived']) && $quiz['archived']) ? 'archived-quiz' : '' ?>"<?= $quiz['active'] ? " style='background-color:#e6ffe6;'" : '' ?>>
-                        <td style="color:#e0e0e0;width:15px;vertical-align:middle;">•</td>
-                        <td style='width:15px; vertical-align: middle;'>
+                    <tr id="quiz-row-<?= $quiz['id'] ?>" class="<?= (isset($quiz['archived']) && $quiz['archived']) ? 'archived-quiz' : '' ?><?= $quiz['active'] ? ' active-quiz' : '' ?>">
+                        <td class="col-bullet" style="color:#e0e0e0;vertical-align:middle;">•</td>
+                        <td class="col-checkbox" style="vertical-align: middle;">
                             <?php 
                             $isArchived = isset($quiz['archived']) ? $quiz['archived'] : false;
                             $checkboxOptions = ['value' => $quiz['id'], 'class' => 'active-radio'];
@@ -810,7 +903,7 @@ $this->registerJs($deleteScript);
                             ?>
                             <?= Html::checkbox('active', $quiz['active'], $checkboxOptions) ?>
                         </td>
-                        <td class="quiz-name-cell" style="width:250px; vertical-align: middle;<?= $quiz['active'] ? 'font-weight:bold;' : '' ?>">
+                        <td class="col-quiz-name quiz-name-cell" style="vertical-align: middle;<?= $quiz['active'] ? 'font-weight:bold;' : '' ?>">
                             <span class="active-dot" title="Active" style="color:#28a745;font-size:1.2em;margin-right:4px;vertical-align:middle;<?= $quiz['active'] ? '' : 'visibility:hidden;' ?>">●</span>
                             <?php 
                                 $url = $quiz['active'] 
@@ -821,10 +914,10 @@ $this->registerJs($deleteScript);
                             <?= Html::a($quiz['name'], $url, ['title' => $title, 'class' => 'quiz-name-link']) ?>
                             <?php if (isset($quiz['archived']) && $quiz['archived']) echo "<span class='archived-badge'>ARCHIVED</span>"; ?>
                         </td>
-                        <td class="highlight-column" _style='background-color:#f8f8f8;color:#d0d0e0;'>
+                        <td class="col-password highlight-column" _style='background-color:#f8f8f8;color:#d0d0e0;'>
                             <?= $quiz['password'] ?>
                         </td>
-                        <td>
+                        <td class="col-questions">
                             <?php
                             $id = $quiz['id'];
                             $aantalQuestion = $quizCounts[$id] ?? 0;
@@ -832,25 +925,25 @@ $this->registerJs($deleteScript);
                             echo "{$maxQuestions} from {$aantalQuestion}";
                             ?>
                         </td>
-                        <td>
+                        <td class="col-taken">
                             <?php
                             $takenCount = $quizTakenCounts[$quiz['id']] ?? 0;
                             echo $takenCount;
                             ?>
                         </td>
-                        <td class="grey-column">
+                        <td class="col-status grey-column">
                             <?= $quiz['review'] ? "&#10003;" : "-" ?>
                         </td>
-                        <td class="grey-column">
+                        <td class="col-status grey-column">
                             <?= $quiz['blind'] ? "&#10003;" : "-" ?>
                         </td>
-                        <td class="grey-column">
+                        <td class="col-status grey-column">
                             <?= $quiz['ip_check'] ? "&#10003;" : "-" ?>
                         </td>
-                        <td class="grey-column">
+                        <td class="col-status grey-column">
                             <?= $quiz['random'] ? "&#10003;" : "-" ?>
                         </td>
-                        <td>
+                        <td class="col-actions">
                             <?= Html::a('❓ Questions', ['question/index', 'quiz_id' => $quiz['id']], ['class' => 'btn quiz-button-small', 'title' => 'Show Questions']) ?>
                             <?= Html::a('✏️ Edit', ['/quiz/update', 'id' => $quiz['id']], ['class' => 'btn quiz-button-small', 'title' => 'Edit Quiz']) ?>
                             <div class="btn-group" style="display: inline-block;">
