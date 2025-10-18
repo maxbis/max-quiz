@@ -196,8 +196,24 @@ $(document).ready(function() {
         var filterTerm = filterInput.val().trim().toLowerCase();
         
         if (filterTerm === '') {
-            // Show all rows
-            allRows.show();
+            // When clearing filter, respect the collapsed state from localStorage
+            // Show all group headers first
+            $('.group-header').show();
+            
+            // For each group header, check collapse state and show/hide content accordingly
+            $('.group-header').each(function(index) {
+                var header = $(this);
+                var content = header.nextUntil('.group-header');
+                var isCollapsed = localStorage.getItem('groupHeader_' + index);
+                
+                // If collapsed in localStorage, hide content; otherwise show
+                if (isCollapsed === 'true' || (isCollapsed === null && header.hasClass('collapsed'))) {
+                    content.hide();
+                } else {
+                    content.show();
+                }
+            });
+            
             clearBtn.removeClass('show');
         } else {
             // Filter rows based on quiz name
