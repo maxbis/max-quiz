@@ -26,6 +26,20 @@ $this->registerLinkTag(['rel' => 'icon', 'type' => 'image/x-icon', 'href' => Yii
 <head>
     <title><?= Html::encode($this->title) ?></title>
     <?php $this->head() ?>
+    <style>
+        /* Prevent scrollbar jump when content changes */
+        html {
+            overflow-y: scroll; /* Always show vertical scrollbar */
+        }
+        
+        /* Alternative: Use overlay scrollbar (if supported) */
+        @supports (scrollbar-gutter: stable) {
+            html {
+                overflow-y: auto;
+                scrollbar-gutter: stable;
+            }
+        }
+    </style>
 </head>
 
 <body class="d-flex flex-column h-100">

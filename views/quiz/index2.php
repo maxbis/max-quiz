@@ -78,17 +78,26 @@ $(document).ready(function() {
 
 $(document).on('click', '.group-header', function() {
     var header = $(this);
+    var content = header.nextUntil('.group-header');
+    var isCollapsed = header.hasClass('collapsed');
+    
+    // Toggle the collapsed state
     header.toggleClass('collapsed');
-    header.nextUntil('.group-header').fadeToggle(400, 'swing'); // This will show/hide the rows until the next group header
+    
+    // Use slideToggle for smoother animation
+    if (isCollapsed) {
+        // Expanding
+        content.slideDown(300, 'swing');
+        header.find('td').css('color', 'darkblue');
+    } else {
+        // Collapsing
+        content.slideUp(300, 'swing');
+        header.find('td').css('color', 'lightgrey');
+    }
 
     var headerIndex = $('.group-header').index(header);
-    var isCollapsed = header.hasClass('collapsed');
-    localStorage.setItem('groupHeader_' + headerIndex, isCollapsed);
-    if ( isCollapsed ) {
-        header.find('td').css('color', 'lightgrey');
-    } else {
-        header.find('td').css('color', 'darkblue');
-    }
+    var newState = header.hasClass('collapsed');
+    localStorage.setItem('groupHeader_' + headerIndex, newState);
 });
 
 $(document).ready(function() {
@@ -131,6 +140,37 @@ $this->registerJs($js); // Register the JavaScript code
 <style>
     .main-table {
         display: none;
+    }
+
+    /* Prevent layout shift when content expands/collapses */
+    body {
+        overflow-x: hidden; /* Prevent horizontal scrollbar */
+    }
+
+    /* Fix for the filter bar moving left/right */
+    .archive-filter {
+        position: relative;
+        left: 0;
+        right: 0;
+        width: 100%;
+        box-sizing: border-box;
+        margin-left: 0;
+        margin-right: 0;
+    }
+
+    .filter-button-group {
+        position: relative;
+        left: 0;
+        right: 0;
+        margin-left: 0;
+        margin-right: 0;
+    }
+
+    /* Ensure the container doesn't shift */
+    .container {
+        position: relative;
+        left: 0;
+        right: 0;
     }
 
 
