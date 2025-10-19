@@ -143,7 +143,7 @@ class QuestionController extends Controller
         if ($returnUrl === 'edit-labels' && $quiz_id !== null) {
             $backUrl = Yii::$app->urlManager->createUrl(['quiz/edit-labels', 'id' => $quiz_id]);
         } elseif ($returnUrl === 'index' && $quiz_id !== null) {
-            $backUrl = Yii::$app->urlManager->createUrl(['question/index', 'id' => $quiz_id]);
+            $backUrl = Yii::$app->urlManager->createUrl(['question/index', 'quiz_id' => $quiz_id]);
         } elseif ($returnUrl !== null && $returnUrl !== '') {
             // Use the provided returnUrl as-is (full URL)
             $backUrl = $returnUrl;
@@ -868,6 +868,94 @@ class QuestionController extends Controller
         
         return $response->data['choices'][0]['message']['content'];
 
+    }
+
+    /**
+     * Generate answers for a question using LM Studio AI
+     */
+    public function actionGenerateAnswers()
+    {
+        Yii::$app->response->format = \yii\web\Response::FORMAT_JSON;
+        
+        $question = Yii::$app->request->post('question', '');
+        
+        if (empty($question)) {
+            return [
+                'success' => false,
+                'message' => 'Please enter a question first'
+            ];
+        }
+
+        try {
+            // Create HTTP client for LM Studio API
+            $client = new Client([
+                'baseUrl' => 'http://localhost:1234',
+            ]);
+
+            $prompt = "Given the following question, generate exactly 6 answers. The first answer MUST be the correct answer, and the other 5 answers should be plausible but incorrect.\n\n";
+            $prompt .= "Question: {$question}\n\n";
+            $prompt .= "Return ONLY a JSON object with this exact format (no additional text):\n";
+            $prompt .= '{"answers": ["correct answer", "wrong answer 1", "wrong answer 2", "wrong answer 3", "wrong answer 4", "wrong answer 5"]}';
+
+            $response = $client->createRequest()
+                ->setMethod('POST')
+                ->setUrl('/v1/chat/completions')
+                ->setFormat(Client::FORMAT_JSON)
+                ->setData([
+                    'model' => 'local-model',
+                    'messages' => [
+                        [
+                            'role' => 'system',
+                            'content' => 'You are a teacher and you need to help to construct a multiple choice quiz.'
+                        ],
+                        [
+                            'role' => 'user',
+                            'content' => $prompt
+                        ]
+                    ],
+                    'max_tokens' => 500,
+                    'temperature' => 0.7,
+                ])
+                ->send();
+
+            if (!$response->isOk) {
+                return [
+                    'success' => false,
+                    'message' => 'AI service error: ' . $response->statusCode
+                ];
+            }
+
+            $content = $response->data['choices'][0]['message']['content'] ?? '';
+            
+            // Try to extract JSON from the response
+            $content = trim($content);
+            
+            // Remove markdown code blocks if present
+            $content = preg_replace('/```json\s*/', '', $content);
+            $content = preg_replace('/```\s*/', '', $content);
+            $content = trim($content);
+            
+            $aiResponse = json_decode($content, true);
+
+            if (!isset($aiResponse['answers']) || count($aiResponse['answers']) < 6) {
+                return [
+                    'success' => false,
+                    'message' => 'AI did not return 6 answers. Please try again.'
+                ];
+            }
+
+            return [
+                'success' => true,
+                'answers' => array_slice($aiResponse['answers'], 0, 6),
+                'correct' => 1 // First answer is correct
+            ];
+
+        } catch (\Exception $e) {
+            return [
+                'success' => false,
+                'message' => 'Error connecting to AI: ' . $e->getMessage()
+            ];
+        }
     }
 
 }

@@ -1,6 +1,7 @@
 <?php
 
 use yii\helpers\Html;
+use yii\helpers\Url;
 use yii\widgets\ActiveForm;
 
 /** @var yii\web\View $this */
@@ -346,9 +347,26 @@ use yii\widgets\ActiveForm;
                         'rows' => 8,
                         'style' => 'font-family: monospace; border: none; background: transparent; resize: vertical; min-height: 120px;',
                         'maxlength' => true,
-                        'placeholder' => 'Enter your question here...'
+                        'placeholder' => 'Enter your question here...',
+                        'id' => 'question-input'
                     ])->label(false) ?>
                     <div class="character-count" id="question-count">0 characters</div>
+                    
+                    <?php /* COMMENTED OUT - AI Generate Answers Button
+                    if ($model->isNewRecord): ?>
+                    <div style="margin-top: 15px;">
+                        <button type="button" id="ai-generate-btn" class="btn btn-info" style="width: 100%;">
+                            <span id="ai-btn-text">🤖 Generate Answers with AI</span>
+                            <span id="ai-btn-loading" style="display: none;">
+                                <span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>
+                                Generating answers...
+                            </span>
+                        </button>
+                        <small class="text-muted d-block mt-2">
+                            ℹ️ Enter your question above, then click this button to automatically generate 6 answers using AI (answer 1 will be correct)
+                        </small>
+                    </div>
+                    <?php endif; */ ?>
                 </div>
             </div>
 
@@ -618,6 +636,12 @@ use yii\widgets\ActiveForm;
                     });
                     updateCorrectAnswerHighlighting();
                 }
+
+                // AI Generate Answers Button
+                const aiGenerateBtn = document.getElementById('ai-generate-btn');
+                if (aiGenerateBtn) {
+                    aiGenerateBtn.addEventListener('click', generateAnswersWithAI);
+                }
             });
             
             function updateCharacterCount(field, countElement) {
@@ -647,6 +671,82 @@ use yii\widgets\ActiveForm;
                     }
                 });
             }
+
+            function generateAnswersWithAI() {
+                const questionField = document.querySelector('textarea[name="Question[question]"]');
+                const question = questionField.value.trim();
+                
+                if (!question) {
+                    alert('Please enter a question first before generating answers.');
+                    questionField.focus();
+                    return;
+                }
+
+                // Show loading state
+                const btn = document.getElementById('ai-generate-btn');
+                const btnText = document.getElementById('ai-btn-text');
+                const btnLoading = document.getElementById('ai-btn-loading');
+                
+                btn.disabled = true;
+                btnText.style.display = 'none';
+                btnLoading.style.display = 'inline';
+
+                // Get CSRF token
+                const csrfToken = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
+
+                // Make AJAX request to generate answers
+                fetch('<?= Url::to(['question/generate-answers']) ?>', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/x-www-form-urlencoded',
+                        'X-CSRF-Token': csrfToken
+                    },
+                    body: new URLSearchParams({
+                        question: question,
+                        _csrf: csrfToken
+                    })
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        // Fill in the answer fields
+                        for (let i = 0; i < 6; i++) {
+                            const answerField = document.querySelector(`textarea[name="Question[a${i + 1}]"]`);
+                            if (answerField && data.answers[i]) {
+                                answerField.value = data.answers[i];
+                                
+                                // Update character count
+                                const countElement = document.getElementById(`answer-${i + 1}-count`);
+                                if (countElement) {
+                                    updateCharacterCount(answerField, countElement);
+                                }
+                            }
+                        }
+
+                        // Set correct answer
+                        const correctField = document.querySelector('input[name="Question[correct]"]');
+                        if (correctField) {
+                            correctField.value = data.correct;
+                            updateCorrectAnswerHighlighting();
+                        }
+
+                        // Show success message
+                        alert('✅ Answers generated successfully! The first answer is marked as correct.');
+                    } else {
+                        alert('❌ Error: ' + (data.message || 'Failed to generate answers'));
+                    }
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    alert('❌ Error connecting to AI service. Please make sure LM Studio is running on port 1234.');
+                })
+                .finally(() => {
+                    // Reset button state
+                    btn.disabled = false;
+                    btnText.style.display = 'inline';
+                    btnLoading.style.display = 'none';
+                });
+            }
         </script>
 
         <!-- Action Buttons -->
@@ -666,11 +766,13 @@ use yii\widgets\ActiveForm;
                     'class' => 'btn btn-warning quiz-button',
                 ]);
 
+                /* COMMENTED OUT - Alternative AI Button
                 $url = Yii::$app->urlManager->createUrl(['/question/alternative', 'question_id' => $model['id']]);
                 echo Html::a('🤖 Alternative (AI)', $url, [
                     'title' => 'Generate Alternative Question using AI',
                     'class' => 'btn btn-danger quiz-button',
                 ]);
+                */
             ?>
         </div>
 
