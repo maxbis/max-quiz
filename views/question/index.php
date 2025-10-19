@@ -226,15 +226,23 @@ if ($show == 0) {
     .multiline-tooltip::after {
         content: attr(data-tooltip);
         display: none;
-        position: absolute;
-        left: 120px;
-        z-index: 1;
+        position: fixed;
+        /* fixed = relative to viewport */
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        /* centers horizontally and vertically */
+        z-index: 9999;
         background: #dbe6ff;
         border: 1px solid #ccc;
-        padding: 5px;
+        padding: 10px 15px;
         font-family: monospace;
         white-space: pre-wrap;
-        max-width: 600px;
+        min-width: 600px;
+        max-width: 900px;
+        min-height: 80px;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+        border-radius: 6px;
     }
 
     .multiline-tooltip:hover::after {
@@ -513,7 +521,17 @@ if ($show == 0) {
         'filterModel' => $searchModel,
         'columns' => [
 
-            ['class' => 'yii\grid\SerialColumn'],
+            [
+                'class' => 'yii\grid\SerialColumn',
+                'headerOptions' => ['style' => 'width:50px;'],
+                'contentOptions' => function ($model) {
+                return [
+                    'class' => 'multiline-tooltip',
+                    'style' => 'color: #404080;',
+                    'data-tooltip' => $model->question,
+                ];
+            },
+            ],
             [
                 'attribute' => 'status',
                 'headerOptions' => ['style' => 'width:40px;'],
@@ -581,7 +599,7 @@ if ($show == 0) {
             ],
             [
                 'label' => 'Actions',
-                'headerOptions' => ['style' => 'width:80px;'],
+                'headerOptions' => ['style' => 'width:90px;'],
                 'contentOptions' => ['style' => 'text-align: center;'],
                 'format' => 'raw',
                 'value' => function ($model) use ($quiz_id) {
