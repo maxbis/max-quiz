@@ -833,6 +833,20 @@ $this->registerJs($deleteScript);
         margin-left: 5px;
         vertical-align: middle;
     }
+
+    /* Official test badge (KC) */
+    .kc-badge {
+        display: inline-block;
+        background-color: #eef0f3; /* subtle light grey */
+        color: #6c757d;           /* muted text */
+        padding: 1px 6px;
+        border-radius: 10px;
+        border: 1px solid #d5d9e0; /* soft border for definition */
+        font-size: 10px;
+        margin-left: 6px;
+        vertical-align: middle;
+        letter-spacing: 0.3px;
+    }
 </style>
 
 <body>
@@ -928,6 +942,17 @@ $this->registerJs($deleteScript);
                                 $title = $quiz['active'] ? 'Show Results' : 'Show Questions';
                             ?>
                             <?= Html::a($quiz['name'], $url, ['title' => $title, 'class' => 'quiz-name-link']) ?>
+                            <?php
+                                $isOfficialTest = (
+                                    (int)($quiz['review'] ?? 0) === 0 &&
+                                    (int)($quiz['blind'] ?? 0) === 1 &&
+                                    (int)($quiz['ip_check'] ?? 0) === 1 &&
+                                    (int)($quiz['random'] ?? 0) === 0
+                                );
+                                if ($isOfficialTest) {
+                                    echo "<span class='kc-badge' title='Official test settings: No Review, On Paper, IP Restricted, Fixed Order'>KC</span>";
+                                }
+                            ?>
                             <?php if (isset($quiz['archived']) && $quiz['archived']) echo "<span class='archived-badge'>ARCHIVED</span>"; ?>
                         </td>
                         <td class="col-password highlight-column" _style='background-color:#f8f8f8;color:#d0d0e0;'>
