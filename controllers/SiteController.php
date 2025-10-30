@@ -215,7 +215,7 @@ class SiteController extends Controller
         }
 
         if ($no_answered != $submission['no_answered']) {
-            writeLog("Sequence error: ${submission['id']}, ${submission['quiz_id']}, ${submission['thisQuestion']}");
+            writeLog("Sequence error: {$submission['id']}, {$submission['quiz_id']}, {$submission['thisQuestion']}");
             Yii::$app->session->setFlash('error', 'Sequence error: question is already answered!');
             return $this->redirect(['site/question']);
         }
@@ -230,7 +230,7 @@ class SiteController extends Controller
         }
 
         $sql = "insert into log (submission_id, quiz_id, question_id, answer_no, correct, no_answered)
-                values (${submission['id']}, ${submission['quiz_id']}, ${submission['thisQuestion']},
+                values ({$submission['id']}, {$submission['quiz_id']}, {$submission['thisQuestion']},
                         $givenAnswer, $punt, $no_answered )
                 ";
         $log = Yii::$app->db->createCommand($sql)->execute();

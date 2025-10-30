@@ -308,7 +308,7 @@ class SubmissionController extends Controller
         $quiz = Yii::$app->db->createCommand($sql)->queryOne();
 
 
-        $sql = "select * from submission where quiz_id = ${quiz['id']} order by first_name, last_name ASC";
+        $sql = "select * from submission where quiz_id = {$quiz['id']} order by first_name, last_name ASC";
         $submissions = Yii::$app->db->createCommand($sql)->queryAll();
 
         return $this->render('monitor', [

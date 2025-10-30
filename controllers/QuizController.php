@@ -254,7 +254,7 @@ class QuizController extends Controller
         $questionIds = Yii::$app->db->createCommand($sql)->queryAll();
 
         foreach ($questionIds as $thisQuestionId) {
-            $sql = "insert into quizquestion (quiz_id, question_id, active) values ($newId, ${thisQuestionId['question_id']}, 1)";
+            $sql = "insert into quizquestion (quiz_id, question_id, active) values ($newId, {$thisQuestionId['question_id']}, 1)";
             Yii::$app->db->createCommand($sql)->execute();
         }
 

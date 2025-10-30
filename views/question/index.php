@@ -30,6 +30,9 @@ $csrfToken = Yii::$app->request->getCsrfToken();
 $apiUrl = Url::toRoute(['/quiz-question/connect']);
 $id = Yii::$app->request->get('id');
 
+// Expose total assigned questions to JS for live updates
+// No extra JS variables needed here
+
 $script = <<<JS
 ajaxActive=0;
 $('.status-checkbox').change(function() {
@@ -65,7 +68,8 @@ $('.status-checkbox').change(function() {
             if ( ajaxActive == 0) { // hide busy indicator
                 $('#modalOverlay').hide();
             }
-            $('#countDisplay').text(response.result.count);
+            // Update active count (configured number remains constant)
+            $('#countActive').text(response.result.count);
             console.log('Update successful', response);
         },
         error: function(error) {
@@ -393,8 +397,13 @@ if ($show == 0) {
                     </span>
                     <span style="display: flex; align-items: center; color: #888;">
                         <span style="font-size:1.3em; margin-right: 7px;">❓</span>
-                        <span style="font-weight: 500;">Questions:</span> <span id="countDisplay"
-                            style="margin-left: 5px; color: #404080;"> <?= count($questionIds); ?> </span>
+                        <span style="font-weight: 500;">Questions:</span>
+                        <span style="margin-left: 5px; color: #404080;">
+                            <span id="countActive"><?= count($questionIds); ?></span>
+                            <span style="color:#9aa0a6;">
+                                (quiz max is <span id="countConfigured"><?= (int)($quiz['no_questions'] ?? count($questionIds)) ?></span>)
+                            </span>
+                        </span>
                     </span>
                 </div>
             </div>

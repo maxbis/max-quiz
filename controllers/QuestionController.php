@@ -101,6 +101,7 @@ class QuestionController extends Controller
         $quizQuestions = Yii::$app->db->createCommand($sql)->queryAll();
         $questionIds = ArrayHelper::getColumn($quizQuestions, 'question_id');
 
+
         $sql = "SELECT * FROM quiz WHERE id = $quiz_id";
         $quiz = Yii::$app->db->createCommand($sql)->queryOne();
 
