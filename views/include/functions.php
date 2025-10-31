@@ -22,4 +22,21 @@ function escapeHtmlExceptTags($html, $deleteTags = [], $allowedTags = ['pre', 'c
 }
 
 
+function validateAllowedTags($html, $allowedTags = ['pre', 'code', 'i', 'b'])
+{
+    $errors = [];
+
+    foreach ($allowedTags as $tag) {
+        $open  = preg_match_all('/<' . $tag . '\b[^>]*>/i', $html, $unused);
+        $close = preg_match_all('/<\/' . $tag . '>/i', $html, $unused);
+
+        if ($open !== $close) {
+            $errors[] = "Tag <$tag> is unbalanced (found $open open vs $close close).";
+        }
+    }
+
+    return $errors;
+}
+
+
 ?>
