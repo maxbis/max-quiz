@@ -700,6 +700,27 @@ class QuestionController extends Controller
 
         $questions = Yii::$app->db->createCommand($sql)->queryAll();
 
+        $badQuestions = [];
+
+        foreach ($questions as $question) {
+            $issues = $this->validateAllowedTags($question['question']);
+            if (!empty($issues)) {
+                $badQuestions[$question['id']] = $issues;
+            }
+        }
+
+        if (!empty($badQuestions)) {
+            $messages = [];
+            foreach ($badQuestions as $id => $issues) {
+                $messages[] = "Question $id: " . implode(' ', $issues);
+            }
+            Yii::$app->session->setFlash(
+                'error',
+                "PDF export aborted. Fix the markup before retrying:\n" . implode("\n", $messages)
+            );
+            return $this->redirect(['question/index', 'quiz_id' => $quiz_id]);
+        }
+
         // Generate PDF using mPDF
         $mpdf = new \Mpdf\Mpdf([
             'mode' => 'utf-8',
@@ -726,6 +747,10 @@ class QuestionController extends Controller
             'quiz' => $quiz,
             'questions' => $questions,
         ]);
+
+        // echo "<pre>";
+        // print_r($html);
+        // exit;
 
         // Write HTML to PDF
         $mpdf->WriteHTML($html);
@@ -829,6 +854,25 @@ class QuestionController extends Controller
         $results = $this->openAI($prompt);
 
         return $this->render('import', ['input' => $results, 'quiz' => null]);
+    }
+
+    private function validateAllowedTags($html, $allowedTags = ['pre', 'code', 'i', 'b'])
+    {
+        $errors = [];
+
+        foreach ($allowedTags as $tag) {
+            $openMatches = [];
+            $closeMatches = [];
+
+            $openCount = preg_match_all('/<' . $tag . '\\b[^>]*>/i', $html, $openMatches);
+            $closeCount = preg_match_all('/<\/' . $tag . '>/i', $html, $closeMatches);
+
+            if ($openCount !== $closeCount) {
+                $errors[] = "Tag <{$tag}> is unbalanced ({$openCount} open vs {$closeCount} close).";
+            }
+        }
+
+        return $errors;
     }
 
     private function openAI($prompt)
