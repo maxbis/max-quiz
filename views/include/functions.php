@@ -1,5 +1,22 @@
 <?php
 
+function escapeHtmlForAnswers($html, $deleteTags = [])
+{
+    // $html = str_replace('<pre>', '<b>', $html);
+    // $html = str_replace('</pre>', '</b>', $html);
+    // $html = str_replace('<code>', '<b>', $html);
+    // $html = str_replace('</code>', '</b>', $html);
+
+    // print_r("<pre>");
+    // print_r($html);
+    // print_r("</pre>");
+    // exit;
+    // return $html;
+
+    return escapeHtmlExceptTags($html, $deleteTags, ['pre', 'code','i', 'b']);
+}
+
+
 function escapeHtmlExceptTags($html, $deleteTags = [], $allowedTags = ['pre', 'code', 'i', 'b'])
 {
     foreach ($deleteTags as $tag) {

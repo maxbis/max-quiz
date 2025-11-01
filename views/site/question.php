@@ -130,7 +130,6 @@ if ($submission['id'] == 0 && $vraagTotalDisplay > 0 && $vraagIndex !== null) {
             min-height: 3em;
             font-family: monospace;
             user-select: none;
-            display: flex;
             justify-content: center;
             align-items: center;
             border-radius: 12px;
@@ -338,30 +337,31 @@ if ($submission['id'] == 0 && $vraagTotalDisplay > 0 && $vraagIndex !== null) {
             padding-left: 10px;
             border-radius: 6px;
             display: block;
+            border-radius: 2;
         }
 
         .answer pre,
         .answer code {
             color: #0a3063;
+            background-color:rgb(239, 237, 237);
+            border-radius: 3px;
+            font-size: 13px;
             font-weight: 600;
+            padding: 3px;
             font-family: 'Consolas', 'Menlo', 'Liberation Mono', 'Courier New', monospace;
         }
 
         .answer pre {
-            white-space: pre-wrap;
-            background: rgba(10, 48, 99, 0.08);
-            padding: 10px 14px;
-            margin: 10px 0;
-            border-radius: 8px;
+            display: inline;
         }
 
         .answer code {
-            display: inline;
-            padding: 0 2px;
-            margin: 0;
-            background: transparent;
-            border-radius: 0;
-            white-space: normal;
+            display: block;
+            margin-left: 40px;
+            margin-right: 40px;
+            margin-top: 6px;
+            margin-bottom: 6px;
+            width: 50%;
         }
 
         .btn {
@@ -511,13 +511,13 @@ echo escapeHtmlExceptTags($question['question']);
                 <div class="row w-100" style="align-items: stretch;">
                     <div class="col-md-6 d-flex">
                         <div class="answer <?= $style ?>" onclick="selectAnswer(this, '<?= $answers[0] ?>')" style="flex: 1;">
-                            <?= escapeHtmlExceptTags($question[$answers[0]]) ?>
+                            <?= escapeHtmlForAnswers($question[$answers[0]]) ?>
                         </div>
                     </div>
                     <?php if ($noAnswers >= 2) { ?>
                         <div class="col-md-6 d-flex">
                             <div class="answer <?= $style ?>" onclick="selectAnswer(this, '<?= $answers[1] ?>')" style="flex: 1;">
-                                <?= escapeHtmlExceptTags($question[$answers[1]]) ?>
+                                <?= escapeHtmlForAnswers($question[$answers[1]]) ?>
                             </div>
                         </div>
                     <?php } ?>
@@ -529,13 +529,13 @@ echo escapeHtmlExceptTags($question['question']);
                 <div class="row w-100" style="align-items: stretch;">
                     <div class="col-md-6 d-flex">
                         <div class="answer <?= $style ?>" onclick="selectAnswer(this, '<?= $answers[2] ?>')" style="flex: 1;">
-                            <?= escapeHtmlExceptTags($question[$answers[2]]) ?>
+                            <?= escapeHtmlForAnswers($question[$answers[2]]) ?>
                         </div>
                     </div>
                     <?php if ($noAnswers >= 4) { ?>
                         <div class="col-md-6 d-flex">
                             <div class="answer <?= $style ?>" onclick="selectAnswer(this, '<?= $answers[3] ?>')" style="flex: 1;">
-                                <?= escapeHtmlExceptTags($question[$answers[3]]) ?>
+                                <?= escapeHtmlForAnswers($question[$answers[3]]) ?>
                             </div>
                         </div>
                     <?php } ?>
@@ -547,13 +547,13 @@ echo escapeHtmlExceptTags($question['question']);
                 <div class="row w-100" style="align-items: stretch;">
                     <div class="col-md-6 d-flex">
                         <div class="answer <?= $style ?>" onclick="selectAnswer(this, '<?= $answers[4] ?>')" style="flex: 1;">
-                            <?= escapeHtmlExceptTags($question[$answers[4]]) ?>
+                            <?= escapeHtmlForAnswers($question[$answers[4]]) ?>
                         </div>
                     </div>
                     <?php if ($noAnswers >= 6) { ?>
                         <div class="col-md-6 d-flex">
                             <div class="answer <?= $style ?>" onclick="selectAnswer(this, '<?= $answers[5] ?>')" style="flex: 1;">
-                                <?= escapeHtmlExceptTags($question[$answers[5]]) ?>
+                                <?= escapeHtmlForAnswers($question[$answers[5]]) ?>
                             </div>
                         </div>
                     <?php } ?>
