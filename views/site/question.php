@@ -63,6 +63,33 @@ if ($vraagTotal === 0) {
     $vraagTotalDisplay = $vraagTotal;
 }
 
+$navPrevUrl = null;
+$navNextUrl = null;
+
+if ($submission['id'] == 0 && $vraagTotalDisplay > 0 && $vraagIndex !== null) {
+    if ($prevRecordId !== null) {
+        $prevParams = ['/question/view', 'id' => $prevRecordId];
+        if (!empty($quiz_id)) {
+            $prevParams['quiz_id'] = $quiz_id;
+        }
+        if (isset($returnUrlParam)) {
+            $prevParams['returnUrl'] = $returnUrlParam;
+        }
+        $navPrevUrl = Yii::$app->urlManager->createUrl($prevParams);
+    }
+
+    if ($nextRecordId !== null) {
+        $nextParams = ['/question/view', 'id' => $nextRecordId];
+        if (!empty($quiz_id)) {
+            $nextParams['quiz_id'] = $quiz_id;
+        }
+        if (isset($returnUrlParam)) {
+            $nextParams['returnUrl'] = $returnUrlParam;
+        }
+        $navNextUrl = Yii::$app->urlManager->createUrl($nextParams);
+    }
+}
+
 ?>
 
 <!DOCTYPE html>
@@ -302,17 +329,81 @@ if ($vraagTotal === 0) {
             transition: transform 0.5s ease-in-out;
         }
 
-        code,
-        pre {
+        .question-block pre,
+        .question-block code {
             margin-left: 30px;
             font-size: 16px;
             color: darkblue;
             border-left: 2px solid lightgray;
             padding-left: 10px;
+            border-radius: 6px;
+            display: block;
+        }
+
+        .answer pre,
+        .answer code {
+            color: #0a3063;
+            font-weight: 600;
+            font-family: 'Consolas', 'Menlo', 'Liberation Mono', 'Courier New', monospace;
+        }
+
+        .answer pre {
+            white-space: pre-wrap;
+            background: rgba(10, 48, 99, 0.08);
+            padding: 10px 14px;
+            margin: 10px 0;
+            border-radius: 8px;
+        }
+
+        .answer code {
+            display: inline;
+            padding: 0 2px;
+            margin: 0;
+            background: transparent;
+            border-radius: 0;
+            white-space: normal;
         }
 
         .btn {
             margin-right: 20px;
+        }
+
+        .question-btn-row {
+            display: flex;
+            flex-wrap: wrap;
+            align-items: center;
+            gap: 12px;
+            margin-top: 16px;
+        }
+
+        .nav-arrow-container {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            margin-left: auto;
+        }
+
+        .nav-arrow-btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 34px;
+            height: 34px;
+            border-radius: 18px;
+            border: 1px solid #0a58ca;
+            color: #0a58ca;
+            background: #fff;
+            text-decoration: none;
+            font-size: 18px;
+            transition: all 0.2s ease;
+        }
+
+        .nav-arrow-btn:hover {
+            background: #0a58ca;
+            color: #fff;
+            text-decoration: none;
+            transform: translateY(-1px);
+            box-shadow: 0 4px 10px rgba(10, 88, 202, 0.2);
         }
 
         .alert-error {
@@ -325,6 +416,13 @@ if ($vraagTotal === 0) {
             color: #a94442;
             background-color: #f2dede;
             border-color: #ebccd1;
+        }
+
+        .margin-left-60 {
+            margin-left: 60px;
+        }
+        .margin-right-60 {
+            margin-right: 60px;
         }
     </style>
 
@@ -474,7 +572,9 @@ echo escapeHtmlExceptTags($question['question']);
                     // Check returnUrlParam to determine which view we came from
                     $isFromEditLabels = isset($returnUrlParam) && $returnUrlParam === 'edit-labels';
                     $isFromIndex = isset($returnUrlParam) && $returnUrlParam === 'index';
-                    
+
+                    echo '<div class="question-btn-row"><hr style="color:#808080; width: 100%;margin-top:0px;">';
+
                     if ($isFromEditLabels) {
                         // Show only Edit and Back buttons when coming from edit-labels
                         $url = Yii::$app->urlManager->createUrl(['/question/update', 'id' => $question['id']]);
@@ -490,16 +590,16 @@ echo escapeHtmlExceptTags($question['question']);
                         ]);
                     } elseif ($isFromIndex) {
                         // Show Edit and Back when coming from question index
+                        echo Html::a('← Back', $returnUrl, [
+                            'id' => 'submitButton-back',
+                            'title' => 'Back to Question Index',
+                            'class' => 'btn btn-outline-primary quiz-button margin-left-60',
+                        ]);
                         $url = Yii::$app->urlManager->createUrl(['/question/update', 'id' => $question['id']]);
                         echo Html::a('Edit', $url, [
                             'id' => 'submitButton-edit',
                             'title' => 'Edit Question',
                             'class' => 'btn btn-outline-secondary quiz-button',
-                        ]);
-                        echo Html::a('← Back to Question Index', $returnUrl, [
-                            'id' => 'submitButton-back',
-                            'title' => 'Back to Question Index',
-                            'class' => 'btn btn-outline-primary quiz-button',
                         ]);
                     } else {
                         // Show all buttons for normal view (legacy behavior)
@@ -511,24 +611,6 @@ echo escapeHtmlExceptTags($question['question']);
                                 'class' => 'btn btn-outline-secondary quiz-button',
                             ]);
                         }
-                        // $url = Yii::$app->urlManager->createUrl(['/question/update', 'id' => $question['id']]);
-                        // echo Html::a('Edit', $url, [
-                        //     'id' => 'submitButton-org1',
-                        //     'title' => 'Edit Question',
-                        //     'class' => 'btn btn-outline-secondary quiz-button',
-                        // ]);
-                        // $url = Yii::$app->urlManager->createUrl(['/question/copy', 'id' => $question['id']]);
-                        // echo Html::a('Copy', $url, [
-                        //     'id' => 'submitButton-org2',
-                        //     'title' => 'Copy Question',
-                        //     'class' => 'btn btn-outline-secondary quiz-button',
-                        // ]);
-                        // $url = Yii::$app->urlManager->createUrl(['/question/alternative', 'question_id' => $question['id']]);
-                        // echo Html::a('Alternative', $url, [
-                        //     'id' => 'submitButton-org2',
-                        //     'title' => 'Create alternative question',
-                        //     'class' => 'btn btn-outline-secondary quiz-button',
-                        // ]);
                         echo Html::a('Back', $returnUrl, [
                             'id' => 'submitButton-org2',
                             'title' => 'Back',
@@ -543,6 +625,19 @@ echo escapeHtmlExceptTags($question['question']);
                             ]);
                         }
                     }
+
+                    if ($navPrevUrl !== null || $navNextUrl !== null) {
+                        echo '<div class="nav-arrow-container margin-right-60">';
+                        if ($navPrevUrl !== null) {
+                            echo Html::a('&lt;', $navPrevUrl, ['class' => 'nav-arrow-btn', 'title' => 'Previous question']);
+                        }
+                        if ($navNextUrl !== null) {
+                            echo Html::a('&gt;', $navNextUrl, ['class' => 'nav-arrow-btn', 'title' => 'Next question']);
+                        }
+                        echo '</div>';
+                    }
+
+                    echo '</div>';
                 } ?>
             </form>
         </div>
