@@ -1030,7 +1030,7 @@ $this->registerJs($regradeScript);
                                         'data-quiz-name' => $quiz['name']
                                     ]) ?>
                                     <div class="dropdown-divider"></div>
-                                    <?= Html::a('♻️ Regrade', '#', [
+                                    <?= Html::a('♻️ Regrade Scores', '#', [
                                         'class' => 'dropdown-item regrade-quiz-btn',
                                         'title' => 'Regrade quiz submissions',
                                         'data-quiz-name' => $quiz['name'],
