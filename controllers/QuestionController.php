@@ -97,7 +97,7 @@ class QuestionController extends Controller
 
         $keysShown = $dataProvider->getKeys();
 
-        $sql = "SELECT question_id FROM quizquestion WHERE quiz_id = $quiz_id AND active = 1";
+        $sql = "SELECT question_id FROM quizquestion WHERE quiz_id = $quiz_id AND active = 1 ORDER BY COALESCE(`order`, 0) ASC, question_id ASC";
         $quizQuestions = Yii::$app->db->createCommand($sql)->queryAll();
         $questionIds = ArrayHelper::getColumn($quizQuestions, 'question_id');
 

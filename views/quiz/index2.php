@@ -346,6 +346,34 @@ JS;
 
 $this->registerJs($deleteScript);
 
+// Handle regrade quiz button with warning dialog
+$regradeScript = <<<JS
+
+$(document).on('click', '.regrade-quiz-btn', function(e) {
+    e.preventDefault();
+
+    var btn = $(this);
+    var quizName = btn.data('quiz-name') || 'this quiz';
+    var maintenanceUrl = btn.data('maintenance-url');
+    var safeQuizName = $('<div>').text(quizName).html();
+
+    window.showCustomDialog(
+        '♻️ Regrade Quiz',
+        'You are about to change the recorded results for "<strong>' + safeQuizName + '</strong>".<br><br>' +
+        '<span style="color:#dc3545;">Warning:</span> These updates may permanently alter test outcomes and cannot always be undone.<br><br>' +
+        'Do you want to proceed?',
+        function() {
+            if (maintenanceUrl) {
+                window.location.href = maintenanceUrl;
+            }
+        }
+    );
+});
+
+JS;
+
+$this->registerJs($regradeScript);
+
 ?>
 
 <!-- Include the reusable custom dialog component -->
@@ -1002,6 +1030,12 @@ $this->registerJs($deleteScript);
                                         'data-quiz-name' => $quiz['name']
                                     ]) ?>
                                     <div class="dropdown-divider"></div>
+                                    <?= Html::a('♻️ Regrade', '#', [
+                                        'class' => 'dropdown-item regrade-quiz-btn',
+                                        'title' => 'Regrade quiz submissions',
+                                        'data-quiz-name' => $quiz['name'],
+                                        'data-maintenance-url' => Url::to(['maintenance/index', 'quiz_id' => $quiz['id']])
+                                    ]) ?>
                                     <?php if (isset($quiz['archived']) && $quiz['archived']): ?>
                                         <?= Html::a('📤 Restore', ['/quiz/toggle-archive', 'id' => $quiz['id']], [
                                             'class' => 'dropdown-item text-success',

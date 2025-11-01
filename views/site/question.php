@@ -42,16 +42,25 @@ if (!isset($returnUrl) || empty($returnUrl)) {
     $returnUrl = Yii::$app->session->get('viewReturnUrl', '');
 }
 
-if ($selectedRecords == null) {
+$vraagTotal = count($selectedRecords);
+$currentRecordId = $question['id'];
+$currentPosition = $vraagTotal > 0 ? array_search($currentRecordId, $selectedRecords) : false;
+
+if ($vraagTotal === 0) {
     $prevRecordId = null;
     $nextRecordId = null;
-    $vraagNr = [1, 0];
+    $vraagIndex = 1;
+    $vraagTotalDisplay = 1;
+} elseif ($currentPosition === false) {
+    $prevRecordId = null;
+    $nextRecordId = null;
+    $vraagIndex = null;
+    $vraagTotalDisplay = $vraagTotal;
 } else {
-    $currentRecordId = $question['id'];
-    $currentPosition = array_search($currentRecordId, $selectedRecords);
     $prevRecordId = $currentPosition > 0 ? $selectedRecords[$currentPosition - 1] : null;
-    $nextRecordId = $currentPosition < count($selectedRecords) - 1 ? $selectedRecords[$currentPosition + 1] : null;
-    $vraagNr = [count($selectedRecords), $currentPosition];
+    $nextRecordId = $currentPosition < $vraagTotal - 1 ? $selectedRecords[$currentPosition + 1] : null;
+    $vraagIndex = $currentPosition + 1;
+    $vraagTotalDisplay = $vraagTotal;
 }
 
 ?>
@@ -345,10 +354,10 @@ if ($selectedRecords == null) {
                     echo " van ";
                     echo $submission['no_questions'];
                 } else {
-                    echo $vraagNr[0] - $vraagNr[1];
+                    $vraagIndexDisplay = $vraagIndex !== null ? $vraagIndex : '?';
+                    echo $vraagIndexDisplay;
                     echo " van ";
-                    echo $vraagNr[0];
-
+                    echo $vraagTotalDisplay;
                 }
                 ?>
             </p>
@@ -368,7 +377,8 @@ if ($selectedRecords == null) {
                 if ($submission['id'] != 0) {
                     echo $submission['no_answered'] + 1;
                 } else {
-                    echo $vraagNr[0] - $vraagNr[1];
+                    $vraagIndexDisplay = $vraagIndex !== null ? $vraagIndex : '?';
+                    echo $vraagIndexDisplay;
                 }
                 ?>
             </div>
@@ -403,13 +413,13 @@ echo escapeHtmlExceptTags($question['question']);
                 <div class="row w-100" style="align-items: stretch;">
                     <div class="col-md-6 d-flex">
                         <div class="answer <?= $style ?>" onclick="selectAnswer(this, '<?= $answers[0] ?>')" style="flex: 1;">
-                            <?= escapeHtmlExceptTags($question[$answers[0]], ['pre']) ?>
+                            <?= escapeHtmlExceptTags($question[$answers[0]]) ?>
                         </div>
                     </div>
                     <?php if ($noAnswers >= 2) { ?>
                         <div class="col-md-6 d-flex">
                             <div class="answer <?= $style ?>" onclick="selectAnswer(this, '<?= $answers[1] ?>')" style="flex: 1;">
-                                <?= escapeHtmlExceptTags($question[$answers[1]], ['pre']) ?>
+                                <?= escapeHtmlExceptTags($question[$answers[1]]) ?>
                             </div>
                         </div>
                     <?php } ?>
@@ -421,13 +431,13 @@ echo escapeHtmlExceptTags($question['question']);
                 <div class="row w-100" style="align-items: stretch;">
                     <div class="col-md-6 d-flex">
                         <div class="answer <?= $style ?>" onclick="selectAnswer(this, '<?= $answers[2] ?>')" style="flex: 1;">
-                            <?= escapeHtmlExceptTags($question[$answers[2]], ['pre']) ?>
+                            <?= escapeHtmlExceptTags($question[$answers[2]]) ?>
                         </div>
                     </div>
                     <?php if ($noAnswers >= 4) { ?>
                         <div class="col-md-6 d-flex">
                             <div class="answer <?= $style ?>" onclick="selectAnswer(this, '<?= $answers[3] ?>')" style="flex: 1;">
-                                <?= escapeHtmlExceptTags($question[$answers[3]], ['pre']) ?>
+                                <?= escapeHtmlExceptTags($question[$answers[3]]) ?>
                             </div>
                         </div>
                     <?php } ?>
@@ -439,13 +449,13 @@ echo escapeHtmlExceptTags($question['question']);
                 <div class="row w-100" style="align-items: stretch;">
                     <div class="col-md-6 d-flex">
                         <div class="answer <?= $style ?>" onclick="selectAnswer(this, '<?= $answers[4] ?>')" style="flex: 1;">
-                            <?= escapeHtmlExceptTags($question[$answers[4]], ['pre']) ?>
+                            <?= escapeHtmlExceptTags($question[$answers[4]]) ?>
                         </div>
                     </div>
                     <?php if ($noAnswers >= 6) { ?>
                         <div class="col-md-6 d-flex">
                             <div class="answer <?= $style ?>" onclick="selectAnswer(this, '<?= $answers[5] ?>')" style="flex: 1;">
-                                <?= escapeHtmlExceptTags($question[$answers[5]], ['pre']) ?>
+                                <?= escapeHtmlExceptTags($question[$answers[5]]) ?>
                             </div>
                         </div>
                     <?php } ?>
