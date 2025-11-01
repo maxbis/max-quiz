@@ -441,7 +441,7 @@ $this->registerJs($regradeScript);
     }
 
     .col-quiz-name {
-        width: 250px;
+        width: 180px;
         max-width: 250px;
         min-width: 150px;
     }
