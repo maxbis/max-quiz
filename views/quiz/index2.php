@@ -1014,14 +1014,13 @@ $this->registerJs($regradeScript);
                         </td>
                         <td class="col-actions">
                             <?= Html::a('❓ Questions', ['question/index', 'quiz_id' => $quiz['id']], ['class' => 'btn quiz-button-small', 'title' => 'Show Questions']) ?>
-                            <?= Html::a('✏️ Edit', ['/quiz/update', 'id' => $quiz['id']], ['class' => 'btn quiz-button-small', 'title' => 'Edit Quiz']) ?>
-                            <div class="btn-group" style="display: inline-block;">
+                            <?= Html::a('📊 Results', ['/submission', 'quiz_id' => $quiz['id']], ['class' => 'btn quiz-button-small', 'title' => 'Show Results/Progress']) ?>
                                 <button type="button" class="btn quiz-button-small dropdown-toggle" data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
                                     ⋮ More
                                 </button>
                                 <div class="dropdown-menu" aria-labelledby="dropdownMenuButton">
+                                    <?= Html::a('✏️ Edit', ['/quiz/update', 'id' => $quiz['id']], ['class' => 'dropdown-item', 'title' => 'Edit Quiz']) ?>
                                     <?= Html::a('👁️ View', ['/question/list', 'quiz_id' => $quiz['id']], ['class' => 'dropdown-item', 'title' => 'View Questions']) ?>
-                                    <?= Html::a('📊 Results', ['/submission', 'quiz_id' => $quiz['id']], ['class' => 'dropdown-item', 'title' => 'Show Results/Progress']) ?>
                                     <?= Html::a('🏷️ Labels/Sort', ['/quiz/edit-labels', 'id' => $quiz['id']], ['class' => 'dropdown-item', 'title' => 'Edit Question Labels']) ?>
                                     <?= Html::a('📄 PDF', '#', [
                                         'class' => 'dropdown-item pdf-download-btn',
