@@ -932,9 +932,9 @@ $this->registerJs($regradeScript);
                     if ($lastGroup !== $currentGroup):
                         $lastGroup = $currentGroup;
                         $groupTitle = $currentGroup ?: 'No Category';
-                        echo "<tr class='group-header collapsed' style='background-color:#f0f0f9;color:darkblue;font-weight:350;font-style:italic;'>
-                                <td class='col-bullet'></td>
-                                <td class='col-checkbox'></td>
+                        echo "<tr class='group-header collapsed' style='background-color:#f0f0f9;color:darkblue;font-weight:350;font-style:italic;width:20px;'>
+                                <td class='col-bullet' style='width:20px;'></td>
+                                <td class='col-checkbox' style='width:20px;'></td>
                                 <td class='col-quiz-name'>
                                     <div class='group-title'><span class='triangle' title='Click to expand/collapse'>▼</span>&nbsp;{$groupTitle}</div>
                                 </td>
@@ -945,7 +945,7 @@ $this->registerJs($regradeScript);
                                 <td class='col-status' title='Blind Quiz' style='color:lightgrey'>BL</td>
                                 <td class='col-status' title='IP Check' style='color:lightgrey'>IP</td>
                                 <td class='col-status' title='Random' style='color:lightgrey'>Rd</td>
-                                <td class='col-actions' style='color:lightgrey'>Actions</td>
+                                <td class='col-actions' style='color:lightgrey;widt:120px;'>Actions</td>
                             </tr>";
                     endif;
                     ?>
