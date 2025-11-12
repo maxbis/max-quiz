@@ -70,13 +70,6 @@ require_once Yii::getAlias('@app/views/include/functions.php');
             padding-left: 10px;
         }
 
-        .quiz-button {
-            font-size: 10px;
-            padding: 2px 5px;
-            margin-left: 10px;
-            min-width: 55px;
-        }
-
         .stats {
             color: darkblue;
             display: none;
@@ -119,54 +112,58 @@ require_once Yii::getAlias('@app/views/include/functions.php');
             width: 96%;
             max-width: 1400px;
             height: 96%;
+            max-height: 96vh;
             background: rgba(255, 255, 255, 0.95);
             border-radius: 20px;
             padding: 40px;
             display: flex;
             flex-direction: column;
-            justify-content: center;
             color: #333;
             box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
             position: relative;
+            overflow-y: auto;
         }
 
         .presentation-question {
-            font-size: 1.5rem;
+            font-size: clamp(1rem, 2.5vh, 1.5rem);
             font-weight: bold;
-            margin-top: 40px;
-            margin-bottom: 40px;
+            margin-top: 20px;
+            margin-bottom: 20px;
             line-height: 1.4;
             text-align: left;
             color: #2c3e50;
-            flex-shrink: 0;
+            flex-shrink: 1;
             white-space: pre-wrap;
         }
 
         .presentation-question pre {
             margin-top: 20px;
-            margin-left: 60px;
-            font-size: 2rem;
+            margin-left: 20px;
+            font-size: clamp(1rem, 3vh, 2rem);
             color: darkblue;
             border-left: 4px solid lightgray;
             padding-left: 10px;
             text-align: left;
+            overflow-x: auto;
+            max-width: 100%;
+            white-space: pre-wrap;
+            word-wrap: break-word;
         }
 
         .presentation-answers {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
-            gap: 20px;
-            margin-bottom: 40px;
-            flex: 1;
-            align-content: center;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 15px;
+            margin-bottom: 20px;
+            flex-shrink: 1;
         }
 
         .presentation-answer {
             background: #f8f9fa;
             border: 2px solid #e9ecef;
             border-radius: 15px;
-            padding: 25px;
-            font-size:1.8rem;
+            padding: 20px;
+            font-size: clamp(0.9rem, 2.2vh, 1.8rem);
             line-height: 1.5;
             transition: all 0.3s ease;
             cursor: pointer;
@@ -174,12 +171,18 @@ require_once Yii::getAlias('@app/views/include/functions.php');
         }
 
         .presentation-answer pre {
-            margin-top: 20px;
+            margin-top: 10px;
+            margin-bottom: 10px;
+            font-size: clamp(0.8rem, 2vh, 1.3rem);
+            overflow-x: auto;
+            max-width: 100%;
+            white-space: pre-wrap;
+            word-wrap: break-word;
         }
 
         .presentation-answer pre pre {
-            margin-left: 30px;
-            font-size: 1.3rem;
+            margin-left: 20px;
+            font-size: clamp(0.8rem, 2vh, 1.3rem);
             color: darkblue;
             border-left: 2px solid lightgray;
             padding-left: 10px;
@@ -272,7 +275,6 @@ require_once Yii::getAlias('@app/views/include/functions.php');
         }
 
         .question-container {
-            cursor: pointer;
             transition: transform 0.2s ease;
         }
 
@@ -281,23 +283,120 @@ require_once Yii::getAlias('@app/views/include/functions.php');
             box-shadow: 5px 5px 15px #888888;
         }
 
+        .clickable-question {
+            cursor: pointer;
+            transition: all 0.2s ease;
+            padding: 10px;
+            border-radius: 8px;
+            position: relative;
+        }
+
+        .clickable-question:hover {
+            background-color: rgba(0, 123, 255, 0.1);
+            border: 2px solid rgba(0, 123, 255, 0.3);
+            transform: translateY(-1px);
+        }
+
+        .clickable-question::after {
+            content: "📺";
+            position: absolute;
+            top: 5px;
+            right: 10px;
+            font-size: 16px;
+            opacity: 0;
+            transition: opacity 0.2s ease;
+        }
+
+        .clickable-question:hover::after {
+            opacity: 1;
+        }
+
+        /* Custom scrollbar for presentation mode */
+        .presentation-content::-webkit-scrollbar {
+            width: 10px;
+        }
+
+        .presentation-content::-webkit-scrollbar-track {
+            background: rgba(0, 0, 0, 0.1);
+            border-radius: 10px;
+        }
+
+        .presentation-content::-webkit-scrollbar-thumb {
+            background: rgba(0, 123, 255, 0.5);
+            border-radius: 10px;
+        }
+
+        .presentation-content::-webkit-scrollbar-thumb:hover {
+            background: rgba(0, 123, 255, 0.7);
+        }
+
+        .presentation-content {
+            scroll-behavior: smooth;
+        }
+
+        h1 a:hover {
+            color: #0a58ca !important;
+            text-decoration: underline !important;
+            cursor: pointer;
+        }
+
+        /* Dim buttons by default, show on hover */
+        .question-buttons {
+            opacity: 0.2;
+            transition: opacity 0.3s ease;
+        }
+
+        .question-buttons:hover {
+            opacity: 1;
+        }
+
         @media (max-width: 768px) {
             .presentation-content {
                 width: 95%;
-                padding: 20px;
+                padding: 15px;
             }
             
             .presentation-question {
-                font-size: 1.8rem;
+                margin-top: 10px;
+                margin-bottom: 15px;
+            }
+
+            .presentation-question pre {
+                margin-left: 20px;
             }
             
             .presentation-answers {
                 grid-template-columns: 1fr;
+                gap: 10px;
             }
             
             .presentation-answer {
-                font-size: 1.2rem;
+                padding: 15px;
+            }
+
+            .presentation-nav-btn {
+                padding: 10px 15px;
+                font-size: 0.9rem;
+                min-width: 80px;
+            }
+        }
+
+        @media (max-height: 700px) {
+            .presentation-content {
                 padding: 20px;
+            }
+
+            .presentation-question {
+                margin-top: 10px;
+                margin-bottom: 15px;
+            }
+
+            .presentation-answers {
+                gap: 10px;
+            }
+
+            .presentation-answer {
+                padding: 15px;
             }
         }
     </style>
@@ -412,14 +511,25 @@ require_once Yii::getAlias('@app/views/include/functions.php');
             shuffledAnswers.forEach((answer, index) => {
                 const answerDiv = document.createElement('div');
                 answerDiv.className = 'presentation-answer';
-                answerDiv.innerHTML = `
-                    <div style="display: flex; align-items: center;">
-                        <span style="margin-right: 15px; font-weight: bold; color: #007bff;">
-                            ${String.fromCharCode(65 + index)})
-                        </span>
-                        <span>${answer.text}</span>
-                    </div>
-                `;
+                
+                // Create the container div
+                const containerDiv = document.createElement('div');
+                containerDiv.style.cssText = 'display: flex; align-items: flex-start; gap: 15px;';
+                
+                // Create the label span
+                const labelSpan = document.createElement('span');
+                labelSpan.style.cssText = 'font-weight: bold; color: #007bff; flex-shrink: 0; padding-top: 2px;';
+                labelSpan.textContent = `${String.fromCharCode(65 + index)})`;
+                
+                // Create the content div
+                const contentDiv = document.createElement('div');
+                contentDiv.style.cssText = 'flex: 1; overflow-wrap: break-word;';
+                contentDiv.innerHTML = answer.text; // Use innerHTML here to preserve <pre> tags
+                
+                // Assemble the structure
+                containerDiv.appendChild(labelSpan);
+                containerDiv.appendChild(contentDiv);
+                answerDiv.appendChild(containerDiv);
                 
                 // Add correct/wrong classes if answer is shown
                 if (answerShown) {
@@ -505,7 +615,10 @@ require_once Yii::getAlias('@app/views/include/functions.php');
 
 <body>
     <h1>
-        <?= $quiz['name']; ?>
+        <?= Html::a($quiz['name'], ['question/index', 'quiz_id' => $quiz['id']], [
+            'style' => 'color: inherit; text-decoration: none;',
+            'title' => 'Go to quiz questions overview'
+        ]); ?>
     </h1>
 
 
@@ -530,15 +643,15 @@ require_once Yii::getAlias('@app/views/include/functions.php');
             </div>
         </div>
 
-        <div class="question-container row" onclick="openPresentationMode(<?= $index ?>)">
+        <div class="question-container row">
             <div class="_col">
                 <form class="answers">
-                    <div class="question" id="question<?= $question['id'] ?>">
+                    <div class="question clickable-question" id="question<?= $question['id'] ?>" onclick="openPresentationMode(<?= $index ?>)" title="Click to open presentation mode">
 <?= escapeHtmlExceptTags($question['question'] ); ?>
                     </div>
             </div>
 
-            <div class="_col" style="border-top:1px dashed gray;margin-top:80px;">
+            <div class="_col" style="border-top:1px dashed gray;margin-top:80px;" onclick="event.stopPropagation();">
 
                 <?php
                 $array = ['1','2','3','4','5','6'];
@@ -561,25 +674,49 @@ require_once Yii::getAlias('@app/views/include/functions.php');
             </div>
 
             <?php
+            // Create return URL for the View button
+            $returnUrl = Url::to(['question/list', 'quiz_id' => $quiz['id']]);
+            
+            // Create View button (left-aligned)
+            $viewUrl = Yii::$app->urlManager->createUrl([
+                '/question/view', 
+                'id' => $question['id'], 
+                'quiz_id' => $quiz['id'],
+                'returnUrl' => $returnUrl
+            ]);
+            $bView = Html::a('View', $viewUrl, [
+                'title' => 'View this question',
+                'class' => 'btn btn-outline-success quiz-button',
+            ]);
+            
+            // Create Edit button
             $url = Yii::$app->urlManager->createUrl(['/question/update', 'id' => $question['id']]);
             $b1 = Html::a('Edit', $url, [
                 'title' => 'Edit',
                 'class' => 'btn btn-outline-primary quiz-button',
             ]);
+            
+            // Create Answer button
             $b2 = Html::button('Answer', [
                 'id' => "answer-button" . $question['id'],
                 'class' => 'btn btn-outline-danger quiz-button',
                 'onclick' => "highlightCheckbox(" . $question['id'] . "," . $question['correct'] . ")",
             ]);
+            
             $b3 = Html::button('Test', [
                 'id' => "answer-button" . $question['id'],
                 'class' => 'btn btn-outline-danger quiz-button',
                 'onclick' => "editQuestion('" . addslashes($url) . "')",
             ]);
             ?>
-            <div style="display: flex; justify-content: flex-end; align-items: left;" onclick="event.stopPropagation();">
-                <?= $b1 ?>
-                <?= $b2 ?>
+            <div class="question-buttons" style="display: flex; justify-content: space-between; align-items: left;" onclick="event.stopPropagation();">
+                <div>
+                    <?= $bView ?>
+                </div>
+                <div>
+                    <?= $b1 ?>
+                    <?= $b2 ?>
+                </div>
             </div>
         </div>
     <?php 
@@ -629,7 +766,78 @@ require_once Yii::getAlias('@app/views/include/functions.php');
 
     <script>
         // Initialize questions array for presentation mode
-        questions = <?= json_encode($questions) ?>;
+        const rawQuestions = <?= json_encode($questions) ?>;
+        
+        /**
+         * JavaScript equivalent of PHP escapeHtmlExceptTags() function
+         * Escapes ALL HTML tags for security, then selectively un-escapes allowed formatting tags
+         * 
+         * This matches the exact algorithm used in views/include/functions.php:
+         * 1. Remove unwanted tags (if specified)
+         * 2. Escape ALL HTML using htmlspecialchars equivalent
+         * 3. Un-escape ONLY allowed tags (pre, code, i, b by default)
+         * 
+         * @param {string} html - The HTML string to process
+         * @param {array} deleteTags - Tags to remove completely (optional)
+         * @param {array} allowedTags - Tags that should be rendered as HTML (default: pre, code, i, b)
+         * @returns {string} Safely escaped HTML with allowed tags preserved
+         */
+        function escapeHtmlExceptTags(html, deleteTags = [], allowedTags = ['pre', 'code', 'i', 'b']) {
+            if (!html) return html;
+            
+            // Step 1: Remove unwanted tags completely
+            deleteTags.forEach(tag => {
+                const startTagRegex = new RegExp('<' + tag + '>', 'gi');
+                const endTagRegex = new RegExp('</' + tag + '>', 'gi');
+                html = html.replace(startTagRegex, '').replace(endTagRegex, '');
+            });
+            
+            // Step 2: Escape ALL HTML characters (equivalent to PHP's htmlspecialchars)
+            // This makes everything safe by default - even malicious scripts become harmless text
+            let escapedHtml = html
+                .replace(/&/g, '&amp;')     // Must be first!
+                .replace(/</g, '&lt;')
+                .replace(/>/g, '&gt;')
+                .replace(/"/g, '&quot;')
+                .replace(/'/g, '&#39;');
+            
+            // Step 3: Un-escape ONLY the allowed tags so they render as actual HTML
+            // For each allowed tag, replace the escaped version back to real HTML
+            allowedTags.forEach(tag => {
+                const escapedStartTag = '&lt;' + tag + '&gt;';
+                const escapedEndTag = '&lt;/' + tag + '&gt;';
+                // Use global replacement to handle multiple occurrences
+                const startTagRegex = new RegExp(escapedStartTag, 'gi');
+                const endTagRegex = new RegExp(escapedEndTag, 'gi');
+                escapedHtml = escapedHtml.replace(startTagRegex, '<' + tag + '>');
+                escapedHtml = escapedHtml.replace(endTagRegex, '</' + tag + '>');
+            });
+            
+            return escapedHtml;
+        }
+        
+        // Process all questions using the same algorithm as the PHP view
+        questions = rawQuestions.map(question => {
+            const escapedQuestion = { ...question };
+            
+            // Escape HTML in question text
+            // Allows: <pre>, <code>, <i>, <b> for formatting
+            // Blocks: <script>, <iframe>, and all other HTML tags
+            if (escapedQuestion.question) {
+                escapedQuestion.question = escapeHtmlExceptTags(escapedQuestion.question);
+            }
+            
+            // Escape HTML in all answer fields
+            // For answers, we delete <pre> tags to prevent nested code blocks
+            // But still allow code formatting via the parent function
+            for (let i = 1; i <= 6; i++) {
+                if (escapedQuestion['a' + i]) {
+                    escapedQuestion['a' + i] = escapeHtmlExceptTags(escapedQuestion['a' + i], ['pre']);
+                }
+            }
+            
+            return escapedQuestion;
+        });
     </script>
 
 </body>

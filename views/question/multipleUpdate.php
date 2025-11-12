@@ -19,13 +19,6 @@ use yii\widgets\ActiveForm;
         text-align: left;
         color: darkblue;
     }
-
-    .quiz-button {
-        font-size: 12px;
-        padding: 2px 5px;
-        min-width: 55px;
-        margin: 5px;
-    }
 </style>
 
 <body>

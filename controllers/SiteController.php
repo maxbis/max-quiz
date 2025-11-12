@@ -139,18 +139,15 @@ class SiteController extends Controller
                 from submission s join quiz q on q.id = s.quiz_id
                 where token = '" . $token . "'";
         $submission = Yii::$app->db->createCommand($sql)->queryOne();
-        if ( ! $submission ) {
+        if (!$submission) {
             return false;
         }
 
         if ($submission['no_answered'] != $submission['no_questions']) {
-            // determine next question number
             $questionOrderArray = explode(' ', $submission['question_order']);
             $thisQuestion = $questionOrderArray[$submission['no_answered']];
             $submission['thisQuestion'] = $thisQuestion;
         } else {
-            // quiz is finised, no current question left anymore
-            // this could only happen if an answer is received on a finshed quiz
             $submission['thisQuestion'] = -99;
         }
 
@@ -160,7 +157,6 @@ class SiteController extends Controller
 
     private function getQuiz($id)
     {
-        // check if quiz is still ative, otherwise redirect to final page
         $sql = "select name, blind from quiz where id = $id";
         $quiz = Yii::$app->db->createCommand($sql)->queryOne();
 
@@ -173,7 +169,6 @@ class SiteController extends Controller
         if (!$submission) {
             return $this->redirect(['submission/create']);
         }
-        // are we (still) ready?
         if ($submission['no_answered'] == $submission['no_questions'] || $submission['finished']) {
             return $this->redirect(['site/finished']);
         }
@@ -204,26 +199,23 @@ class SiteController extends Controller
         if ($request->isPost) {
             $givenAnswer = $request->post('selectedAnswer');
             $no_answered = $request->post('no_answered');
-        } else { // if no post, show question (again)
+        } else {
             return $this->redirect(['site/question']);
         }
 
-        if ($givenAnswer == "") { // this should not happen
+        if ($givenAnswer == "") {
             writeLog("Error, the posted selectedAnswer is empty");
             return $this->redirect(['site/question']);
         }
 
         $submission = $this->getSubmission();
         if ($submission['thisQuestion'] == -99) {
-            // this should not happen; an answer is posted while the quiz is finished
             writeLog($msg = "Sequence error, answer given after quiz was finished");
             return $this->redirect(['site/finished']);
         }
 
-        // check order
         if ($no_answered != $submission['no_answered']) {
-            // and answer was given on question n while the submission status expects an answer on question n+m
-            writeLog("Sequence error: ${submission['id']}, ${submission['quiz_id']}, ${submission['thisQuestion']}");
+            writeLog("Sequence error: {$submission['id']}, {$submission['quiz_id']}, {$submission['thisQuestion']}");
             Yii::$app->session->setFlash('error', 'Sequence error: question is already answered!');
             return $this->redirect(['site/question']);
         }
@@ -238,7 +230,7 @@ class SiteController extends Controller
         }
 
         $sql = "insert into log (submission_id, quiz_id, question_id, answer_no, correct, no_answered)
-                values (${submission['id']}, ${submission['quiz_id']}, ${submission['thisQuestion']},
+                values ({$submission['id']}, {$submission['quiz_id']}, {$submission['thisQuestion']},
                         $givenAnswer, $punt, $no_answered )
                 ";
         $log = Yii::$app->db->createCommand($sql)->execute();
@@ -251,7 +243,6 @@ class SiteController extends Controller
                 where token = '" . $this->getToken() . "'";
         $question = Yii::$app->db->createCommand($sql)->execute();
 
-        // are we ready? The $submission has the status before the update, therefor we add 1
         if ($submission['no_answered'] + 1 == $submission['no_questions']) {
             $sql = "update submission set end_time = NOW(), finished=1 where token = '" . $this->getToken() . "'";
             $question = Yii::$app->db->createCommand($sql)->execute();
@@ -277,7 +268,6 @@ class SiteController extends Controller
         $submission = Submission::find()
             ->where(['submission.token' => $token])
             ->joinWith('quiz')
-            // ->andWhere(['quiz.active' => 1])
             ->one();
 
         if (!isset($submission['id'])) {

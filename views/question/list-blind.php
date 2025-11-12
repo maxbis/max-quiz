@@ -42,13 +42,6 @@ require_once Yii::getAlias('@app/views/include/functions.php');
             border-left: 2px solid lightgray;
             padding-left: 10px;
         }
-
-        .quiz-button {
-            font-size: 10px;
-            padding: 2px 5px;
-            margin-left: 10px;
-            min-width: 55px;
-        }
     </style>
 </head>
 

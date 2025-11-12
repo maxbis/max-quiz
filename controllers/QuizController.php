@@ -52,22 +52,6 @@ class QuizController extends Controller
         );
     }
 
-    /**
-     * Lists all Quiz models.
-     *
-     * @return string
-     */
-    // public function actionIndex2()
-    // {
-    //     $searchModel = new QuizSearch();
-    //     $dataProvider = $searchModel->search($this->request->queryParams);
-
-    //     return $this->render('index', [
-    //         'searchModel' => $searchModel,
-    //         'dataProvider' => $dataProvider,
-    //     ]);
-    // }
-
     private function updateQuestionNumbers()
     {
         $sql = "UPDATE quiz
@@ -84,7 +68,7 @@ class QuizController extends Controller
         Yii::$app->db->createCommand($sql)->execute();
     }
 
-    public function actionIndex($reset=false)
+    public function actionIndex($reset=false, $show='active')
     {
         if ( $reset) {
             $sql="update quiz set active=0";
@@ -107,14 +91,24 @@ class QuizController extends Controller
             $quizTakenCounts[$result['quiz_id']] = (int) $result['taken_count'];
         }
 
+        // Filter based on archived status
+        $archiveFilter = '';
+        if ($show === 'active') {
+            $archiveFilter = ' WHERE archived = 0';
+        } elseif ($show === 'archived') {
+            $archiveFilter = ' WHERE archived = 1';
+        }
+        // If $show === 'all', no filter is applied
+
         // sort on names containing a . first and second on name
-        $sql = "select * from quiz order by CASE WHEN name LIKE '%.%' THEN 1 ELSE 2 END, name";
+        $sql = "select * from quiz" . $archiveFilter . " order by CASE WHEN name LIKE '%.%' THEN 1 ELSE 2 END, name";
         $quizes = Yii::$app->db->createCommand($sql)->queryAll();
 
         return $this->render('index2', [
             'quizCounts' => $quizCounts,
             'quizes' => $quizes,
             'quizTakenCounts' => $quizTakenCounts,
+            'showFilter' => $show,
         ]);
     }
 
@@ -133,7 +127,7 @@ class QuizController extends Controller
                     Quiz::updateAll(['active' => 0], ['!=', 'id', $model->id]);
                 }
                 if ($model->save()) {
-                    return $this->redirect(['index', 'id' => $model->id]);
+                    return $this->redirect(['question/index', 'quiz_id' => $model->id]);
                 }
             } else {
                 $model->loadDefaultValues();
@@ -150,9 +144,6 @@ class QuizController extends Controller
         $model = $this->findModel($id);
 
         if ($this->request->isPost && $model->load($this->request->post())) {
-            // if ( $model->active == 1 ) {
-            //     Quiz::updateAll(['active' => 0], ['!=', 'id', $model->id]);
-            // }
             try {
                 if ($model->save()) {
                     return $this->redirect(['index', 'id' => $model->id]);
@@ -186,6 +177,32 @@ class QuizController extends Controller
         $this->findModel($id)->delete();
 
         return $this->redirect(['index', 'show' => $show]);
+    }
+
+    /**
+     * Toggle archive status of a quiz
+     * @param int $id Quiz ID
+     * @return \yii\web\Response
+     */
+    public function actionToggleArchive($id)
+    {
+        $model = $this->findModel($id);
+        $model->archived = $model->archived ? 0 : 1;
+        
+        // If archiving, also deactivate the quiz
+        if ($model->archived) {
+            $model->active = 0;
+        }
+        
+        if ($model->save(false)) {
+            Yii::$app->session->setFlash('success', 
+                $model->archived ? 'Quiz archived successfully.' : 'Quiz restored successfully.'
+            );
+        } else {
+            Yii::$app->session->setFlash('error', 'Failed to update quiz archive status.');
+        }
+
+        return $this->redirect(['index']);
     }
 
     /**
@@ -237,7 +254,7 @@ class QuizController extends Controller
         $questionIds = Yii::$app->db->createCommand($sql)->queryAll();
 
         foreach ($questionIds as $thisQuestionId) {
-            $sql = "insert into quizquestion (quiz_id, question_id, active) values ($newId, ${thisQuestionId['question_id']}, 1)";
+            $sql = "insert into quizquestion (quiz_id, question_id, active) values ($newId, {$thisQuestionId['question_id']}, 1)";
             Yii::$app->db->createCommand($sql)->execute();
         }
 

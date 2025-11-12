@@ -8,13 +8,36 @@ use yii\grid\GridView;
 use yii\grid\CheckboxColumn;
 use yii\widgets\ActiveForm;
 
+// Register the custom dialog asset bundle
+app\assets\CustomDialogAsset::register($this);
+
 /** @var yii\web\View $this */
 /** @var app\models\QuestionSearch $searchModel */
 /** @var yii\data\ActiveDataProvider $dataProvider */
 
-$this->title = 'All Questions';
+// $this->title = 'All Questions';
 // $this->params['breadcrumbs'][] = $this->title;
-echo "<p style='color:#909090;font-size:16px;'>".$this->title.'</p>';
+// echo "<p style='color:#909090;font-size:12px;margin-top:20px;'>" . $this->title . '</p>';
+
+// Make entire table rows clickable
+$script = <<< JS
+    $(document).ready(function() {
+        $('.grid-view tbody tr').click(function(e) {
+            // Don't trigger if clicking on delete button or other interactive elements
+            if ($(e.target).hasClass('delete-question-btn') ||
+                $(e.target).closest('a[href*="delete"]').length > 0) {
+                return;
+            }
+            
+            // Find the question link in this row and click it
+            var questionLink = $(this).find('a[href*="update"]').first();
+            if (questionLink.length > 0) {
+                window.location.href = questionLink.attr('href');
+            }
+        });
+    });
+JS;
+$this->registerJs($script);
 ?>
 
 <style>
@@ -40,14 +63,24 @@ echo "<p style='color:#909090;font-size:16px;'>".$this->title.'</p>';
         display: block;
     }
 
-    .quiz-button {
-        font-size: 12px;
-        padding: 2px 5px;
-        min-width: 55px;
-        margin: 5px;
+    /* Make table rows clickable and hover-friendly */
+    .grid-view tbody tr {
+        cursor: pointer;
+        transition: background-color 0.2s ease;
+    }
+
+    .grid-view tbody tr:hover {
+        background-color: #f8f9fa;
+    }
+
+    .grid-view tbody tr:hover td {
+        background-color: transparent;
+    }
+
+    .question-index {
+        margin-top: 20px;
     }
 </style>
-
 
 <div class="question-index">
 
@@ -83,6 +116,7 @@ echo "<p style='color:#909090;font-size:16px;'>".$this->title.'</p>';
             ],
             [
                 'attribute' => 'question',
+                'format' => 'raw',
                 'value' => function ($model) {
                     $pattern = '/<pre>(.*?)<\/pre>(.*)/s';
                     if (preg_match($pattern, $model->question, $matches)) {
@@ -90,7 +124,12 @@ echo "<p style='color:#909090;font-size:16px;'>".$this->title.'</p>';
                     } else {
                         $questionText = $model->question;
                     }
-                    return mb_substr($questionText, 0, 100) . (mb_strlen($questionText) > 100 ? '...' : '');
+                    $truncatedText = mb_substr($questionText, 0, 100) . (mb_strlen($questionText) > 100 ? '...' : '');
+                    $editUrl = Url::toRoute(['update', 'id' => $model->id]);
+                    return Html::a($truncatedText, $editUrl, [
+                        'style' => 'color: #0a58ca; text-decoration: none; cursor: pointer;',
+                        'title' => 'Click to edit this question'
+                    ]);
                 },
             ],
             // [
@@ -103,11 +142,12 @@ echo "<p style='color:#909090;font-size:16px;'>".$this->title.'</p>';
                 'attribute' => 'label',
                 'label' => 'Label',
                 'headerOptions' => ['style' => 'width:180px;'],
+                'contentOptions' => ['style' => 'color: #404080;'],
             ],
             [
                 'attribute' => 'id',
                 'label' => 'id',
-                'headerOptions' => ['style' => 'width:80px;'],
+                'headerOptions' => ['style' => 'width:30px;'],
                 'contentOptions' => function ($model) {
                     return [
                         'class' => 'multiline-tooltip',
@@ -117,16 +157,66 @@ echo "<p style='color:#909090;font-size:16px;'>".$this->title.'</p>';
                 },
             ],
             [
-                'class' => ActionColumn::className(),
-                'headerOptions' => ['style' => 'width:80px;'],
-                'urlCreator' => function ($action, Question $model, $key, $index, $column) {
-                    return Url::toRoute([$action, 'id' => $model->id]);
-                }
+                'label' => 'Actions',
+                'headerOptions' => ['style' => 'width:60px;'],
+                'contentOptions' => ['style' => 'text-align: center;'],
+                'format' => 'raw',
+                'value' => function ($model) {
+                    return Html::button('🗑️', [
+                        'title' => 'Delete this question',
+                        'style' => 'color: #dc3545; text-decoration: none; font-size: 16px; background: none; border: none; cursor: pointer;',
+                        'class' => 'delete-question-btn',
+                        'data-question-id' => $model->id,
+                        'data-question-text' => mb_substr(strip_tags($model->question), 0, 50) . '...'
+                    ]);
+                },
             ],
         ],
     ]);
     ?>
 </div>
+
+<!-- Include the reusable custom dialog component -->
+<?= $this->render('@app/views/include/_custom-dialog.php') ?>
+
+<?php
+// Handle delete question button click with custom dialog
+$csrfToken = Yii::$app->request->getCsrfToken();
+$deleteQuestionScript = <<<JS
+$(document).ready(function() {
+    $('.delete-question-btn').on('click', function(e) {
+        e.preventDefault();
+        
+        var questionId = $(this).data('question-id');
+        var questionText = $(this).data('question-text');
+        
+        window.showCustomDialog(
+            '❌ Delete Question',
+            'Are you sure you want to delete this question?<br><br><strong>Question preview:</strong><br><em>' + questionText + '</em><br><br><span style="color:#dc3545;">⚠️ Warning: This action cannot be undone!</span>',
+            function() {
+                // Create a hidden form to submit the POST request
+                var form = $('<form>', {
+                    'method': 'POST',
+                    'action': '/question/delete?id=' + questionId
+                });
+                
+                // Add CSRF token
+                form.append($('<input>', {
+                    'type': 'hidden',
+                    'name': '_csrf',
+                    'value': '$csrfToken'
+                }));
+                
+                // Append to body and submit
+                form.appendTo('body').submit();
+            }
+        );
+    });
+});
+JS;
+
+$this->registerJs($deleteQuestionScript);
+?>
 
 <div id="button-bar" style="display:block;">
     <p>

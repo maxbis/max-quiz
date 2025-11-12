@@ -1,0 +1,279 @@
+/**
+ * Standardized Button Styles for Max-Quiz Application
+ * 
+ * This file defines consistent button styling across the entire application.
+ * Use these classes instead of inline styles for better maintainability.
+ * 
+ * Button Sizes:
+ * - .quiz-button: Normal size for primary actions (Create, Save, etc.)
+ * - .quiz-button-small: Small size for secondary/table actions (Edit, View, Delete, etc.)
+ * 
+ * Button Colors: Use Bootstrap variants (btn-outline-primary, btn-outline-success, etc.)
+ */
+
+/* ============================================
+   PRIMARY BUTTON - Normal Size
+   Use for: Main page actions, primary CTAs
+   ============================================ */
+.quiz-button {
+    font-size: 14px;
+    padding: 8px 16px;
+    min-width: 80px;
+    margin: 5px;
+    font-weight: 500;
+    border-radius: 4px;
+    transition: all 0.2s ease;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 4px;
+    text-decoration: none;
+    cursor: pointer;
+    vertical-align: middle;
+}
+
+.quiz-button:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.15);
+}
+
+.quiz-button:active {
+    transform: translateY(0);
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.12);
+}
+
+/* ============================================
+   SECONDARY BUTTON - Small Size
+   Use for: Table actions, toolbar utilities
+   ============================================ */
+.quiz-button-small {
+    font-size: 12px;
+    padding: 4px 10px;
+    min-width: 60px;
+    margin: 3px;
+    font-weight: 500;
+    border-radius: 3px;
+    transition: all 0.2s ease;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 3px;
+    text-decoration: none;
+    cursor: pointer;
+    vertical-align: middle;
+}
+
+.quiz-button-small:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.12);
+}
+
+.quiz-button-small:active {
+    transform: translateY(0);
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+}
+
+/* ============================================
+   BUTTON GROUP ADJUSTMENTS
+   ============================================ */
+.btn-group .quiz-button,
+.btn-group .quiz-button-small {
+    margin: 0;
+}
+
+.btn-group .quiz-button-small.dropdown-toggle {
+    vertical-align: top !important;
+    margin-top: 0 !important;
+    margin-bottom: 0 !important;
+}
+
+/* ============================================
+   SPECIFIC BUTTON VARIANTS
+   Use these for special purposes
+   ============================================ */
+
+/* Modal buttons */
+.btn-modal {
+    padding: 10px 25px;
+    border: none;
+    border-radius: 5px;
+    font-size: 14px;
+    font-weight: bold;
+    cursor: pointer;
+    transition: background-color 0.3s;
+}
+
+.btn-modal-primary {
+    background-color: #4CAF50;
+    color: white;
+}
+
+.btn-modal-primary:hover {
+    background-color: #45a049;
+}
+
+.btn-modal-secondary {
+    background-color: #e0e0e0;
+    color: #333;
+}
+
+.btn-modal-secondary:hover {
+    background-color: #d0d0d0;
+}
+
+/* Submit button (for forms) */
+.btn-submit {
+    background-color: #4CAF50;
+    color: white;
+    padding: 10px 25px;
+    border: none;
+    border-radius: 5px;
+    font-size: 14px;
+    font-weight: bold;
+    cursor: pointer;
+    transition: background-color 0.3s;
+}
+
+.btn-submit:hover {
+    background-color: #45a049;
+}
+
+/* Back/Cancel button */
+.btn-back {
+    background-color: #666;
+    color: white;
+    padding: 10px 25px;
+    border: none;
+    border-radius: 5px;
+    font-size: 14px;
+    cursor: pointer;
+    margin-left: 10px;
+    text-decoration: none;
+    display: inline-block;
+}
+
+.btn-back:hover {
+    background-color: #555;
+    color: white;
+    text-decoration: none;
+}
+
+/* Sort labels button */
+.btn-sort-labels {
+    background-color: #2196F3;
+    color: white;
+    padding: 8px 20px;
+    border: none;
+    border-radius: 5px;
+    font-size: 14px;
+    font-weight: bold;
+    cursor: pointer;
+    transition: background-color 0.3s;
+}
+
+.btn-sort-labels:hover {
+    background-color: #0b7dda;
+}
+
+/* ============================================
+   COLOR OVERRIDES FOR BOOTSTRAP VARIANTS
+   Enhance the default Bootstrap outline buttons
+   ============================================ */
+
+/* Primary (Blue) */
+.btn-outline-primary.quiz-button,
+.btn-outline-primary.quiz-button-small {
+    color: #0a58ca;
+    border-color: #0a58ca;
+}
+
+.btn-outline-primary.quiz-button:hover,
+.btn-outline-primary.quiz-button-small:hover {
+    background-color: #0a58ca;
+    border-color: #0a58ca;
+    color: white;
+}
+
+/* Success (Green) */
+.btn-outline-success.quiz-button,
+.btn-outline-success.quiz-button-small {
+    color: #198754;
+    border-color: #198754;
+}
+
+.btn-outline-success.quiz-button:hover,
+.btn-outline-success.quiz-button-small:hover {
+    background-color: #198754;
+    border-color: #198754;
+    color: white;
+}
+
+/* Danger (Red) */
+.btn-outline-danger.quiz-button,
+.btn-outline-danger.quiz-button-small {
+    color: #dc3545;
+    border-color: #dc3545;
+}
+
+.btn-outline-danger.quiz-button:hover,
+.btn-outline-danger.quiz-button-small:hover {
+    background-color: #dc3545;
+    border-color: #dc3545;
+    color: white;
+}
+
+/* Secondary (Gray) */
+.btn-outline-secondary.quiz-button,
+.btn-outline-secondary.quiz-button-small {
+    color: #6c757d;
+    border-color: #6c757d;
+}
+
+.btn-outline-secondary.quiz-button:hover,
+.btn-outline-secondary.quiz-button-small:hover {
+    background-color: #6c757d;
+    border-color: #6c757d;
+    color: white;
+}
+
+/* Dark */
+.btn-outline-dark.quiz-button,
+.btn-outline-dark.quiz-button-small {
+    color: #212529;
+    border-color: #212529;
+}
+
+.btn-outline-dark.quiz-button:hover,
+.btn-outline-dark.quiz-button-small:hover {
+    background-color: #212529;
+    border-color: #212529;
+    color: white;
+}
+
+/* ============================================
+   RESPONSIVE ADJUSTMENTS
+   ============================================ */
+@media (max-width: 768px) {
+    .quiz-button {
+        font-size: 13px;
+        padding: 6px 12px;
+        min-width: 70px;
+    }
+    
+    .quiz-button-small {
+        font-size: 11px;
+        padding: 3px 8px;
+        min-width: 50px;
+    }
+}
+
+/* ============================================
+   DISABLED STATE
+   ============================================ */
+.quiz-button:disabled,
+.quiz-button-small:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+    pointer-events: none;
+}
+

@@ -97,9 +97,10 @@ class QuestionController extends Controller
 
         $keysShown = $dataProvider->getKeys();
 
-        $sql = "SELECT question_id FROM quizquestion WHERE quiz_id = $quiz_id AND active = 1";
+        $sql = "SELECT question_id FROM quizquestion WHERE quiz_id = $quiz_id AND active = 1 ORDER BY COALESCE(`order`, 0) ASC, question_id ASC";
         $quizQuestions = Yii::$app->db->createCommand($sql)->queryAll();
         $questionIds = ArrayHelper::getColumn($quizQuestions, 'question_id');
+
 
         $sql = "SELECT * FROM quiz WHERE id = $quiz_id";
         $quiz = Yii::$app->db->createCommand($sql)->queryOne();
@@ -124,14 +125,7 @@ class QuestionController extends Controller
      * @return string
      * @throws NotFoundHttpException if the model cannot be found
      */
-    public function actionViewOld($id)
-    {
-        return $this->render('view', [
-            'model' => $this->findModel($id),
-        ]);
-    }
-
-    public function actionView($id)
+    public function actionView($id, $quiz_id = null, $returnUrl = null)
     {
         $submission = [
             'id' => 0,
@@ -146,9 +140,20 @@ class QuestionController extends Controller
         $sql = "select * from question where id=" . $id;
         $question = Yii::$app->db->createCommand($sql)->queryOne();
 
-        $returnUrl = Yii::$app->request->referrer;
-        if (strpos($returnUrl, 'index') !== false) { // if the referrer is the view itself, back should not refer to the prev view  
-            Yii::$app->session->set('viewReturnUrl', $returnUrl);
+        // Determine the return URL based on returnUrl parameter
+        if ($returnUrl === 'edit-labels' && $quiz_id !== null) {
+            $backUrl = Yii::$app->urlManager->createUrl(['quiz/edit-labels', 'id' => $quiz_id]);
+        } elseif ($returnUrl === 'index' && $quiz_id !== null) {
+            $backUrl = Yii::$app->urlManager->createUrl(['question/index', 'quiz_id' => $quiz_id]);
+        } elseif ($returnUrl !== null && $returnUrl !== '') {
+            // Use the provided returnUrl as-is (full URL)
+            $backUrl = $returnUrl;
+        } else {
+            // Fallback to referrer-based logic
+            $backUrl = Yii::$app->request->referrer;
+            if (strpos($backUrl, 'index') !== false) { // if the referrer is the view itself, back should not refer to the prev view  
+                Yii::$app->session->set('viewReturnUrl', $backUrl);
+            }
         }
 
         if (!$question) {
@@ -156,7 +161,14 @@ class QuestionController extends Controller
         }
 
         $this->layout = false;
-        return $this->render('/site/question', ['title' => 'Quiz [expl-adm]', 'question' => $question, 'submission' => $submission]);
+        return $this->render('/site/question', [
+            'title' => 'Quiz [expl-adm]', 
+            'question' => $question, 
+            'submission' => $submission, 
+            'returnUrl' => $backUrl,
+            'returnUrlParam' => $returnUrl,
+            'quiz_id' => $quiz_id
+        ]);
     }
 
     /**
@@ -189,7 +201,7 @@ class QuestionController extends Controller
         ]);
     }
 
-    public function actionCopy($id)
+    public function actionCopy($id, $quiz_id = null)
     {
         $model = $this->findModel($id);
 
@@ -198,8 +210,32 @@ class QuestionController extends Controller
         $newModel->question = "(Copy)\n" . $model->question;
 
         if ($newModel->save()) {
-            Yii::$app->session->setFlash('success', 'Question copied successfully.');
-            return $this->redirect(['update', 'id' => $newModel->primaryKey]);
+            // If quiz_id is provided, add the copied question to the current quiz
+            if ($quiz_id) {
+                // Get the maximum sort order for this quiz
+                $maxOrder = Quizquestion::find()
+                    ->where(['quiz_id' => $quiz_id])
+                    ->max('`order`');
+                
+                $nextOrder = ($maxOrder !== null) ? $maxOrder + 1 : 1;
+                
+                // Create the quiz-question relationship
+                $quizquestion = new Quizquestion();
+                $quizquestion->quiz_id = $quiz_id;
+                $quizquestion->question_id = $newModel->id;
+                $quizquestion->order = $nextOrder;
+                $quizquestion->active = 1;
+                
+                if ($quizquestion->save()) {
+                    Yii::$app->session->setFlash('success', "Question copied successfully and added to quiz with sort order {$nextOrder}.");
+                } else {
+                    Yii::$app->session->setFlash('warning', 'Question copied but failed to add to quiz.');
+                }
+            } else {
+                Yii::$app->session->setFlash('success', 'Question copied successfully.');
+            }
+            
+            return $this->redirect(['update', 'id' => $newModel->primaryKey, 'quiz_id' => $quiz_id]);
         } else {
             Yii::$app->session->setFlash('error', 'There was an error copying the question.');
             return $this->redirect(['view', 'id' => $id]);
@@ -213,7 +249,7 @@ class QuestionController extends Controller
      * @return string|\yii\web\Response
      * @throws NotFoundHttpException if the model cannot be found
      */
-    public function actionUpdate($id, $quiz_id = null)
+    public function actionUpdate($id, $quiz_id = null, $show_archived = 0)
     {
         $model = $this->findModel($id);
 
@@ -230,10 +266,14 @@ class QuestionController extends Controller
             $currentOrder = $result ? $result['order'] : 0;
         }
 
-        $sql = "select q.id, q.name, qq.active from quiz q
+        // Filter archived quizzes by default (show_archived = 0 means show only active quizzes)
+        $archiveFilter = $show_archived ? '' : ' WHERE q.archived = 0';
+        
+        $sql = "select q.id, q.name, qq.active, q.archived from quiz q
             left join quizquestion qq on qq.quiz_id = q.id 
-            and qq.active = 1 and qq.question_id=$id
-            order by q.name ASC";
+            and qq.active = 1 and qq.question_id=$id"
+            . $archiveFilter .
+            " order by q.name ASC";
         $questionLinks = Yii::$app->db->createCommand($sql)->queryAll();
 
         if ($this->request->isPost && $model->load($this->request->post())) {
@@ -285,6 +325,7 @@ class QuestionController extends Controller
             'questionLinks' => $questionLinks,
             'quiz_id' => $quiz_id,
             'currentOrder' => $currentOrder,
+            'show_archived' => $show_archived,
         ]);
     }
 
@@ -297,10 +338,6 @@ class QuestionController extends Controller
      */
     public function actionDelete($id, $show = null)
     {
-
-        // $sql = "delete from quizquestion where question_id=$id";
-        // Yii::$app->db->createCommand($sql)->execute();
-
         $sql = "SELECT count(*) count FROM quizquestion where active = 1 and question_id = $id";
         $result = Yii::$app->db->createCommand($sql)->queryOne();
 
@@ -348,8 +385,6 @@ class QuestionController extends Controller
                 order by COALESCE(qq.order, 0) ASC, id ASC";
         $questions = Yii::$app->db->createCommand($sql)->queryAll();
 
-        // $sql = "select question_id id, sum(answer_no) answer, sum(correct) correct from log where quiz_id = $quiz_id group by 1";
-
         $sql = "select l.question_id id, sum(1) answer, sum(l.correct) correct
                 from log l
                 join submission s on s.id = l.submission_id
@@ -358,7 +393,6 @@ class QuestionController extends Controller
         $log = Yii::$app->db->createCommand($sql)->queryAll();
 
         $logItems = [];
-
         foreach ($log as $item) {
             $logItems[$item['id']] = [
                 'answer' => $item['answer'],
@@ -366,7 +400,7 @@ class QuestionController extends Controller
             ];
         }
 
-        $sql = "select name from quiz where id=$quiz_id";
+        $sql = "select id, name from quiz where id=$quiz_id";
         $quiz = Yii::$app->db->createCommand($sql)->queryOne();
 
         return $this->render($view, [
@@ -383,6 +417,71 @@ class QuestionController extends Controller
         return $this->render('import', ['input' => $input, 'quiz' => $quiz]);
     }
 
+    private function validateBulkInputSyntax($input)
+    {
+        $lines = explode("\n", $input);
+        $errors = [];
+        $questionCount = 0;
+        $currentQuestion = 0;
+        $hasQuestion = false;
+        $hasCorrectAnswer = false;
+        $hasAtLeastOneAnswer = false;
+        $currentSection = '';
+        $questionText = '';
+        
+        foreach ($lines as $lineNum => $line) {
+            $lineNum++; // Convert to 1-based line numbers
+            $token = substr($line, 0, 2);
+            
+            if ($token == 'QQ') {
+                $currentQuestion++;
+                $hasQuestion = false;
+                $hasCorrectAnswer = false;
+                $hasAtLeastOneAnswer = false;
+                $currentSection = 'question';
+                $questionText = '';
+            } elseif ($token == 'AC') {
+                $hasCorrectAnswer = true;
+                $hasAtLeastOneAnswer = true;
+                $currentSection = 'answer';
+            } elseif ($token == 'AA') {
+                $hasAtLeastOneAnswer = true;
+                $currentSection = 'answer';
+            } elseif ($token == 'LL' || $token == 'ID') {
+                $currentSection = 'label';
+            } else {
+                // This is content for the current section
+                if ($currentSection == 'question') {
+                    $questionText .= $line . "\n";
+                    if (!empty(trim($line))) {
+                        $hasQuestion = true;
+                    }
+                }
+                // Empty lines are allowed as content
+            }
+        }
+        
+        // Check if we have at least one question
+        if ($currentQuestion == 0) {
+            $errors[] = "No questions found. Each question must start with 'QQ' on a new line.";
+        }
+        
+        // Check if the last question is complete
+        if ($currentQuestion > 0 && !$hasQuestion) {
+            $errors[] = "Question $currentQuestion is missing question text after 'QQ'.";
+        }
+        
+        if ($currentQuestion > 0 && !$hasCorrectAnswer) {
+            $errors[] = "Question $currentQuestion is missing correct answer (must have 'AC' section).";
+        }
+        
+        if ($currentQuestion > 0 && !$hasAtLeastOneAnswer) {
+            $errors[] = "Question $currentQuestion must have at least one answer option.";
+        }
+        
+        return $errors;
+    }
+
     private function parseBulkInput($input)
     {
         $lines = explode("\n", $input);
@@ -394,15 +493,13 @@ class QuestionController extends Controller
         $answerIndex = 1;
 
         $trimEmptyLines = function ($text) {
-            $trimmedText = preg_replace('/^\h*\v+/m', '', $text); // Remove empty lines from the beginning of the text
-            $trimmedText = preg_replace('/\v+\h*$/m', '', $trimmedText); // Remove empty lines from the end of the text
+            $trimmedText = preg_replace('/^\h*\v+/m', '', $text);
+            $trimmedText = preg_replace('/\v+\h*$/m', '', $trimmedText);
             return $trimmedText;
         };
 
         foreach ($lines as $line) {
-            # $line = chop($line);
             $token = substr($line, 0, 2);
-            // _d(['Newline token, line, currentQuestion, curretnData, currentKey',$token, $line, $thisQuestion, $currentData, $currentKey]);
             if ($token == 'QQ') {
                 if ($currentKey && $currentData) {
                     $thisQuestion[$currentKey] = $trimEmptyLines($currentData);
@@ -438,7 +535,6 @@ class QuestionController extends Controller
                 $currentKey = "id";
                 $currentData = "";
             } else {
-                // remove empty lines if token <> QQ
                 if ($currentKey <> "question") {
                     $currentData .= rtrim($line, "\n\r");
                 } else {
@@ -449,9 +545,8 @@ class QuestionController extends Controller
         if ($currentData) {
             $thisQuestion[$currentKey] = $trimEmptyLines($currentData);
         }
-        array_push($questions, $thisQuestion); // save the last question
+        array_push($questions, $thisQuestion);
 
-        // dd($questions);
         return $questions;
     }
 
@@ -462,8 +557,20 @@ class QuestionController extends Controller
             $bulkInput = Yii::$app->request->post('bulkInput');
             $action = Yii::$app->request->post('action', null);
             $quiz_id = Yii::$app->request->post('quiz_id');
-            $parsedQuestions = $this->parseBulkInput($bulkInput);
             $label = Yii::$app->request->post('label');
+
+            // First validate the syntax
+            $syntaxErrors = $this->validateBulkInputSyntax($bulkInput);
+            
+            if (!empty($syntaxErrors)) {
+                // Show syntax errors and return to import screen
+                $errorMessage = "Import syntax errors found:\n" . implode("\n", $syntaxErrors);
+                Yii::$app->session->setFlash('error', $errorMessage);
+                return $this->redirect(['import', 'quiz_id' => $quiz_id, 'input' => $bulkInput]);
+            }
+
+            // If syntax is valid, proceed with import
+            $parsedQuestions = $this->parseBulkInput($bulkInput);
 
             foreach ($parsedQuestions as $questionData) {
                 $no_succes += $this->insertQuestion($questionData, $action, $quiz_id, $label);
@@ -475,7 +582,7 @@ class QuestionController extends Controller
         }
         Yii::$app->session->setFlash('success', ' Question(s) imported: ' . $no_succes);
 
-        return $this->redirect(['/quiz/index']);
+        return $this->redirect(['index', 'quiz_id' => $quiz_id]);
     }
 
 
@@ -491,12 +598,6 @@ class QuestionController extends Controller
         }
         if ($question === null) { // nothing to update
             $questionText = rtrim($questionData['question'], "\r\n");
-
-            // Check for duplicate - oops sometimes questions are the same!
-            // $existingQuestion = Question::find()->where(['like', 'question', $questionText . '%', false])->one();
-            // if ($existingQuestion !== null) {
-            //     return -1;
-            // }
             $question = new Question();
         }
 
@@ -514,12 +615,9 @@ class QuestionController extends Controller
             $question->label = $questionData['label'] ?? 'Imported';
         }
 
-        // dd($question);
-
         if ($question->save()) {
             $succes++;
             if ($quiz_id) {
-                // connect question to quiz
                 $exists = Quizquestion::findOne(['quiz_id' => $quiz_id, 'question_id' => $question->id]);
                 if ($exists === null) {
                     $quizQuestion = new Quizquestion();
@@ -550,11 +648,6 @@ class QuestionController extends Controller
             }
         }
 
-
-        // ToDO select only quetions for this quiz, join with quizquestion
-        // $sql = "select * from question";
-        // where qq.quiz_id=$quiz_id and qq.active=1
-
         $sql = "select
                 q.id id, question question, a1, a2, a3, a4, a5, a6, correct, label, qq.order
                 from question q
@@ -580,7 +673,7 @@ class QuestionController extends Controller
         return $this->render('export', ['output' => $output]);
     }
 
-    public function actionPdf($quiz_id)
+    public function actionPdf($quiz_id, $filename = null)
     {
         if ($quiz_id == "") {
             $sql = "SELECT max(id) id FROM quiz WHERE active = 1";
@@ -607,6 +700,27 @@ class QuestionController extends Controller
                 order by COALESCE(qq.order, 0) ASC, id ASC";
 
         $questions = Yii::$app->db->createCommand($sql)->queryAll();
+
+        $badQuestions = [];
+
+        foreach ($questions as $question) {
+            $issues = $this->validateAllowedTags($question['question']);
+            if (!empty($issues)) {
+                $badQuestions[$question['id']] = $issues;
+            }
+        }
+
+        if (!empty($badQuestions)) {
+            $messages = [];
+            foreach ($badQuestions as $id => $issues) {
+                $messages[] = "Question $id: " . implode(' ', $issues);
+            }
+            Yii::$app->session->setFlash(
+                'error',
+                "PDF export aborted. Fix the markup before retrying:\n" . implode("\n", $messages)
+            );
+            return $this->redirect(['question/index', 'quiz_id' => $quiz_id]);
+        }
 
         // Generate PDF using mPDF
         $mpdf = new \Mpdf\Mpdf([
@@ -635,18 +749,30 @@ class QuestionController extends Controller
             'questions' => $questions,
         ]);
 
+        // echo "<pre>";
+        // print_r($html);
+        // exit;
+
         // Write HTML to PDF
         $mpdf->WriteHTML($html);
 
-        // Output PDF
-        $filename = 'quiz_' . $quiz_id . '_' . date('Ymd_His') . '.pdf';
+        // Output PDF with custom or default filename
+        if ($filename === null || trim($filename) === '') {
+            $filename = 'quiz_' . $quiz_id . '_' . date('Ymd_His');
+        }
+        // Sanitize filename (remove invalid characters)
+        $filename = preg_replace('/[^a-zA-Z0-9_-]/', '_', $filename);
+        // Add .pdf extension if not present
+        if (substr($filename, -4) !== '.pdf') {
+            $filename .= '.pdf';
+        }
+        
         $mpdf->Output($filename, 'D'); // 'D' for download
         exit;
     }
 
     public function actionBulkDelete($quiz_id)
     {
-        _dd('Not available, only for testing');
         $sql = "delete from question where id in (
                     select q.id from question q
                     join quizquestion qq on qq.question_id = q.id
@@ -663,7 +789,8 @@ class QuestionController extends Controller
                 )";
         Yii::$app->db->createCommand($sql)->execute();
 
-        return $this->redirect(['/quiz']);
+        Yii::$app->session->setFlash('success', 'All linked questions have been deleted successfully.');
+        return $this->redirect(['question/index', 'quiz_id' => $quiz_id]);
     }
 
     public function actionDeleteMultiple()
@@ -728,13 +855,29 @@ class QuestionController extends Controller
         $results = $this->openAI($prompt);
 
         return $this->render('import', ['input' => $results, 'quiz' => null]);
-        dd($response->data);
-
     }
+
+    private function validateAllowedTags($html, $allowedTags = ['pre', 'code', 'i', 'b'])
+    {
+        $errors = [];
+
+        foreach ($allowedTags as $tag) {
+            $openMatches = [];
+            $closeMatches = [];
+
+            $openCount = preg_match_all('/<' . $tag . '\\b[^>]*>/i', $html, $openMatches);
+            $closeCount = preg_match_all('/<\/' . $tag . '>/i', $html, $closeMatches);
+
+            if ($openCount !== $closeCount) {
+                $errors[] = "Tag <{$tag}> is unbalanced ({$openCount} open vs {$closeCount} close).";
+            }
+        }
+
+        return $errors;
+    }
+
     private function openAI($prompt)
     {
-        //$apiKey = Yii::$app->params['openApiKey'];
-
         $secret = require __DIR__ . '/../config/secret.php';
         $apiKey = $secret['openApiKey'];
 
@@ -765,11 +908,99 @@ class QuestionController extends Controller
             ->send();
 
             if (! isset($response->data['choices'][0]['message']['content'])) {
-               dd($$response->data);
+               dd($response->data);
             } 
         
         return $response->data['choices'][0]['message']['content'];
 
+    }
+
+    /**
+     * Generate answers for a question using LM Studio AI
+     */
+    public function actionGenerateAnswers()
+    {
+        Yii::$app->response->format = \yii\web\Response::FORMAT_JSON;
+        
+        $question = Yii::$app->request->post('question', '');
+        
+        if (empty($question)) {
+            return [
+                'success' => false,
+                'message' => 'Please enter a question first'
+            ];
+        }
+
+        try {
+            // Create HTTP client for LM Studio API
+            $client = new Client([
+                'baseUrl' => 'http://localhost:1234',
+            ]);
+
+            $prompt = "Given the following question, generate exactly 6 answers. The first answer MUST be the correct answer, and the other 5 answers should be plausible but incorrect.\n\n";
+            $prompt .= "Question: {$question}\n\n";
+            $prompt .= "Return ONLY a JSON object with this exact format (no additional text):\n";
+            $prompt .= '{"answers": ["correct answer", "wrong answer 1", "wrong answer 2", "wrong answer 3", "wrong answer 4", "wrong answer 5"]}';
+
+            $response = $client->createRequest()
+                ->setMethod('POST')
+                ->setUrl('/v1/chat/completions')
+                ->setFormat(Client::FORMAT_JSON)
+                ->setData([
+                    'model' => 'local-model',
+                    'messages' => [
+                        [
+                            'role' => 'system',
+                            'content' => 'You are a teacher and you need to help to construct a multiple choice quiz.'
+                        ],
+                        [
+                            'role' => 'user',
+                            'content' => $prompt
+                        ]
+                    ],
+                    'max_tokens' => 500,
+                    'temperature' => 0.7,
+                ])
+                ->send();
+
+            if (!$response->isOk) {
+                return [
+                    'success' => false,
+                    'message' => 'AI service error: ' . $response->statusCode
+                ];
+            }
+
+            $content = $response->data['choices'][0]['message']['content'] ?? '';
+            
+            // Try to extract JSON from the response
+            $content = trim($content);
+            
+            // Remove markdown code blocks if present
+            $content = preg_replace('/```json\s*/', '', $content);
+            $content = preg_replace('/```\s*/', '', $content);
+            $content = trim($content);
+            
+            $aiResponse = json_decode($content, true);
+
+            if (!isset($aiResponse['answers']) || count($aiResponse['answers']) < 6) {
+                return [
+                    'success' => false,
+                    'message' => 'AI did not return 6 answers. Please try again.'
+                ];
+            }
+
+            return [
+                'success' => true,
+                'answers' => array_slice($aiResponse['answers'], 0, 6),
+                'correct' => 1 // First answer is correct
+            ];
+
+        } catch (\Exception $e) {
+            return [
+                'success' => false,
+                'message' => 'Error connecting to AI: ' . $e->getMessage()
+            ];
+        }
     }
 
 }

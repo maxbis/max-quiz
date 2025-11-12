@@ -1,6 +1,7 @@
 <?php
 
 use yii\helpers\Html;
+use yii\helpers\Url;
 use yii\widgets\DetailView;
 
 /** @var yii\web\View $this */
@@ -10,6 +11,19 @@ $this->title = $model->id;
 $this->params['breadcrumbs'][] = ['label' => 'Questions', 'url' => ['index']];
 $this->params['breadcrumbs'][] = $this->title;
 \yii\web\YiiAsset::register($this);
+
+// Get return URL from parameter
+$returnUrl = Yii::$app->request->get('returnUrl', 'index');
+$quiz_id = Yii::$app->request->get('quiz_id');
+
+// Determine the back URL based on returnUrl parameter
+if ($returnUrl === 'edit-labels' && $quiz_id) {
+    $backUrl = ['quiz/edit-labels', 'id' => $quiz_id];
+    $backLabel = '← Back to Edit Labels';
+} else {
+    $backUrl = ['index', 'id' => $quiz_id];
+    $backLabel = '← Back to Question Index';
+}
 ?>
 
 <style>
@@ -63,6 +77,13 @@ $this->params['breadcrumbs'][] = $this->title;
 </style>
 
 <div class="question-view">
+
+    <p style="margin-bottom: 20px;">
+        <?= Html::a($backLabel, $backUrl, [
+            'class' => 'btn btn-secondary',
+            'style' => 'font-size: 14px;'
+        ]) ?>
+    </p>
 
     <h1><?= Html::encode($this->title) ?></h1>
 
@@ -160,10 +181,10 @@ $this->params['breadcrumbs'][] = $this->title;
 
     <p style="margin-top:60px;">
         <span style="margin:20px;">
-            <?= Html::a('Edit', ['update', 'id' => $model->id], ['class' => 'btn btn-success']) ?>
+            <?= Html::a('Edit', ['update', 'id' => $model->id, 'quiz_id' => $quiz_id], ['class' => 'btn btn-success']) ?>
         </span>
         <span style="margin:20px;">
-            <?= Html::a('Delete', ['delete', 'id' => $model->id], [
+            <?= Html::a('Delete', ['delete', 'id' => $model->id, 'quiz_id' => $quiz_id], [
                 'class' => 'btn btn-danger',
                 'data' => [
                     'confirm' => 'Are you sure you want to delete this item?',
@@ -172,7 +193,10 @@ $this->params['breadcrumbs'][] = $this->title;
             ]) ?>
         </span>
         <span style="margin:20px;">
-            <?= Html::a('Copy', ['copy', 'id' => $model->id], ['class' => 'btn btn-warning']) ?>
+            <?= Html::a('Copy', ['copy', 'id' => $model->id, 'quiz_id' => $quiz_id], ['class' => 'btn btn-warning']) ?>
+        </span>
+        <span style="margin:20px;">
+            <?= Html::a($backLabel, $backUrl, ['class' => 'btn btn-secondary']) ?>
         </span>
     </p>
 

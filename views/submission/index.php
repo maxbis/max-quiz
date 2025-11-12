@@ -8,6 +8,9 @@ use yii\grid\GridView;
 
 use yii\widgets\Pjax;
 
+// Register the custom dialog asset bundle
+app\assets\CustomDialogAsset::register($this);
+
 $this->title = 'Results for ' . $quizName;
 // echo "<p style='color:#909090;font-size:16px;'>".$this->title.'</p>';
 $params = Yii::$app->request->getQueryParams();
@@ -42,13 +45,6 @@ $params = Yii::$app->request->getQueryParams();
     /* Optional: Remove the bottom border from the last row */
     .condensed-table tr:last-child td {
         border-bottom: none;
-    }
-
-    .quiz-button {
-        font-size: 10px;
-        padding: 2px 5px;
-        min-width: 65px;
-        margin: 5px;
     }
 
     .delete-button {
@@ -87,7 +83,7 @@ $statusClass = $quizActive == 1 ? 'dot-green' : 'dot-red';
 ?>
 
 <div class="row">
-    <div class="col-md-9">
+    <div class="col-md-8">
         <p style='color:#909090;font-size:16px;'>
         <h3>
             <div class="dot <?= $statusClass ?>"></div>
@@ -95,27 +91,36 @@ $statusClass = $quizActive == 1 ? 'dot-green' : 'dot-red';
         </h3>
         </p>
     </div>
-    <div class="col-md-2 d-flex align-items-end">
+    <div class="col-md-4 d-flex align-items-center justify-content-end pe-0">
 
         <?php
-        $url = Yii::$app->urlManager->createUrl(['/submission/delete-unfinished', 'quiz_id' => $params['quiz_id']]);
-        echo Html::a('❌ Clean', $url, [
+        echo Html::a('🧹&nbsp;Clean', '#', [
             'title' => 'Delete Old Unfinished',
-            'class' => 'btn btn-outline-dark quiz-button',
-            'data-confirm' => 'All unfinshed submissions that are inactive for more than 2 hours will be deleted, OK?',
-            'data-method' => 'post',
+            'class' => 'btn btn-outline-dark btn-sm me-2 clean-btn',
+            'style' => 'min-width: 80px; padding: 6px 12px;',
+            'data-quiz-id' => $params['quiz_id']
         ]);
 
-        if (isset($params['quiz_id'])) { ?>
-        <span style="margin-left:20px;"></span>
-            <a href="<?= Url::to(['submission/export', 'quiz_id' => $params['quiz_id']]) ?>"
-                class="btn btn-outline-dark quiz-button" title="Export all results per student">📊&nbsp;Results</a>
-            <a href="<?= Url::to(['submission/export-stats', 'quiz_id' => $params['quiz_id']]) ?>"
-                class="btn btn-outline-dark quiz-button" title="Export the stats per question">📊 Stats</a>
-        <?php } ?>
+        if (isset($params['quiz_id'])) { 
+            echo Html::a('⬇️&nbsp;Results', '#', [
+                'class' => 'btn btn-outline-dark btn-sm me-2 export-results-btn',
+                'style' => 'min-width: 80px; padding: 6px 12px;',
+                'title' => 'Download results as CSV file',
+                'data-quiz-id' => $params['quiz_id']
+            ]);
+            echo Html::a('⬇️&nbsp;&nbsp;Stats', '#', [
+                'class' => 'btn btn-outline-dark btn-sm export-stats-btn',
+                'style' => 'min-width: 80px; padding: 6px 12px;',
+                'title' => 'Download statistics as CSV file',
+                'data-quiz-id' => $params['quiz_id']
+            ]);
+        } ?>
 
     </div>
 </div>
+
+<!-- Include the reusable custom dialog component -->
+<?= $this->render('@app/views/include/_custom-dialog.php') ?>
 
 <div>
 
@@ -377,22 +382,62 @@ $statusClass = $quizActive == 1 ? 'dot-green' : 'dot-red';
             Pjax::end();
         }
 
+        // Generate URLs and CSRF token for JavaScript
+        $cleanUrl = Url::to(['submission/delete-unfinished']);
+        $exportUrl = Url::to(['submission/export']);
+        $exportStatsUrl = Url::to(['submission/export-stats']);
+        $csrfToken = Yii::$app->request->csrfToken;
 
         $script = <<<JS
+
+            // Page-specific button handlers for the submission index page
+            // Note: The dialog functions (showCustomDialog, closeCustomDialog) are now
+            // loaded from custom-dialog.js via the CustomDialogAsset bundle
 
             $(document).on('click', '.ajax-delete', function (e) {
                 e.preventDefault();
                 var url = $(this).data('url');
                 var name = $(this).data('name');
-                if(confirm('Are you sure to delete the submission for ' + name + '?')) {
-                    $.post(url, function (data) {
-                        console.log('AJAX delete succes');
-                        location.reload(); // Reload the page or use Pjax to refresh the GridView
-                    }).fail(function () {
-                        console.log('AJAX delete error');
-                        alert('Error occurred while deleting.');
-                    });
-                }
+                window.showCustomDialog(
+                    'Delete Submission',
+                    'Are you sure to delete the submission for ' + name + '?',
+                    function() {
+                        $.post(url, function (data) {
+                            console.log('AJAX delete succes');
+                            location.reload(); // Reload the page or use Pjax to refresh the GridView
+                        }).fail(function () {
+                            console.log('AJAX delete error');
+                            alert('Error occurred while deleting.');
+                        });
+                    }
+                );
+            });
+
+            // Clean button
+            $('.clean-btn').on('click', function(e) {
+                e.preventDefault();
+                window.showCustomDialog(
+                    'Clean Unfinished Submissions',
+                    'All unfinished submissions that are inactive for more than 2 hours will be deleted. Do you want to proceed?',
+                    function() {
+                        var quizId = $('.clean-btn').data('quiz-id');
+                        // Use POST request as required by the controller
+                        $.post('$cleanUrl?quiz_id=' + quizId, {
+                            _csrf: '$csrfToken'
+                        }, function(data) {
+                            // Handle successful response
+                            if (data.success) {
+                                // Just reload to show the flash message banner
+                                location.reload();
+                            } else {
+                                alert('Error: ' + (data.message || 'Unknown error occurred'));
+                            }
+                        }).fail(function(xhr, status, error) {
+                            console.error('Clean error:', xhr.responseText);
+                            alert('Error occurred while cleaning submissions: ' + error);
+                        });
+                    }
+                );
             });
 
             var refreshIntervalId = setInterval(function () {
@@ -402,6 +447,45 @@ $statusClass = $quizActive == 1 ? 'dot-green' : 'dot-red';
             setTimeout(function() {
                 clearInterval(refreshIntervalId);
             }, 2700000); // 2700000 milliseconds = 45 minutes
+
+            // Export buttons with filename prompt
+            $('.export-results-btn').on('click', function(e) {
+                e.preventDefault();
+                var quizId = $(this).data('quiz-id');
+                var defaultName = 'quiz-results-' + quizId + '-' + new Date().toISOString().slice(0,10);
+                window.showCustomDialog(
+                    'Export Results',
+                    'Enter filename for export (without extension):',
+                    function() {
+                        var filename = $('#dialogInput').val().trim();
+                        if (filename !== '') {
+                            var url = '$exportUrl?quiz_id=' + quizId + '&filename=' + encodeURIComponent(filename);
+                            window.location.href = url;
+                        }
+                    },
+                    true,
+                    defaultName
+                );
+            });
+
+            $('.export-stats-btn').on('click', function(e) {
+                e.preventDefault();
+                var quizId = $(this).data('quiz-id');
+                var defaultName = 'quiz-stats-' + quizId + '-' + new Date().toISOString().slice(0,10);
+                window.showCustomDialog(
+                    'Export Stats',
+                    'Enter filename for export (without extension):',
+                    function() {
+                        var filename = $('#dialogInput').val().trim();
+                        if (filename !== '') {
+                            var url = '$exportStatsUrl?quiz_id=' + quizId + '&filename=' + encodeURIComponent(filename);
+                            window.location.href = url;
+                        }
+                    },
+                    true,
+                    defaultName
+                );
+            });
 
         JS;
 

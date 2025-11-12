@@ -37,18 +37,57 @@ function hasLongAnswer($string, $maxLength = 60)
 }
 
 $selectedRecords = Yii::$app->session->get('selectedQuestionIds', []);
-$returnUrl = Yii::$app->session->get('viewReturnUrl', '');
+// $returnUrl is now passed from the controller, but fallback to session if not provided
+if (!isset($returnUrl) || empty($returnUrl)) {
+    $returnUrl = Yii::$app->session->get('viewReturnUrl', '');
+}
 
-if ($selectedRecords == null) {
+$vraagTotal = count($selectedRecords);
+$currentRecordId = $question['id'];
+$currentPosition = $vraagTotal > 0 ? array_search($currentRecordId, $selectedRecords) : false;
+
+if ($vraagTotal === 0) {
     $prevRecordId = null;
     $nextRecordId = null;
-    $vraagNr = [1, 0];
+    $vraagIndex = 1;
+    $vraagTotalDisplay = 1;
+} elseif ($currentPosition === false) {
+    $prevRecordId = null;
+    $nextRecordId = null;
+    $vraagIndex = null;
+    $vraagTotalDisplay = $vraagTotal;
 } else {
-    $currentRecordId = $question['id'];
-    $currentPosition = array_search($currentRecordId, $selectedRecords);
     $prevRecordId = $currentPosition > 0 ? $selectedRecords[$currentPosition - 1] : null;
-    $nextRecordId = $currentPosition < count($selectedRecords) - 1 ? $selectedRecords[$currentPosition + 1] : null;
-    $vraagNr = [count($selectedRecords), $currentPosition];
+    $nextRecordId = $currentPosition < $vraagTotal - 1 ? $selectedRecords[$currentPosition + 1] : null;
+    $vraagIndex = $currentPosition + 1;
+    $vraagTotalDisplay = $vraagTotal;
+}
+
+$navPrevUrl = null;
+$navNextUrl = null;
+
+if ($submission['id'] == 0 && $vraagTotalDisplay > 0 && $vraagIndex !== null) {
+    if ($prevRecordId !== null) {
+        $prevParams = ['/question/view', 'id' => $prevRecordId];
+        if (!empty($quiz_id)) {
+            $prevParams['quiz_id'] = $quiz_id;
+        }
+        if (isset($returnUrlParam)) {
+            $prevParams['returnUrl'] = $returnUrlParam;
+        }
+        $navPrevUrl = Yii::$app->urlManager->createUrl($prevParams);
+    }
+
+    if ($nextRecordId !== null) {
+        $nextParams = ['/question/view', 'id' => $nextRecordId];
+        if (!empty($quiz_id)) {
+            $nextParams['quiz_id'] = $quiz_id;
+        }
+        if (isset($returnUrlParam)) {
+            $nextParams['returnUrl'] = $returnUrlParam;
+        }
+        $navNextUrl = Yii::$app->urlManager->createUrl($nextParams);
+    }
 }
 
 ?>
@@ -91,7 +130,6 @@ if ($selectedRecords == null) {
             min-height: 3em;
             font-family: monospace;
             user-select: none;
-            display: flex;
             justify-content: center;
             align-items: center;
             border-radius: 12px;
@@ -290,24 +328,82 @@ if ($selectedRecords == null) {
             transition: transform 0.5s ease-in-out;
         }
 
-        code,
-        pre {
+        .question-block pre,
+        .question-block code {
             margin-left: 30px;
             font-size: 16px;
             color: darkblue;
             border-left: 2px solid lightgray;
             padding-left: 10px;
+            border-radius: 6px;
+            display: block;
+            border-radius: 2;
+        }
+
+        .answer pre,
+        .answer code {
+            color: #0a3063;
+            background-color:rgb(239, 237, 237);
+            border-radius: 3px;
+            font-size: 13px;
+            font-weight: 600;
+            padding: 3px;
+            font-family: 'Consolas', 'Menlo', 'Liberation Mono', 'Courier New', monospace;
+        }
+
+        .answer pre {
+            display: inline;
+        }
+
+        .answer code {
+            display: block;
+            margin-left: 40px;
+            margin-right: 40px;
+            margin-top: 6px;
+            margin-bottom: 6px;
+            width: 50%;
         }
 
         .btn {
             margin-right: 20px;
         }
 
-        .quiz-button {
-            font-size: 12px;
-            padding: 2px 5px;
-            min-width: 55px;
-            margin: 5px;
+        .question-btn-row {
+            display: flex;
+            flex-wrap: wrap;
+            align-items: center;
+            gap: 12px;
+            margin-top: 16px;
+        }
+
+        .nav-arrow-container {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            margin-left: auto;
+        }
+
+        .nav-arrow-btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 34px;
+            height: 34px;
+            border-radius: 18px;
+            border: 1px solid #0a58ca;
+            color: #0a58ca;
+            background: #fff;
+            text-decoration: none;
+            font-size: 18px;
+            transition: all 0.2s ease;
+        }
+
+        .nav-arrow-btn:hover {
+            background: #0a58ca;
+            color: #fff;
+            text-decoration: none;
+            transform: translateY(-1px);
+            box-shadow: 0 4px 10px rgba(10, 88, 202, 0.2);
         }
 
         .alert-error {
@@ -320,6 +416,13 @@ if ($selectedRecords == null) {
             color: #a94442;
             background-color: #f2dede;
             border-color: #ebccd1;
+        }
+
+        .margin-left-60 {
+            margin-left: 60px;
+        }
+        .margin-right-60 {
+            margin-right: 60px;
         }
     </style>
 
@@ -349,10 +452,10 @@ if ($selectedRecords == null) {
                     echo " van ";
                     echo $submission['no_questions'];
                 } else {
-                    echo $vraagNr[0] - $vraagNr[1];
+                    $vraagIndexDisplay = $vraagIndex !== null ? $vraagIndex : '?';
+                    echo $vraagIndexDisplay;
                     echo " van ";
-                    echo $vraagNr[0];
-
+                    echo $vraagTotalDisplay;
                 }
                 ?>
             </p>
@@ -372,7 +475,8 @@ if ($selectedRecords == null) {
                 if ($submission['id'] != 0) {
                     echo $submission['no_answered'] + 1;
                 } else {
-                    echo $vraagNr[0] - $vraagNr[1];
+                    $vraagIndexDisplay = $vraagIndex !== null ? $vraagIndex : '?';
+                    echo $vraagIndexDisplay;
                 }
                 ?>
             </div>
@@ -402,30 +506,62 @@ echo escapeHtmlExceptTags($question['question']);
             }
             ?>
 
-            <div class="col-md-6">
-                <!-- Answers Column 1, 3, 5 -->
-                <?php for ($i = 1; $i <= 5; $i += 2) { ?>
-                    <?php if ($noAnswers >= $i) { ?>
-                        <div class="answer <?= $style ?>" onclick="selectAnswer(this, '<?= $answers[($i - 1)] ?>')">
-                            <?= escapeHtmlExceptTags($question[$answers[$i - 1]], ['pre']) ?>
+            <!-- Row 1: Answers 1 and 2 -->
+            <?php if ($noAnswers >= 1) { ?>
+                <div class="row w-100" style="align-items: stretch;">
+                    <div class="col-md-6 d-flex">
+                        <div class="answer <?= $style ?>" onclick="selectAnswer(this, '<?= $answers[0] ?>')" style="flex: 1;">
+                            <?= escapeHtmlForAnswers($question[$answers[0]]) ?>
+                        </div>
+                    </div>
+                    <?php if ($noAnswers >= 2) { ?>
+                        <div class="col-md-6 d-flex">
+                            <div class="answer <?= $style ?>" onclick="selectAnswer(this, '<?= $answers[1] ?>')" style="flex: 1;">
+                                <?= escapeHtmlForAnswers($question[$answers[1]]) ?>
+                            </div>
                         </div>
                     <?php } ?>
-                <?php } ?>
-            </div>
+                </div>
+            <?php } ?>
 
-            <div class="col-md-6">
-                <!-- Answers Column 2, 4, 6 -->
-                <?php for ($i = 2; $i <= 6; $i += 2) { ?>
-                    <?php if ($noAnswers >= $i) { ?>
-                        <div class="answer <?= $style ?>" onclick="selectAnswer(this, '<?= $answers[($i - 1)] ?>')">
-                            <?= escapeHtmlExceptTags($question[$answers[$i - 1]], ['pre']) ?>
+            <!-- Row 2: Answers 3 and 4 -->
+            <?php if ($noAnswers >= 3) { ?>
+                <div class="row w-100" style="align-items: stretch;">
+                    <div class="col-md-6 d-flex">
+                        <div class="answer <?= $style ?>" onclick="selectAnswer(this, '<?= $answers[2] ?>')" style="flex: 1;">
+                            <?= escapeHtmlForAnswers($question[$answers[2]]) ?>
+                        </div>
+                    </div>
+                    <?php if ($noAnswers >= 4) { ?>
+                        <div class="col-md-6 d-flex">
+                            <div class="answer <?= $style ?>" onclick="selectAnswer(this, '<?= $answers[3] ?>')" style="flex: 1;">
+                                <?= escapeHtmlForAnswers($question[$answers[3]]) ?>
+                            </div>
                         </div>
                     <?php } ?>
-                <?php } ?>
-            </div>
+                </div>
+            <?php } ?>
+
+            <!-- Row 3: Answers 5 and 6 -->
+            <?php if ($noAnswers >= 5) { ?>
+                <div class="row w-100" style="align-items: stretch;">
+                    <div class="col-md-6 d-flex">
+                        <div class="answer <?= $style ?>" onclick="selectAnswer(this, '<?= $answers[4] ?>')" style="flex: 1;">
+                            <?= escapeHtmlForAnswers($question[$answers[4]]) ?>
+                        </div>
+                    </div>
+                    <?php if ($noAnswers >= 6) { ?>
+                        <div class="col-md-6 d-flex">
+                            <div class="answer <?= $style ?>" onclick="selectAnswer(this, '<?= $answers[5] ?>')" style="flex: 1;">
+                                <?= escapeHtmlForAnswers($question[$answers[5]]) ?>
+                            </div>
+                        </div>
+                    <?php } ?>
+                </div>
+            <?php } ?>
 
 
-            <form id="answer" class="mt-4" action="<?= Url::to(['site/answer']) ?>" method="POST">
+            <form id="answer" class="mt-4 mb-4" action="<?= Url::to(['site/answer']) ?>" method="POST">
                 <input type="hidden" id="selectedAnswer" name="selectedAnswer">
                 <input type="hidden" id="no_answered" name="no_answered" value="<?= $submission['no_answered']; ?>">
                 <input type="hidden" name="<?= $csrfTokenName ?>" value="<?= $csrfToken ?>">
@@ -433,46 +569,75 @@ echo escapeHtmlExceptTags($question['question']);
                     <button type="button" id="submitButton" class="btn btn-light" style="margin-bottom:10px;"
                         title="Click eerst op een antwoord" disabled>Volgende vraag >></button>
                 <?php } else {
-                    if ($nextRecordId !== null) {
-                        $url = Yii::$app->urlManager->createUrl(['/question/view', 'id' => $nextRecordId]);
-                        echo Html::a('<<', $url, [
-                            'id' => 'submitButton-org1',
-                            'title' => 'Prev Question',
+                    // Check returnUrlParam to determine which view we came from
+                    $isFromEditLabels = isset($returnUrlParam) && $returnUrlParam === 'edit-labels';
+                    $isFromIndex = isset($returnUrlParam) && $returnUrlParam === 'index';
+
+                    echo '<div class="question-btn-row"><hr style="color:#808080; width: 100%;margin-top:0px;">';
+
+                    if ($isFromEditLabels) {
+                        // Show only Edit and Back buttons when coming from edit-labels
+                        $url = Yii::$app->urlManager->createUrl(['/question/update', 'id' => $question['id']]);
+                        echo Html::a('Edit', $url, [
+                            'id' => 'submitButton-edit',
+                            'title' => 'Edit Question',
                             'class' => 'btn btn-outline-secondary quiz-button',
                         ]);
-                    }
-                    $url = Yii::$app->urlManager->createUrl(['/question/update', 'id' => $question['id']]);
-                    echo Html::a('Edit', $url, [
-                        'id' => 'submitButton-org1',
-                        'title' => 'Edit Question',
-                        'class' => 'btn btn-outline-secondary quiz-button',
-                    ]);
-                    $url = Yii::$app->urlManager->createUrl(['/question/copy', 'id' => $question['id']]);
-                    echo Html::a('Copy', $url, [
-                        'id' => 'submitButton-org2',
-                        'title' => 'Copy Question',
-                        'class' => 'btn btn-outline-secondary quiz-button',
-                    ]);
-                    $url = Yii::$app->urlManager->createUrl(['/question/alternative', 'question_id' => $question['id']]);
-                    echo Html::a('Alternative', $url, [
-                        'id' => 'submitButton-org2',
-                        'title' => 'Create alternative question',
-                        'class' => 'btn btn-outline-secondary quiz-button',
-                    ]);
-                    echo Html::a('Back', $returnUrl, [
-                        'id' => 'submitButton-org2',
-                        'title' => 'Back',
-                        'class' => 'btn btn-outline-secondary quiz-button',
-                    ]);
-                    if ($prevRecordId !== null) {
-                        $url = Yii::$app->urlManager->createUrl(['/question/view', 'id' => $prevRecordId]);
-                        echo Html::a('>>', $url, [
-                            'id' => 'submitButton-org1',
-                            'title' => 'Next Question',
+                        echo Html::a('← Back to Edit Labels', $returnUrl, [
+                            'id' => 'submitButton-back',
+                            'title' => 'Back to Edit Labels',
+                            'class' => 'btn btn-outline-primary quiz-button',
+                        ]);
+                    } elseif ($isFromIndex) {
+                        // Show Edit and Back when coming from question index
+                        echo Html::a('← Back', $returnUrl, [
+                            'id' => 'submitButton-back',
+                            'title' => 'Back to Question Index',
+                            'class' => 'btn btn-outline-primary quiz-button margin-left-60',
+                        ]);
+                        $url = Yii::$app->urlManager->createUrl(['/question/update', 'id' => $question['id']]);
+                        echo Html::a('Edit', $url, [
+                            'id' => 'submitButton-edit',
+                            'title' => 'Edit Question',
                             'class' => 'btn btn-outline-secondary quiz-button',
                         ]);
+                    } else {
+                        // Show all buttons for normal view (legacy behavior)
+                        if ($nextRecordId !== null) {
+                            $url = Yii::$app->urlManager->createUrl(['/question/view', 'id' => $nextRecordId]);
+                            echo Html::a('<<', $url, [
+                                'id' => 'submitButton-org1',
+                                'title' => 'Prev Question',
+                                'class' => 'btn btn-outline-secondary quiz-button',
+                            ]);
+                        }
+                        echo Html::a('Back', $returnUrl, [
+                            'id' => 'submitButton-org2',
+                            'title' => 'Back',
+                            'class' => 'btn btn-outline-secondary quiz-button',
+                        ]);
+                        if ($prevRecordId !== null) {
+                            $url = Yii::$app->urlManager->createUrl(['/question/view', 'id' => $prevRecordId]);
+                            echo Html::a('>>', $url, [
+                                'id' => 'submitButton-org1',
+                                'title' => 'Next Question',
+                                'class' => 'btn btn-outline-secondary quiz-button',
+                            ]);
+                        }
                     }
 
+                    if ($navPrevUrl !== null || $navNextUrl !== null) {
+                        echo '<div class="nav-arrow-container margin-right-60">';
+                        if ($navPrevUrl !== null) {
+                            echo Html::a('&lt;', $navPrevUrl, ['class' => 'nav-arrow-btn', 'title' => 'Previous question']);
+                        }
+                        if ($navNextUrl !== null) {
+                            echo Html::a('&gt;', $navNextUrl, ['class' => 'nav-arrow-btn', 'title' => 'Next question']);
+                        }
+                        echo '</div>';
+                    }
+
+                    echo '</div>';
                 } ?>
             </form>
         </div>
