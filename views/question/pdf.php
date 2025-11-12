@@ -53,7 +53,7 @@ require_once Yii::getAlias('@app/views/include/functions.php');
             margin: -15px -15px 15px -15px;
             border-radius: 5px 5px 0 0;
             font-weight: bold;
-            font-size: 13px;
+            font-size: 12px;
         }
         
         .question-text {
@@ -86,10 +86,10 @@ require_once Yii::getAlias('@app/views/include/functions.php');
     </style>
 </head>
 <body>
-    <div class="header">
-        <h1><?= htmlspecialchars($quiz['name']) ?></h1>
+    <!-- <div class="header">
+        <h3 style="color:rgb(19, 0, 94);margin:0px"><?= htmlspecialchars($quiz['name']) ?></h2>
         <p class="info">Generated on: <?= date('F j, Y \a\t g:i A') ?></p>
-    </div>
+    </div> -->
 
     <?php 
     $questionCount = count($questions);

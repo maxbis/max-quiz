@@ -740,7 +740,7 @@ class QuestionController extends Controller
         $mpdf->SetCreator('Max Quiz System');
 
         // Set header and footer
-        $mpdf->SetHeader('Max Quiz System|' . $quiz['name'] . '|' . date('Y-m-d H:i'));
+        $mpdf->SetHeader( $quiz['name'] . '|' . 'ROC Amstelland College Quiz' . '|' . date('Y-m-d H:i'));
         $mpdf->SetFooter('Page {PAGENO} of {nbpg}');
 
         // Generate HTML content
