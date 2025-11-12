@@ -59,7 +59,7 @@ require_once Yii::getAlias('@app/views/include/functions.php');
         .question-text {
             font-size: 13px;
             line-height: 1.5;
-            margin-bottom: 6px;
+            margin-bottom: 0px;
             white-space: pre-wrap;
         }
         
