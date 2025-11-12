@@ -728,10 +728,10 @@ class QuestionController extends Controller
             'format' => 'A4',
             'margin_left' => 20,
             'margin_right' => 20,
-            'margin_top' => 30,
-            'margin_bottom' => 30,
-            'margin_header' => 15,
-            'margin_footer' => 15,
+            'margin_top' => 22,
+            'margin_bottom' => 22,
+            'margin_header' => 12,
+            'margin_footer' => 12,
         ]);
 
         // Set document properties

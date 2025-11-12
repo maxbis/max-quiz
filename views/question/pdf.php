@@ -20,8 +20,8 @@ require_once Yii::getAlias('@app/views/include/functions.php');
         .header {
             text-align: center;
             border-bottom: 2px solid #2c3e50;
-            padding-bottom: 15px;
-            margin-bottom: 30px;
+            padding-bottom: 10px;
+            margin-bottom: 20px;
         }
         
         .header h1 {
@@ -39,8 +39,8 @@ require_once Yii::getAlias('@app/views/include/functions.php');
         
         .question-container {
             page-break-inside: avoid;
-            margin-bottom: 25px;
-            padding: 15px;
+            margin-bottom: 18px;
+            padding: 12px;
             border: 1px solid #ecf0f1;
             border-radius: 5px;
             background-color: #fafbfc;
@@ -67,8 +67,8 @@ require_once Yii::getAlias('@app/views/include/functions.php');
             background-color: #f8f9fa;
             border: 1px solid #e9ecef;
             border-radius: 3px;
-            padding: 10px;
-            margin: 10px 0;
+            padding: 8px;
+            margin: 8px 0;
             font-family: 'Courier New', monospace;
             font-size: 11px;
             overflow-x: auto;
