@@ -17,6 +17,10 @@ app\assets\CustomDialogAsset::register($this);
 $csrfToken = Yii::$app->request->getCsrfToken();
 $showFilter = $showFilter ?? 'active';
 $id = Yii::$app->request->get('id');
+$selectedQuizCount = array_reduce($quizes ?? [], function ($count, $quiz) {
+    return $count + (!empty($quiz['active']) ? 1 : 0);
+}, 0);
+$showOverviewButton = $selectedQuizCount >= 2;
 
 $apiUrl = Url::toRoute(['/quiz-question/active']);
 $submissionBaseUrl = Url::toRoute(['/submission']);
@@ -58,6 +62,22 @@ function updateActiveStatus(id, active) {
     });
 }
 
+function updateOverviewButtonVisibility() {
+    var button = $('#overview-button');
+    if (!button.length) { return; }
+
+    var spacer = $('#overview-button-gap');
+    var activeCount = $('.active-radio:checked').length;
+
+    if (activeCount >= 2) {
+        button.show();
+        spacer.show();
+    } else {
+        button.hide();
+        spacer.hide();
+    }
+}
+
 // Handle the change event of the checkboxes for active status
 $(document).ready(function() {
     $('input[name="active"]').on('change', function() {
@@ -67,6 +87,7 @@ $(document).ready(function() {
         if (isDisabled) { return; }
         
         updateActiveStatus(quizId, isActive);
+        updateOverviewButtonVisibility();
         
         // Update the quiz name link dynamically
         var row = $('#quiz-row-' + quizId);
@@ -79,6 +100,8 @@ $(document).ready(function() {
             link.attr('title', 'Show Questions');
         }
     });
+
+    updateOverviewButtonVisibility();
 });
 
 $(document).on('click', '.group-header', function() {
@@ -1069,5 +1092,12 @@ $this->registerJs($regradeScript);
         <?= Html::a('➕ New Quiz', ['create'], ['title' => 'Create New Quiz', 'class' => 'btn btn-outline-success quiz-button']) ?>
         &nbsp;&nbsp;&nbsp;
         <?= Html::a('Disable All', ['index', 'reset' => 1], ['title' => 'Disbale all quizes', 'class' => 'btn btn-outline-success quiz-button']) ?>
+        <span id="overview-button-gap" style="<?= $showOverviewButton ? '' : 'display:none;' ?>">&nbsp;&nbsp;&nbsp;</span>
+        <?= Html::a('Overview' , ['/overview'], [
+            'title' => 'Overview of all active quizes',
+            'class' => 'btn btn-outline-success quiz-button',
+            'id' => 'overview-button',
+            'style' => $showOverviewButton ? '' : 'display:none;',
+        ]) ?>
     </p>
 </body>
