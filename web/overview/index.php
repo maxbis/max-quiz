@@ -152,7 +152,7 @@ try {
         <section class="card">
             <div class="card-header">
                 <div class="tabs">
-                    <button type="button" class="   " onclick="window.history.back();"><< Back</button>
+                    <button type="button" class="tab" onclick="window.history.back();"><< Back</button>
                 </div>
                 <button type="button" class="export-btn" id="export-btn">Export CSV</button>
             </div>
