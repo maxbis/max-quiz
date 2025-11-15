@@ -356,6 +356,16 @@ tbody tr:hover td {
     background: #f5f7fb;
 }
 
+.score.repeat {
+    border-left-color: transparent;
+    border-right-color: transparent;
+}
+
+.score.repeat span {
+    border-bottom: 2px dotted #800000;
+    cursor: help;
+}
+
 .average-cell {
     position: sticky;
     right: 0;

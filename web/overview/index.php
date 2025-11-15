@@ -23,6 +23,7 @@ $quizGroups = [];
 $flatQuizzes = [];
 $students = [];
 $scores = [];
+$attemptCounts = [];
 $csvHeaders = [];
 $csvRows = [];
 
@@ -104,6 +105,10 @@ try {
             if (!isset($scores[$studentNr])) {
                 $scores[$studentNr] = [];
             }
+            if (!isset($attemptCounts[$studentNr])) {
+                $attemptCounts[$studentNr] = [];
+            }
+            $attemptCounts[$studentNr][$quizId] = ($attemptCounts[$studentNr][$quizId] ?? 0) + 1;
 
             if (!isset($scores[$studentNr][$quizId]) || ($ratio !== null && $ratio > $scores[$studentNr][$quizId]['ratio'])) {
                 $scores[$studentNr][$quizId] = [
@@ -248,6 +253,8 @@ try {
                                     <?php
                                     $quizId = $quiz['id'];
                                     $cell = $scores[$student['student_nr']][$quizId] ?? null;
+                                    $attemptCount = $attemptCounts[$student['student_nr']][$quizId] ?? 0;
+                                    $hasMultipleAttempts = $attemptCount > 1;
                                     $ratio = $cell['ratio'] ?? null;
                                     $percent = $ratio !== null ? round($ratio * 100) : null;
                                     $cellLabel = $percent !== null ? $percent . '%' : '–';
@@ -264,9 +271,13 @@ try {
                                         $ratioCount++;
                                     }
                                     $rowValues[] = $percent !== null ? $percent : '';
+                                    $tooltip = $hasMultipleAttempts
+                                        ? ' title="' . htmlspecialchars(sprintf('Best of %d attempts', $attemptCount), ENT_QUOTES, 'UTF-8') . '"'
+                                        : '';
+                                    $repeatClass = $hasMultipleAttempts ? ' repeat' : '';
                                     ?>
-                                    <td class="score <?= $tone ?>">
-                                        <span><?= $cellLabel ?></span>
+                                    <td class="score <?= $tone . $repeatClass ?>">
+                                        <span<?= $tooltip ?>><?= $cellLabel ?></span>
                                     </td>
                                 <?php endforeach; ?>
                                 <?php
