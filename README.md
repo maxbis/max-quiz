@@ -1,106 +1,96 @@
 # Max-Quiz
 
-### Use Case
+Max-Quiz is a Yii2-based classroom assessment platform. Teachers can build, activate, and monitor quizzes while students interact through a streamlined password-protected interface.
 
-In a classroom, as a teacher, I want to execute a formative assessment. I want to be able to start a quiz, minimize the change that students help each other and I want to be able to change quizzes, create new ones without much hassle.
+## Highlights
 
-Furthermore, I want to monitor the quiz once it is running and I want to be able to spot irregularities during the quiz session.
+- Teacher dashboard to activate quizzes, monitor submissions, and export results
+- Student screen that always serves the next unanswered question and enforces time/IP limits
+- Question bank management with quick linking, bulk import/export, and printable previews
+- Progress monitoring to adjust scores or force-finish attempts
+- Dialog/PDF utilities (see `docs/`) for sharing question sets
+- `archived` flag to hide old quizzes without deleting them
 
-The commercial product Socrative matches this use case pretty well, but I kept on running into limitations. So I made my own quiz app.
+## Requirements
 
-### Installation
+- PHP 7.4+ with intl, mbstring, PDO/MySQL, and GD extensions
+- Composer 2.x
+- MySQL or MariaDB 10.4+
+- Web server (Apache/Nginx) or PHP CLI for local serving
 
-##### Clone the repo
+## Installation
 
-git clone [https://github.com/maxbis/max-quiz](https://github.com/maxbis/max-quiz)
+1. **Clone**
 
-##### Update with composer
+   ```bash
+   git clone https://github.com/maxbis/max-quiz.git
+   cd max-quiz
+   ```
 
-composer update
+2. **Install dependencies**
 
-##### Database
+   ```bash
+   composer install
+   ```
 
-Install the MySQL database by importing the file max-quiz-database-plus example\_data.sql, note that this files also creates the database for you. If you want to name the database different, please edit the SLQ file.
+   Composer runs the Yii post-install hook that sets permissions and generates the cookie validation key.
 
-##### Create and/or set rights to some directories
+3. **Configure the database**
 
-Depending on the system you are running on, you might need to create a few directories, since empty directories are not copied with GitHub. Maybe you need to set the file/directory rights, but this depends on your system and your Web server settings.
+   Edit `config/db.php` with your host, database name, username, and password.
 
-The framework Yii will give pretty clear hints for this.
+4. **Import a schema**
 
-The Yii app can be opened by navigating to the web directory, all routes mentioned in this document are relative to this directory.
+   Choose one of the bundled SQL dumps:
 
-(this documentation needs to be updated)
+   - `max-quiz-demo.sql` – schema plus demo data (sample quiz, questions, admin user).
+   - `max-quiz-DB-structure.sql` – schema only if you want a clean slate.
 
-### Students view
+   Both dumps already include the `archived` column and create the `max-quiz` database by default. Feel free to edit the file before importing if you prefer another name. You can also apply SQL migrations manually from `migrations/` (e.g., `migrations/add_archived_to_quiz.sql`).
 
-[![image-1704213000660.png](https://www.roc.ovh/uploads/images/gallery/2024-01/scaled-1680-/image-1704213000660.png)](https://www.roc.ovh/uploads/images/gallery/2024-01/image-1704213000660.png)
+5. **Ensure writable directories**
 
-The app starts by navigation to the web directory.
+   Verify that `runtime/` and `web/assets/` are writable by the web server user. Create any missing directories if you deploy to a clean server.
 
-If you are not logged in you get a screen to start a quiz, this is the student's view.
+## Running Locally
 
-A student need to provide his name, class and a password to start the quiz.
+- **PHP built-in server**
 
-### Student session
+  ```bash
+  php yii serve --port=8080
+  ```
 
-Once a student is started. He will always get the next unanswered questions. You can refresh the page, or do whatever. The sessions kept in a cookie that is valid for 2 hours. This is also the maximum time a student can work on a quiz.
+  Visit http://localhost:8080 for the student view and http://localhost:8080/admin for the admin console. All routes are relative to the `web/` directory.
 
-When for what reason the student looses his session (he switched from device a to device b), you can provide the student a link to continue to finish the quiz.
+- **Apache/Nginx**
 
-### Admin  
+  Point the virtual host root to `web/` and ensure `index.php` is the front controller.
 
+## Default Credentials
 
-Go to the login, by navigating to /admin.
+If you imported `max-quiz-demo.sql`, the demo admin account is:
 
-The standard database has one admin account, called admin with the password admin.
+- Username: `admin`
+- Password: `admin`
 
-The management of the users is all standard Yii: navigate to /tbl-user to manage this.
+The password is stored as a SHA1 hash in the dump—change it immediately on production systems.
 
-For now only username and password are used.
+## Project Layout
 
-### Quiz Screen
+- `web/` – public entry point, assets, and route endpoints
+- `docs/` – supplementary guides (PDF dialogs, auto-activation workflows, etc.)
+- `migrations/` – raw SQL migrations for manual schema changes
+- `max-quiz-demo.sql` / `max-quiz-DB-structure.sql` – database dumps kept in sync with the current schema
 
-[![image-1704214311510.png](https://www.roc.ovh/uploads/images/gallery/2024-01/scaled-1680-/image-1704214311510.png)](https://www.roc.ovh/uploads/images/gallery/2024-01/image-1704214311510.png)
+## Documentation
 
-In the quiz screen you can manage the quizzes. Only active quizzes can be started.
+Additional feature guides live under `docs/` (for example `docs/QUESTION_INDEX_PDF_DIALOG.md`, `docs/PDF_DIALOG_IMPLEMENTATION.md`, and `docs/TEST_QUIZ_AUTO_ACTIVATE.md`). Refer to them for advanced workflows like PDF exports or automatic quiz activation.
 
-Once a quiz is started, it can only be forced to be stopped on a student level.
+## Contributing
 
-### Progress Screen
+1. Keep both SQL dumps aligned with any schema change.
+2. Document new features in this README or in `docs/`.
+3. Submit pull requests or issues via GitHub.
 
-[![image-1704214756481.png](https://www.roc.ovh/uploads/images/gallery/2024-01/scaled-1680-/image-1704214756481.png)](https://www.roc.ovh/uploads/images/gallery/2024-01/image-1704214756481.png)
+For Yii-specific help, consult the [Yii 2 Guide](https://www.yiiframework.com/doc/guide/2.0/en/start-installation).
 
-Here you can monitor the progress of the quiz. The questions are mixed per student.
-
-By pressing on the progress column ("Progr."), you can edit the submission. You can change the name, class, correct the score, and force the quiz to be finished.
-
-The code in shown in the left column helps to identify a user, since the code is printed in the header of the students working on the quiz.
-
-One all students are finished, you can export the results to Excel.
-
-### Questions Screen
-
-In this screen you get a grid with all question. Here you can link/unlink questions to a quiz.
-
-Use the search bars (*question* and *label*) to select questions and add these to the quiz.
-
-[![image-1704215215315.png](https://www.roc.ovh/uploads/images/gallery/2024-01/scaled-1680-/image-1704215215315.png)](https://www.roc.ovh/uploads/images/gallery/2024-01/image-1704215215315.png)
-
-### View complete quiz
-
-On the questions screen, the first part shows the quiz data. The green dot means the quiz is active.
-
-[![image-1704215094101.png](https://www.roc.ovh/uploads/images/gallery/2024-01/scaled-1680-/image-1704215094101.png)](https://www.roc.ovh/uploads/images/gallery/2024-01/image-1704215094101.png)
-
-With the view button on the area where the quiz is shown, you can *view* a quiz and show all questions. This can be handy when you want to reflect on the quiz with students.
-
-### Import/export Questions
-
-From this screen you can go to import and export where you can import/export questions.
-
-The format used is shown in the import screen and can also be seen when exporting a series of questions. Note that only the linked question of the quiz will be exported.
-
-When the optional ID is provided in an import, you can update questions via import/export. Of course, you can also use the GUI.
-
-\--

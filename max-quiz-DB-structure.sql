@@ -148,7 +148,8 @@ ALTER TABLE `question`
 --
 ALTER TABLE `quiz`
   ADD PRIMARY KEY (`id`),
-  ADD UNIQUE KEY `password` (`password`);
+  ADD UNIQUE KEY `password` (`password`),
+  ADD KEY `idx_archived` (`archived`);
 
 --
 -- Indexes for table `quizquestion`

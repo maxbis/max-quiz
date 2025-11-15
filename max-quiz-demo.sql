@@ -83,15 +83,16 @@ CREATE TABLE `quiz` (
   `password` varchar(20) NOT NULL,
   `active` tinyint(1) NOT NULL,
   `no_questions` int(11) DEFAULT NULL,
-  `review` int(11) DEFAULT NULL
+  `review` int(11) DEFAULT NULL,
+  `archived` tinyint(1) NOT NULL DEFAULT 0
 ) ENGINE=InnoDB DEFAULT CHARSET=utf32 COLLATE=utf32_general_ci;
 
 --
 -- Dumping data for table `quiz`
 --
 
-INSERT INTO `quiz` (`id`, `name`, `password`, `active`, `no_questions`, `review`) VALUES
-(31, 'Demo', 'Demo', 1, 3, 1);
+INSERT INTO `quiz` (`id`, `name`, `password`, `active`, `no_questions`, `review`, `archived`) VALUES
+(31, 'Demo', 'Demo', 1, 3, 1, 0);
 
 -- --------------------------------------------------------
 
@@ -182,7 +183,8 @@ ALTER TABLE `question`
 --
 ALTER TABLE `quiz`
   ADD PRIMARY KEY (`id`),
-  ADD UNIQUE KEY `password` (`password`);
+  ADD UNIQUE KEY `password` (`password`),
+  ADD KEY `idx_archived` (`archived`);
 
 --
 -- Indexes for table `quizquestion`
