@@ -11,6 +11,7 @@ use yii\filters\VerbFilter;
 use app\models\Question;
 use app\models\Quizquestion;
 use yii\helpers\ArrayHelper;
+use yii\helpers\Url;
 
 use yii\filters\AccessControl;
 
@@ -35,6 +36,7 @@ class QuizController extends Controller
                     'class' => VerbFilter::className(),
                     'actions' => [
                         'delete' => ['POST'],
+                        'swap-questions' => ['POST'],
                     ],
                 ],
                 // Access Control Filter (ACF)
@@ -259,6 +261,48 @@ class QuizController extends Controller
         }
 
         return $this->redirect(['question/index', 'quiz_id' => $newId]);
+    }
+
+    public function actionSwapQuestions($id)
+    {
+        $quiz = $this->findModel($id);
+        $request = Yii::$app->request;
+        $returnUrl = $request->post('returnUrl', $request->get('returnUrl'));
+        if (empty($returnUrl)) {
+            $returnUrl = Url::to(['quiz/view', 'id' => $quiz->id]);
+        }
+
+        $transaction = Yii::$app->db->beginTransaction();
+
+        try {
+            // Flip active flag (0 <-> 1) for all quiz-question relations belonging to this quiz
+            $swapSql = "UPDATE quizquestion SET active = 1 - active WHERE quiz_id = :quiz_id";
+            $affectedRows = Yii::$app->db->createCommand($swapSql)
+                ->bindValue(':quiz_id', $quiz->id)
+                ->execute();
+
+            // Update cached number of active questions on quiz table
+            $countSql = "SELECT COUNT(*) FROM quizquestion WHERE quiz_id = :quiz_id AND active = 1";
+            $activeCount = (int) Yii::$app->db->createCommand($countSql)
+                ->bindValue(':quiz_id', $quiz->id)
+                ->queryScalar();
+
+            Quiz::updateAll(['no_questions' => $activeCount], ['id' => $quiz->id]);
+
+            $transaction->commit();
+
+            Yii::$app->session->setFlash('success', sprintf(
+                'Swapped active state for %d questions. Active questions now: %d.',
+                $affectedRows,
+                $activeCount
+            ));
+        } catch (\Throwable $e) {
+            $transaction->rollBack();
+            Yii::error('Failed to swap quiz questions: ' . $e->getMessage(), __METHOD__);
+            Yii::$app->session->setFlash('error', 'Failed to swap question states. Please try again.');
+        }
+
+        return $this->redirect($returnUrl);
     }
 
     public function actionEditLabels($id)

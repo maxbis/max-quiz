@@ -692,6 +692,13 @@ if ($show == 0) {
         ]);
         ?>
         <span style="margin-left:50px;"> </span>
+        <?= Html::button('🔄 Swap active/inactive', [
+            'class' => 'btn btn-outline-danger quiz-button',
+            'title' => 'Toggle all active/inactive assignments',
+            'aria-label' => 'Swap active and inactive questions',
+            'id' => 'swap-questions-button',
+        ]) ?>
+        <span style="margin-left:50px;"> </span>
         <!-- <?php
         if ($show == 1) {
             echo Html::a(
@@ -708,6 +715,9 @@ if ($show == 0) {
         }
         ?> -->
     </p>
+    <?= Html::beginForm(['quiz/swap-questions', 'id' => $quiz['id']], 'post', ['id' => 'swap-questions-form', 'style' => 'display:none;']) ?>
+    <?= Html::hiddenInput('returnUrl', Url::to(['question/index', 'quiz_id' => $quiz['id'], 'sort' => Yii::$app->request->get('sort')])) ?>
+    <?= Html::endForm() ?>
 </div>
 
 <!-- Include the reusable custom dialog component -->
@@ -837,6 +847,24 @@ $(document).ready(function() {
 JS;
 
 $this->registerJs($copyQuizScript);
+
+$swapQuestionsScript = <<<JS
+$(document).ready(function() {
+    $('#swap-questions-button').click(function(e) {
+        e.preventDefault();
+        
+        window.showCustomDialog(
+            '🔄 Swap Questions',
+            'Swap active and inactive questions for this quiz?',
+            function() {
+                $('#swap-questions-form').submit();
+            }
+        );
+    });
+});
+JS;
+
+$this->registerJs($swapQuestionsScript);
 
 // Handle delete all questions button click with custom dialog
 $deleteAllUrl = Url::to(['question/bulk-delete', 'quiz_id' => $quiz['id']]);

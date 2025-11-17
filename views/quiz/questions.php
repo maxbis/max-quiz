@@ -1,5 +1,6 @@
 <?php
 
+use app\assets\CustomDialogAsset;
 use yii\helpers\Html;
 use yii\widgets\DetailView;
 use yii\widgets\ActiveForm;
@@ -13,6 +14,7 @@ $this->title = $quiz->name;
 $this->params['breadcrumbs'][] = ['label' => 'Quizzes', 'url' => ['index']];
 $this->params['breadcrumbs'][] = $this->title;
 \yii\web\YiiAsset::register($this);
+CustomDialogAsset::register($this);
 ?>
 
 <style>
@@ -141,7 +143,12 @@ $this->registerJs($script);
                     ['quiz/edit-labels', 'id' => $id], 
                     [ 'class' => 'btn btn-info button-sm m-2', 'title' => 'Bulk edit question labels'],
                 );
-            ?>
+            ?>&nbsp;
+            <?= Html::button('Swap active/inactive', [
+                'class' => 'btn btn-danger button-sm m-2',
+                'id' => 'swap-questions-button-top',
+                'title' => 'Swap all active/inactive questions',
+            ]) ?>
         </td>
     </tr>
 </table>
@@ -199,4 +206,28 @@ echo Html::button('Uncheck All', [
     'onclick' => 'checkAllCheckboxes(false);',
 ]);
 
+?>
+
+<?= Html::beginForm(['quiz/swap-questions', 'id' => $id], 'post', ['id' => 'swap-questions-form-top', 'style' => 'display:none;']) ?>
+<?= Html::hiddenInput('returnUrl', Yii::$app->request->url) ?>
+<?= Html::endForm() ?>
+
+<?= $this->render('@app/views/include/_custom-dialog.php') ?>
+
+<?php
+$swapScript = <<<JS
+$(document).ready(function() {
+    $('#swap-questions-button-top').on('click', function(e) {
+        e.preventDefault();
+        window.showCustomDialog(
+            '🔄 Swap Questions',
+            'Swap active and inactive questions for this quiz?',
+            function() {
+                $('#swap-questions-form-top').submit();
+            }
+        );
+    });
+});
+JS;
+$this->registerJs($swapScript);
 ?>
