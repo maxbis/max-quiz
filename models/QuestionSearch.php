@@ -67,7 +67,7 @@ class QuestionSearch extends Question
         $dataProvider = new ActiveDataProvider([
             'query' => $query,
             'pagination' => [
-                'pageSize' => 20,
+                'pageSize' => 60,
             ],
             'sort' => [
                 'attributes' => [
