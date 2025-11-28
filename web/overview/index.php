@@ -158,7 +158,20 @@ try {
 </head>
 <body>
     <header class="app-header">
-        <div class="brand">
+        <?php
+        // Calculate parent directory URL (one level up, minus last folder)
+        $currentPath = rtrim($_SERVER['REQUEST_URI'], '/');
+        $parentPath = dirname($currentPath);
+        // Normalize path separators
+        $parentPath = str_replace('\\', '/', $parentPath);
+        // Handle root and normalize
+        if ($parentPath === '.' || $parentPath === '/') {
+            $parentUrl = '/';
+        } else {
+            $parentUrl = rtrim($parentPath, '/') . '/';
+        }
+        ?>
+        <div class="brand" onclick="window.location.href = '<?= htmlspecialchars($parentUrl, ENT_QUOTES, 'UTF-8') ?>';">
             <div class="logo">M</div>
             <div class="brand-copy">
                 <span class="brand-title">Quiz</span>

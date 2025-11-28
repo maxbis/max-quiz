@@ -31,6 +31,12 @@ body {
     display: flex;
     align-items: center;
     gap: 12px;
+    cursor: pointer;
+    transition: opacity 0.2s ease;
+}
+
+.brand:hover {
+    opacity: 0.7;
 }
 
 .logo {
@@ -380,7 +386,6 @@ tbody tr:hover td {
 
 .average-row {
     background: #f9fbff;
-    border-top: 4px solid #808080;
 }
 
 .average-row td {
@@ -388,6 +393,7 @@ tbody tr:hover td {
     font-weight: 600;
     padding-top: 14px;
     padding-bottom: 14px;
+    border-top: 3px solid #b3b3b3;
 }
 
 .average-row td.sticky {
