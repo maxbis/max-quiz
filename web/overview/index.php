@@ -120,6 +120,26 @@ try {
         }
 
         ksort($students, SORT_NATURAL);
+        
+        // Calculate column averages (per quiz)
+        $columnAverages = [];
+        foreach ($flatQuizzes as $quiz) {
+            $quizId = $quiz['id'];
+            $sum = 0;
+            $count = 0;
+            
+            foreach ($students as $student) {
+                $cell = $scores[$student['student_nr']][$quizId] ?? null;
+                $ratio = $cell['ratio'] ?? null;
+                
+                if ($ratio !== null) {
+                    $sum += $ratio;
+                    $count++;
+                }
+            }
+            
+            $columnAverages[$quizId] = $count > 0 ? $sum / $count : null;
+        }
     }
 } catch (PDOException $exception) {
     $connectionError = $exception->getMessage();
@@ -303,6 +323,58 @@ try {
                                 ?>
                             </tr>
                         <?php endforeach; ?>
+                        <!-- Average row -->
+                        <tr class="average-row">
+                            <td class="sticky sticky-student strong">Average</td>
+                            <td class="sticky sticky-class"></td>
+                            <td class="sticky sticky-name subtle"></td>
+                            <?php foreach ($flatQuizzes as $quiz): ?>
+                                <?php
+                                $quizId = $quiz['id'];
+                                $avgRatio = $columnAverages[$quizId] ?? null;
+                                $avgPercent = $avgRatio !== null ? round($avgRatio * 100, 1) : null;
+                                $avgTone = 'empty';
+                                if ($avgPercent !== null) {
+                                    if ($avgPercent >= 80) {
+                                        $avgTone = 'pass';
+                                    } elseif ($avgPercent >= 50) {
+                                        $avgTone = 'warn';
+                                    } else {
+                                        $avgTone = 'fail';
+                                    }
+                                }
+                                ?>
+                                <td class="score <?= $avgTone ?>">
+                                    <span><?= $avgPercent !== null ? number_format($avgPercent, 1) . '%' : '–' ?></span>
+                                </td>
+                            <?php endforeach; ?>
+                            <?php
+                            // Calculate overall average (average of all column averages)
+                            $overallSum = 0;
+                            $overallCount = 0;
+                            foreach ($columnAverages as $avgRatio) {
+                                if ($avgRatio !== null) {
+                                    $overallSum += $avgRatio;
+                                    $overallCount++;
+                                }
+                            }
+                            $overallAvg = $overallCount > 0 ? $overallSum / $overallCount : null;
+                            $overallAvgPercent = $overallAvg !== null ? round($overallAvg * 100, 1) : null;
+                            $overallTone = 'empty';
+                            if ($overallAvgPercent !== null) {
+                                if ($overallAvgPercent >= 80) {
+                                    $overallTone = 'pass';
+                                } elseif ($overallAvgPercent >= 50) {
+                                    $overallTone = 'warn';
+                                } else {
+                                    $overallTone = 'fail';
+                                }
+                            }
+                            ?>
+                            <td class="score average-cell <?= $overallTone ?>">
+                                <span><?= $overallAvgPercent !== null ? number_format($overallAvgPercent, 1) . '%' : '–' ?></span>
+                            </td>
+                        </tr>
                         </tbody>
                     </table>
                 </div>

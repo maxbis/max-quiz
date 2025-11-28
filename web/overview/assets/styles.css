@@ -378,6 +378,30 @@ tbody tr:hover td {
     z-index: 1;
 }
 
+.average-row {
+    background: #f9fbff;
+    border-top: 4px solid #808080;
+}
+
+.average-row td {
+    background: #f9fbff;
+    font-weight: 600;
+    padding-top: 14px;
+    padding-bottom: 14px;
+}
+
+.average-row td.sticky {
+    background: #f9fbff;
+}
+
+.average-row:hover td {
+    background: #f1f5fb;
+}
+
+.average-row:hover td.sticky {
+    background: #f1f5fb;
+}
+
 @media (max-width: 1024px) {
     .app-header {
         flex-direction: column;
