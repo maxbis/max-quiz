@@ -91,7 +91,9 @@ $this->registerJs($script);
             <div class="col">
                 <?= $form->field($model, 'class')->textInput(['maxlength' => true, 'style' => 'background-color: #FFFFE0;']) ?>
             </div>
-
+            <div class="col">
+                <?= $form->field($model, 'student_nr')->textInput(['maxlength' => true, 'style' => 'background-color: #FFFFE0;']) ?>
+            </div>
 
         </div>
     </div>

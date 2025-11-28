@@ -154,7 +154,10 @@ $csrfToken = Yii::$app->request->getCsrfToken();
                             <div class="form-group col-sm-10">
                                 <label for="student_nr">Student Number</label>
                                 <input type="text" class="form-control" id="student_nr" name="student_nr"
-                                    placeholder="Student Number" minlength="4" maxlength="8" required>
+                                    placeholder="Student Number" minlength="4" maxlength="8" required
+                                    pattern="[0-9]+" 
+                                    inputmode="numeric"
+                                    title="Please enter only numbers (no letters allowed)">
                             </div>
                             <div class="form-group col-sm-10">
                                 <label for="klas">Class</label>
@@ -230,12 +233,29 @@ $csrfToken = Yii::$app->request->getCsrfToken();
             }
         });
 
+        // Validate student number to only allow numbers
+        document.getElementById('student_nr').addEventListener('input', function(e) {
+            // Remove any non-numeric characters
+            this.value = this.value.replace(/[^0-9]/g, '');
+        });
+
         document.getElementById('submitButton').addEventListener('click', function() {
+            // Validate student number before submission
+            const studentNrInput = document.getElementById('student_nr');
+            const studentNr = studentNrInput.value.trim();
+            
+            // Check if student number contains only numbers
+            if (!/^[0-9]+$/.test(studentNr)) {
+                alert('Student Number must contain only numbers (no letters allowed)');
+                studentNrInput.focus();
+                return false;
+            }
+
             // Store form data in a cookie for 4 months
             const studentInfo = {
                 firstName: document.getElementById('first_name').value,
                 lastName: document.getElementById('last_name').value,
-                studentNr: document.getElementById('student_nr').value,
+                studentNr: studentNr,
                 class: document.getElementById('class').value,
             };
             setCookie('studentInfo', JSON.stringify(studentInfo), 120);
