@@ -614,12 +614,39 @@ require_once Yii::getAlias('@app/views/include/functions.php');
 </head>
 
 <body>
-    <h1>
-        <?= Html::a($quiz['name'], ['question/index', 'quiz_id' => $quiz['id']], [
-            'style' => 'color: inherit; text-decoration: none;',
-            'title' => 'Go to quiz questions overview'
-        ]); ?>
-    </h1>
+    <?php
+    // Determine whether to use random or deterministic answer order
+    $useRandomAnswers = Yii::$app->request->get('random_answers', '0') === '1';
+    $currentParams = Yii::$app->request->getQueryParams();
+    ?>
+
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+        <h1 style="margin: 0;">
+            <?= Html::a($quiz['name'], ['question/index', 'quiz_id' => $quiz['id']], [
+                'style' => 'color: inherit; text-decoration: none;',
+                'title' => 'Go to quiz questions overview'
+            ]); ?>
+        </h1>
+
+        <form method="get" style="margin: 0;">
+            <?php foreach ($currentParams as $key => $value): ?>
+                <?php if ($key === 'random_answers') continue; ?>
+                <input type="hidden" name="<?= Html::encode($key) ?>" value="<?= Html::encode($value) ?>">
+            <?php endforeach; ?>
+
+            <label style="font-size: 0.9rem;">
+                <input
+                    type="checkbox"
+                    name="random_answers"
+                    value="1"
+                    <?= $useRandomAnswers ? 'checked' : '' ?>
+                    onchange="this.form.submit()"
+                    title="Answers are randominzed in a deterministic way, unless the checkbox is checked."
+                >
+                Random answer order
+            </label>
+        </form>
+    </div>
 
 
     <?php
@@ -655,7 +682,16 @@ require_once Yii::getAlias('@app/views/include/functions.php');
 
                 <?php
                 $array = ['1','2','3','4','5','6'];
-                shuffle($array);
+
+                // By default use deterministic order seeded per question;
+                // when "Random answer order" checkbox is checked, use true random.
+                if ($useRandomAnswers) {
+                    shuffle($array);
+                } else {
+                    $seed = crc32($question['id']);
+                    mt_srand($seed);
+                    shuffle($array);
+                }
                 $questionLabel = 'a';
                 foreach($array as $item) {
                     if ( $question['a'.$item]==='' || $question['a'.$item] === null ) continue;
