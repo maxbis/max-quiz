@@ -444,6 +444,29 @@ require_once Yii::getAlias('@app/views/include/functions.php');
         let questions = [];
         let answerShown = false;
 
+        // Deterministic "random" for presentation mode answer order.
+        // This ensures answers don't reshuffle when re-rendering (e.g. after "Show Answer").
+        function mulberry32(seed) {
+            let a = seed >>> 0;
+            return function () {
+                a |= 0;
+                a = (a + 0x6D2B79F5) | 0;
+                let t = Math.imul(a ^ (a >>> 15), 1 | a);
+                t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t;
+                return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
+            };
+        }
+
+        function shuffleDeterministic(items, seed) {
+            const arr = [...items];
+            const rand = mulberry32(seed);
+            for (let i = arr.length - 1; i > 0; i--) {
+                const j = Math.floor(rand() * (i + 1));
+                [arr[i], arr[j]] = [arr[j], arr[i]];
+            }
+            return arr;
+        }
+
         function openPresentationMode(questionIndex) {
             currentQuestionIndex = questionIndex;
             answerShown = false;
@@ -505,8 +528,10 @@ require_once Yii::getAlias('@app/views/include/functions.php');
                 }
             }
             
-            // Shuffle answers for presentation
-            const shuffledAnswers = [...answersArray].sort(() => Math.random() - 0.5);
+            // Shuffle answers for presentation (deterministic per question id)
+            // Seed must be stable across renders to avoid order changes on "Show Answer".
+            const seed = (parseInt(question.id, 10) || 0) >>> 0;
+            const shuffledAnswers = shuffleDeterministic(answersArray, seed);
             
             shuffledAnswers.forEach((answer, index) => {
                 const answerDiv = document.createElement('div');
