@@ -103,14 +103,17 @@ require_once Yii::getAlias('@app/views/include/functions.php');
             display: none;
             flex-direction: column;
             justify-content: center;
-            align-items: center;
+            align-items: flex-start;
             color: white;
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
         }
 
         .presentation-content {
-            width: 96%;
-            max-width: 1400px;
+            box-sizing: border-box;
+            width: 80vw;
+            max-width: 80vw;
+            margin-left: 0;
+            margin-right: auto;
             height: 96%;
             max-height: 96vh;
             background: rgba(255, 255, 255, 0.95);
