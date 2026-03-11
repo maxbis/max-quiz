@@ -69,13 +69,7 @@ function formatQuestionHtmlForPdf($html, $allowedTags = null)
         return '';
     }
 
-    $paragraphs = preg_split("/\n{2,}/", $normalizedHtml);
-    $paragraphs = array_map(function ($paragraph) {
-        $paragraph = preg_replace("/\n/", "<br>\n", trim($paragraph));
-        return '<p>' . $paragraph . '</p>';
-    }, array_filter($paragraphs, static fn($paragraph) => trim($paragraph) !== ''));
-
-    return implode("\n", $paragraphs);
+    return nl2br($normalizedHtml);
 }
 
 
