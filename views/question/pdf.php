@@ -119,7 +119,7 @@ require_once Yii::getAlias('@app/views/include/functions.php');
         </div>
         
         <div class="question-text">
-            <?= escapeHtmlExceptTags($question['question'], [], $allowedTags ?? questionHtmlAllowedTags()) ?>
+            <?= formatQuestionHtmlForPdf($question['question'], $allowedTags ?? questionHtmlAllowedTags()) ?>
         </div>
         
     </div>

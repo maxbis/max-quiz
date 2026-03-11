@@ -55,6 +55,29 @@ function escapeHtmlExceptTags($html, $deleteTags = [], $allowedTags = null)
     return $escapedHtml;
 }
 
+function formatQuestionHtmlForPdf($html, $allowedTags = null)
+{
+    $allowedTags = $allowedTags ?? questionHtmlAllowedTags();
+    $escapedHtml = escapeHtmlExceptTags($html, [], $allowedTags);
+
+    if (preg_match('/<(p|ul|ol|li|pre|blockquote)\b/i', $escapedHtml)) {
+        return $escapedHtml;
+    }
+
+    $normalizedHtml = str_replace(["\r\n", "\r"], "\n", trim($escapedHtml));
+    if ($normalizedHtml === '') {
+        return '';
+    }
+
+    $paragraphs = preg_split("/\n{2,}/", $normalizedHtml);
+    $paragraphs = array_map(function ($paragraph) {
+        $paragraph = preg_replace("/\n/", "<br>\n", trim($paragraph));
+        return '<p>' . $paragraph . '</p>';
+    }, array_filter($paragraphs, static fn($paragraph) => trim($paragraph) !== ''));
+
+    return implode("\n", $paragraphs);
+}
+
 
 function validateAllowedTags($html, $allowedTags = null)
 {
