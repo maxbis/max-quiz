@@ -704,7 +704,7 @@ class QuestionController extends Controller
         $badQuestions = [];
 
         foreach ($questions as $question) {
-            $issues = $this->validateAllowedTags($question['question']);
+            $issues = $this->validateAllowedTags($question['question'], $this->getPdfAllowedTags());
             if (!empty($issues)) {
                 $badQuestions[$question['id']] = $issues;
             }
@@ -747,6 +747,7 @@ class QuestionController extends Controller
         $html = $this->renderPartial('pdf', [
             'quiz' => $quiz,
             'questions' => $questions,
+            'allowedTags' => $this->getPdfAllowedTags(),
         ]);
 
         // echo "<pre>";
@@ -857,11 +858,21 @@ class QuestionController extends Controller
         return $this->render('import', ['input' => $results, 'quiz' => null]);
     }
 
-    private function validateAllowedTags($html, $allowedTags = ['pre', 'code', 'i', 'b'])
+    private function getPdfAllowedTags()
     {
+        return ['pre', 'code', 'i', 'b', 'p', 'br', 'ul', 'ol', 'li', 'strong', 'em'];
+    }
+
+    private function validateAllowedTags($html, $allowedTags = null)
+    {
+        $allowedTags = $allowedTags ?? $this->getPdfAllowedTags();
         $errors = [];
 
         foreach ($allowedTags as $tag) {
+            if (in_array($tag, ['br'], true)) {
+                continue;
+            }
+
             $openMatches = [];
             $closeMatches = [];
 

@@ -59,10 +59,28 @@ require_once Yii::getAlias('@app/views/include/functions.php');
         .question-text {
             font-size: 13px;
             line-height: 1.5;
-            margin-bottom: 0px;
-            white-space: pre-wrap;
+            margin-bottom: 0;
+            word-wrap: break-word;
         }
-        
+
+        .question-text p {
+            margin: 0 0 12px 0;
+        }
+
+        .question-text p:last-child {
+            margin-bottom: 0;
+        }
+
+        .question-text ul,
+        .question-text ol {
+            margin: 0 0 12px 24px;
+            padding: 0;
+        }
+
+        .question-text li {
+            margin-bottom: 6px;
+        }
+
         .question-text pre {
             background-color: #f8f9fa;
             border: 1px solid #e9ecef;
@@ -101,7 +119,7 @@ require_once Yii::getAlias('@app/views/include/functions.php');
         </div>
         
         <div class="question-text">
-            <?= escapeHtmlExceptTags($question['question']) ?>
+            <?= escapeHtmlExceptTags($question['question'], [], $allowedTags ?? questionHtmlAllowedTags()) ?>
         </div>
         
     </div>

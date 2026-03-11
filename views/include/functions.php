@@ -1,5 +1,10 @@
 <?php
 
+function questionHtmlAllowedTags()
+{
+    return ['pre', 'code', 'i', 'b', 'p', 'br', 'ul', 'ol', 'li', 'strong', 'em'];
+}
+
 function escapeHtmlForAnswers($html, $deleteTags = [])
 {
     // $html = str_replace('<pre>', '<b>', $html);
@@ -17,8 +22,10 @@ function escapeHtmlForAnswers($html, $deleteTags = [])
 }
 
 
-function escapeHtmlExceptTags($html, $deleteTags = [], $allowedTags = ['pre', 'code', 'i', 'b'])
+function escapeHtmlExceptTags($html, $deleteTags = [], $allowedTags = null)
 {
+    $allowedTags = $allowedTags ?? questionHtmlAllowedTags();
+
     foreach ($deleteTags as $tag) {
         $html = str_replace('<' . $tag . '>', '', $html);
         $html = str_replace('</' . $tag . '>', '', $html);
@@ -29,21 +36,36 @@ function escapeHtmlExceptTags($html, $deleteTags = [], $allowedTags = ['pre', 'c
 
     // For each allowed tag, replace the escaped version back to HTML
     foreach ($allowedTags as $tag) {
-        $escapedStartTag = '&lt;' . $tag . '&gt;';
-        $escapedEndTag = '&lt;/' . $tag . '&gt;';
-        $escapedHtml = str_replace($escapedStartTag, '<' . $tag . '>', $escapedHtml);
-        $escapedHtml = str_replace($escapedEndTag, '</' . $tag . '>', $escapedHtml);
+        $escapedHtml = preg_replace(
+            '/&lt;(' . preg_quote($tag, '/') . ')\s*\/?&gt;/i',
+            '<$1>',
+            $escapedHtml
+        );
+        $escapedHtml = preg_replace(
+            '/&lt;\/(' . preg_quote($tag, '/') . ')\s*&gt;/i',
+            '</$1>',
+            $escapedHtml
+        );
+    }
+
+    if (in_array('br', $allowedTags, true)) {
+        $escapedHtml = preg_replace('/&lt;br\s*\/?&gt;/i', '<br>', $escapedHtml);
     }
 
     return $escapedHtml;
 }
 
 
-function validateAllowedTags($html, $allowedTags = ['pre', 'code', 'i', 'b'])
+function validateAllowedTags($html, $allowedTags = null)
 {
+    $allowedTags = $allowedTags ?? questionHtmlAllowedTags();
     $errors = [];
 
     foreach ($allowedTags as $tag) {
+        if (in_array($tag, ['br'], true)) {
+            continue;
+        }
+
         $open  = preg_match_all('/<' . $tag . '\b[^>]*>/i', $html, $unused);
         $close = preg_match_all('/<\/' . $tag . '>/i', $html, $unused);
 
