@@ -18,7 +18,7 @@ class QuizSearch extends Quiz
     {
         return [
             [['id', 'active', 'no_questions'], 'integer'],
-            [['name', 'password'], 'safe'],
+            [['name', 'quiz_group', 'language', 'password'], 'safe'],
         ];
     }
 
@@ -75,6 +75,8 @@ class QuizSearch extends Quiz
         ]);
 
         $query->andFilterWhere(['like', 'name', $this->name])
+            ->andFilterWhere(['like', 'quiz_group', $this->quiz_group])
+            ->andFilterWhere(['like', 'language', $this->language])
             ->andFilterWhere(['like', 'password', $this->password]);
 
         return $dataProvider;

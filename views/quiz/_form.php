@@ -231,12 +231,28 @@ $id = Yii::$app->request->get('id');
             </div>
             
             <div class="row">
-                <div class="col-md-6">
+                <div class="col-md-4">
                     <?= $form->field($model, 'name')->textInput(['maxlength' => true, 'class' => 'form-control'])->label('Quiz Name') ?>
                 </div>
+                <div class="col-md-4">
+                    <?= $form->field($model, 'quiz_group')
+                        ->textInput(['maxlength' => true, 'class' => 'form-control'])
+                        ->label('Quiz Group')
+                        ->hint('Shared key for equivalent quizzes. Existing quizzes are grouped by the text before the first dot in the name.') ?>
+                </div>
+                <div class="col-md-4">
+                    <?= $form->field($model, 'language')
+                        ->textInput(['maxlength' => true, 'class' => 'form-control', 'placeholder' => 'en, nl, de...'])
+                        ->label('Language')
+                        ->hint('Optional language code for this variant.') ?>
+                </div>
+            </div>
+
+            <div class="row">
                 <div class="col-md-6">
                     <?= $form->field($model, 'password')->textInput(['maxlength' => true, 'class' => 'form-control'])->label('Unique code to access quiz') ?>
                 </div>
+                <div class="col-md-6"></div>
             </div>
         </div>
 

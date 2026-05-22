@@ -34,33 +34,55 @@ try {
     ]);
 
     $quizStmt = $pdo->query("
-        SELECT id, name, no_questions
+        SELECT id, name, quiz_group, language, no_questions
         FROM quiz
         WHERE active = 1
-        ORDER BY name ASC
+        ORDER BY quiz_group ASC, name ASC
     ");
     $activeQuizzes = $quizStmt->fetchAll();
 
     if ($activeQuizzes) {
+        $quizIdToGroupKey = [];
+
         foreach ($activeQuizzes as $quiz) {
-            $parts = explode('.', $quiz['name'], 2);
-            $main = $parts[0];
-            $sub = $parts[1] ?? $parts[0];
+            $groupKey = trim((string)$quiz['quiz_group']);
+            if ($groupKey === '') {
+                $groupKey = trim((string)$quiz['name']);
+            }
 
-            $entry = [
-                'id' => (int)$quiz['id'],
-                'main' => $main,
-                'sub' => $sub,
-                'full_name' => $quiz['name'],
-            ];
+            $language = trim((string)($quiz['language'] ?? ''));
 
-            $quizGroups[$main][] = $entry;
-            $flatQuizzes[] = $entry;
+            if (!isset($quizGroups[$groupKey])) {
+                $quizGroups[$groupKey] = [
+                    'key' => $groupKey,
+                    'label' => $groupKey,
+                    'languages' => [],
+                    'names' => [],
+                    'quiz_ids' => [],
+                ];
+            }
+
+            if ($language !== '') {
+                $quizGroups[$groupKey]['languages'][$language] = strtoupper($language);
+            }
+            $quizGroups[$groupKey]['names'][] = $quiz['name'];
+            $quizGroups[$groupKey]['quiz_ids'][] = (int)$quiz['id'];
+            $quizIdToGroupKey[(int)$quiz['id']] = $groupKey;
+        }
+
+        foreach ($quizGroups as $groupKey => $group) {
+            $languageLabels = array_values($group['languages']);
+            sort($languageLabels, SORT_NATURAL | SORT_FLAG_CASE);
+            $quizGroups[$groupKey]['sub_label'] = $languageLabels
+                ? implode(' / ', $languageLabels)
+                : 'Grouped';
+            $quizGroups[$groupKey]['full_name'] = implode(' | ', array_unique($group['names']));
+            $flatQuizzes[] = $quizGroups[$groupKey];
         }
 
         $csvHeaders = ['Student', 'Class', 'Name'];
         foreach ($flatQuizzes as $quiz) {
-            $csvHeaders[] = $quiz['main'] . ' ' . $quiz['sub'];
+            $csvHeaders[] = $quiz['label'];
         }
         $csvHeaders[] = 'Average';
 
@@ -89,6 +111,10 @@ try {
         foreach ($rows as $row) {
             $studentNr = trim((string)$row['student_nr']);
             $quizId = (int)$row['quiz_id'];
+            $groupKey = $quizIdToGroupKey[$quizId] ?? null;
+            if ($groupKey === null) {
+                continue;
+            }
 
             if (!isset($students[$studentNr])) {
                 $students[$studentNr] = [
@@ -108,10 +134,10 @@ try {
             if (!isset($attemptCounts[$studentNr])) {
                 $attemptCounts[$studentNr] = [];
             }
-            $attemptCounts[$studentNr][$quizId] = ($attemptCounts[$studentNr][$quizId] ?? 0) + 1;
+            $attemptCounts[$studentNr][$groupKey] = ($attemptCounts[$studentNr][$groupKey] ?? 0) + 1;
 
-            if (!isset($scores[$studentNr][$quizId]) || ($ratio !== null && $ratio > $scores[$studentNr][$quizId]['ratio'])) {
-                $scores[$studentNr][$quizId] = [
+            if (!isset($scores[$studentNr][$groupKey]) || ($ratio !== null && $ratio > $scores[$studentNr][$groupKey]['ratio'])) {
+                $scores[$studentNr][$groupKey] = [
                     'ratio' => $ratio,
                     'correct' => $correct,
                     'total' => $total,
@@ -124,12 +150,12 @@ try {
         // Calculate column averages (per quiz)
         $columnAverages = [];
         foreach ($flatQuizzes as $quiz) {
-            $quizId = $quiz['id'];
+            $groupKey = $quiz['key'];
             $sum = 0;
             $count = 0;
             
             foreach ($students as $student) {
-                $cell = $scores[$student['student_nr']][$quizId] ?? null;
+                $cell = $scores[$student['student_nr']][$groupKey] ?? null;
                 $ratio = $cell['ratio'] ?? null;
                 
                 if ($ratio !== null) {
@@ -138,7 +164,7 @@ try {
                 }
             }
             
-            $columnAverages[$quizId] = $count > 0 ? $sum / $count : null;
+            $columnAverages[$groupKey] = $count > 0 ? $sum / $count : null;
         }
     }
 } catch (PDOException $exception) {
@@ -230,8 +256,8 @@ try {
                                     Name
                                 </button>
                             </th>
-                            <?php foreach ($quizGroups as $groupName => $groupQuizzes): ?>
-                                <th class="group-header" colspan="<?= count($groupQuizzes) ?>">
+                            <?php foreach ($quizGroups as $groupName => $groupQuiz): ?>
+                                <th class="group-header" colspan="1">
                                     <?= htmlspecialchars($groupName, ENT_QUOTES, 'UTF-8') ?>
                                 </th>
                             <?php endforeach; ?>
@@ -247,19 +273,17 @@ try {
                         </tr>
                         <tr>
                             <?php $columnIndex = 3; ?>
-                            <?php foreach ($quizGroups as $groupQuizzes): ?>
-                                <?php foreach ($groupQuizzes as $quiz): ?>
-                                    <th class="sub-header" title="<?= htmlspecialchars($quiz['full_name'], ENT_QUOTES, 'UTF-8') ?>">
-                                        <button
-                                            type="button"
-                                            class="sort-trigger"
-                                            data-sort-index="<?= $columnIndex ?>"
-                                        >
-                                            <?= htmlspecialchars($quiz['sub'], ENT_QUOTES, 'UTF-8') ?>
-                                        </button>
-                                    </th>
-                                    <?php $columnIndex++; ?>
-                                <?php endforeach; ?>
+                            <?php foreach ($quizGroups as $quiz): ?>
+                                <th class="sub-header" title="<?= htmlspecialchars($quiz['full_name'], ENT_QUOTES, 'UTF-8') ?>">
+                                    <button
+                                        type="button"
+                                        class="sort-trigger"
+                                        data-sort-index="<?= $columnIndex ?>"
+                                    >
+                                        <?= htmlspecialchars($quiz['sub_label'], ENT_QUOTES, 'UTF-8') ?>
+                                    </button>
+                                </th>
+                                <?php $columnIndex++; ?>
                             <?php endforeach; ?>
                         </tr>
                         </thead>
@@ -284,9 +308,9 @@ try {
                                 ?>
                                 <?php foreach ($flatQuizzes as $quiz): ?>
                                     <?php
-                                    $quizId = $quiz['id'];
-                                    $cell = $scores[$student['student_nr']][$quizId] ?? null;
-                                    $attemptCount = $attemptCounts[$student['student_nr']][$quizId] ?? 0;
+                                    $groupKey = $quiz['key'];
+                                    $cell = $scores[$student['student_nr']][$groupKey] ?? null;
+                                    $attemptCount = $attemptCounts[$student['student_nr']][$groupKey] ?? 0;
                                     $hasMultipleAttempts = $attemptCount > 1;
                                     $ratio = $cell['ratio'] ?? null;
                                     $percent = $ratio !== null ? round($ratio * 100) : null;
@@ -343,8 +367,8 @@ try {
                             <td class="sticky sticky-name subtle"></td>
                             <?php foreach ($flatQuizzes as $quiz): ?>
                                 <?php
-                                $quizId = $quiz['id'];
-                                $avgRatio = $columnAverages[$quizId] ?? null;
+                                $groupKey = $quiz['key'];
+                                $avgRatio = $columnAverages[$groupKey] ?? null;
                                 $avgPercent = $avgRatio !== null ? round($avgRatio * 100, 1) : null;
                                 $avgTone = 'empty';
                                 if ($avgPercent !== null) {
@@ -404,4 +428,3 @@ try {
     <script src="assets/app.js" defer></script>
 </body>
 </html>
-

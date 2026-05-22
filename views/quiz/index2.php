@@ -885,18 +885,28 @@ $this->registerJs($regradeScript);
         vertical-align: middle;
     }
 
-    /* Official test badge (KC) */
-    .kc-badge {
+    .quiz-meta-badge {
         display: inline-block;
-        background-color: #eef0f3; /* subtle light grey */
-        color: #6c757d;           /* muted text */
         padding: 1px 6px;
         border-radius: 10px;
-        border: 1px solid #d5d9e0; /* soft border for definition */
         font-size: 10px;
         margin-left: 6px;
         vertical-align: middle;
         letter-spacing: 0.3px;
+    }
+
+    .language-badge {
+        background-color: #eef0f3;
+        color: #6c757d;
+        border: 1px solid #d5d9e0;
+    }
+
+    /* Official test badge (KC) */
+    .kc-badge {
+        background-color: #fff3cd;
+        color: #8a5a00;
+        border: 1px solid #e8c568;
+        box-shadow: inset 0 0 0 1px rgba(255,255,255,0.25);
     }
 </style>
 
@@ -951,15 +961,16 @@ $this->registerJs($regradeScript);
                 $index = 1;
 
                 foreach ($quizes as $quiz):
-                    $currentGroup = strstr($quiz['name'], '.', true);
+                    $currentGroup = trim((string)($quiz['quiz_group'] ?? ''));
                     if ($lastGroup !== $currentGroup):
                         $lastGroup = $currentGroup;
                         $groupTitle = $currentGroup ?: 'No Category';
+                        $groupTitleEncoded = Html::encode($groupTitle);
                         echo "<tr class='group-header collapsed' style='background-color:#f0f0f9;color:darkblue;font-weight:350;font-style:italic;width:20px;'>
                                 <td class='col-bullet' style='width:20px;'></td>
                                 <td class='col-checkbox' style='width:20px;'></td>
                                 <td class='col-quiz-name'>
-                                    <div class='group-title'><span class='triangle' title='Click to expand/collapse'>▼</span>&nbsp;{$groupTitle}</div>
+                                    <div class='group-title'><span class='triangle' title='Click to expand/collapse'>▼</span>&nbsp;{$groupTitleEncoded}</div>
                                 </td>
                                 <td class='col-password' style='color:lightgrey'>Password</td>
                                 <td class='col-questions' style='color:lightgrey'>Questions</td>
@@ -1001,9 +1012,12 @@ $this->registerJs($regradeScript);
                                     (int)($quiz['random'] ?? 0) === 0
                                 );
                                 if ($isOfficialTest) {
-                                    echo "<span class='kc-badge' title='Official test settings: No Review, On Paper, IP Restricted, Fixed Order'>KC</span>";
+                                    echo "<span class='quiz-meta-badge kc-badge' title='Official test settings: No Review, On Paper, IP Restricted, Fixed Order'>KC</span>";
                                 }
                             ?>
+                            <?php if (!empty($quiz['language'])): ?>
+                                <span class='quiz-meta-badge language-badge' title='Language variant'><?= Html::encode(strtoupper((string)$quiz['language'])) ?></span>
+                            <?php endif; ?>
                             <?php if (isset($quiz['archived']) && $quiz['archived']) echo "<span class='archived-badge'>ARCHIVED</span>"; ?>
                         </td>
                         <td class="col-password highlight-column" _style='background-color:#f8f8f8;color:#d0d0e0;'>

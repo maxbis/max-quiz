@@ -38,11 +38,13 @@ class SubmissionSearch extends Submission
      *
      * @return ActiveDataProvider
      */
-    public function search($params, $quiz_id = null)
+    public function search($params, $quiz_id = null, array $quizIds = [])
     {
         $query = Submission::find();
 
-        if ($quiz_id) {
+        if (!empty($quizIds)) {
+            $query->andWhere(['submission.quiz_id' => $quizIds]);
+        } elseif ($quiz_id) {
             $query->andWhere(['quiz_id' => $quiz_id]);
         }
 
@@ -119,6 +121,11 @@ class SubmissionSearch extends Submission
                     'duration' => [
                         'asc' => ['(TIMESTAMPDIFF(SECOND, end_time, start_time ))' => SORT_ASC],
                         'desc' => ['(TIMESTAMPDIFF(SECOND, end_time, start_time))' => SORT_DESC],
+                        'default' => SORT_ASC,
+                    ],
+                    'language' => [
+                        'asc' => ['quiz.language' => SORT_ASC, 'quiz.name' => SORT_ASC],
+                        'desc' => ['quiz.language' => SORT_DESC, 'quiz.name' => SORT_DESC],
                         'default' => SORT_ASC,
                     ],
                 ],

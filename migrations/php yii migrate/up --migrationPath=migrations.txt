@@ -1,0 +1,3 @@
+Run from project root:
+
+php yii migrate/new --migrationPath=migrations

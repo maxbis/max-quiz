@@ -14,6 +14,9 @@ app\assets\CustomDialogAsset::register($this);
 $this->title = 'Results for ' . $quizName;
 // echo "<p style='color:#909090;font-size:16px;'>".$this->title.'</p>';
 $params = Yii::$app->request->getQueryParams();
+$groupedQuizzes = $groupedQuizzes ?? [];
+$showGroupedResults = $showGroupedResults ?? false;
+$selectedQuizId = $selectedQuizId ?? null;
 ?>
 
 <style>
@@ -23,13 +26,13 @@ $params = Yii::$app->request->getQueryParams();
         border-collapse: collapse;
         /* Ensures that the border is collapsed (no space between them) */
         border: 1px solid #b0b0b0;
-        font-size: 14px;
+        font-size: 13px;
     }
 
     /* Style for table cells */
     .condensed-table td,
     .condensed-table th {
-        padding: 2px;
+        padding: 1px 2px;
         border: 1px solid #e0e0e0;
     }
 
@@ -119,6 +122,26 @@ $statusClass = $quizActive == 1 ? 'dot-green' : 'dot-red';
     </div>
 </div>
 
+<?php if ($showGroupedResults && !empty($groupedQuizzes)): ?>
+    <p style="color:#606090; margin-top: 6px; margin-bottom: 14px;">
+        Showing submissions for this quiz group:
+        <?php
+        $labels = [];
+        foreach ($groupedQuizzes as $groupQuiz) {
+            $label = $groupQuiz->name;
+            if (!empty($groupQuiz->language)) {
+                $label .= ' [' . strtoupper((string)$groupQuiz->language) . ']';
+            }
+            if ((int)$groupQuiz->id === (int)$selectedQuizId) {
+                $label .= ' (selected)';
+            }
+            $labels[] = Html::encode($label);
+        }
+        echo implode(' | ', $labels);
+        ?>
+    </p>
+<?php endif; ?>
+
 <!-- Include the reusable custom dialog component -->
 <?= $this->render('@app/views/include/_custom-dialog.php') ?>
 
@@ -157,10 +180,22 @@ $statusClass = $quizActive == 1 ? 'dot-green' : 'dot-red';
                     'headerOptions' => ['style' => 'width:30px;'],
                 ],
                 [
+                    'label' => 'Lang',
+                    'attribute' => 'language',
+                    'enableSorting' => true,
+                    'visible' => $showGroupedResults,
+                    'headerOptions' => ['style' => 'width:54px;'],
+                    'format' => 'raw',
+                    'value' => function ($model) {
+                        $language = trim((string)($model->quiz->language ?? ''));
+                        return Html::encode($language !== '' ? strtoupper($language) : '—');
+                    },
+                ],
+                [
                     'label' => 'Code', // You can change the label as needed
                     'attribute' => 'token',
                     'enableSorting' => true,
-                    'headerOptions' => ['style' => 'width:40px;'],
+                    'headerOptions' => ['style' => 'width:36px;'],
                     'format' => 'raw',
                     'value' => function ($model) {
                         return Html::a(strtoupper(substr($model->token, 0, 3)), ['submission/update', 'id' => $model->id]);
@@ -173,7 +208,7 @@ $statusClass = $quizActive == 1 ? 'dot-green' : 'dot-red';
                     'filter' => true,
                     'label' => 'Ready',
                     // 'header' => 'Ready',
-                    'headerOptions' => ['style' => 'width:40px;'],
+                    'headerOptions' => ['style' => 'width:34px;'],
                     'contentOptions' => $contentOptionsReady,
                     'format' => 'raw',
                     'value' => function ($model) {
@@ -183,7 +218,7 @@ $statusClass = $quizActive == 1 ? 'dot-green' : 'dot-red';
                 [
                     'label' => 'Voortgang',
                     'attribute' => 'no_answered',
-                    'headerOptions' => ['style' => 'width:60px;'],
+                    'headerOptions' => ['style' => 'width:56px;'],
                     'contentOptions' => function ($model, $key, $index, $column) {
                         return ['style' => "position: relative;"];
                     },
@@ -197,7 +232,7 @@ $statusClass = $quizActive == 1 ? 'dot-green' : 'dot-red';
                 [
                     'label' => 'Score',
                     'attribute' => 'answeredScore',
-                    'headerOptions' => ['style' => 'width:80px;'],
+                    'headerOptions' => ['style' => 'width:66px;'],
                     'contentOptions' => function ($model, $key, $index, $column) {
                         if ($model->finished) {
                             //finished
@@ -259,14 +294,14 @@ $statusClass = $quizActive == 1 ? 'dot-green' : 'dot-red';
                 [
                     'attribute' => 'class',
                     'label' => 'klas',
-                    'headerOptions' => ['style' => 'width:60px;'],
+                    'headerOptions' => ['style' => 'width:52px;'],
                     'contentOptions' => $contentOptionsReady,
 
                 ],
                 [
                     'attribute' => 'no_answered',
                     'label' => 'Progr.',
-                    'headerOptions' => ['style' => 'width:60px;', 'title' => 'Number of Questions / Number of Answers'],
+                    'headerOptions' => ['style' => 'width:54px;', 'title' => 'Number of Questions / Number of Answers'],
                     'contentOptions' => $contentOptionsReady,
                     'format' => 'raw',
                     'value' => function ($model) {
@@ -277,7 +312,7 @@ $statusClass = $quizActive == 1 ? 'dot-green' : 'dot-red';
                 [
                     'attribute' => 'no_correct',
                     'label' => 'Corr',
-                    'headerOptions' => ['style' => 'width:60px;', 'title' => 'Number of Correct Answers'],
+                    'headerOptions' => ['style' => 'width:50px;', 'title' => 'Number of Correct Answers'],
                     'contentOptions' => $contentOptionsReady,
 
                 ],
@@ -286,7 +321,7 @@ $statusClass = $quizActive == 1 ? 'dot-green' : 'dot-red';
                     'attribute' => 'start_time',
                     'enableSorting' => true,
                     'filter' => false,
-                    'headerOptions' => ['style' => 'width:100px;'],
+                    'headerOptions' => ['style' => 'width:92px;'],
                     'format' => 'raw',
                     'value' => function ($model) {
                         $value = Yii::$app->formatter->asDatetime($model->start_time, 'php:d-m H:i');
@@ -296,7 +331,7 @@ $statusClass = $quizActive == 1 ? 'dot-green' : 'dot-red';
                 [
                     'attribute' => 'last_updated',
                     'label' => 'Last Update',
-                    'headerOptions' => ['style' => 'width:100px;'],
+                    'headerOptions' => ['style' => 'width:92px;'],
                     'format' => 'raw',
                     'value' => function ($model) {
                         $formattedDate = Yii::$app->formatter->asDatetime($model->last_updated, 'php:d-m H:i');
@@ -308,7 +343,7 @@ $statusClass = $quizActive == 1 ? 'dot-green' : 'dot-red';
                     'enableSorting' => false,
                     'attribute' => 'duration',
                     'filter' => false,
-                    'headerOptions' => ['style' => 'width:60px;'],
+                    'headerOptions' => ['style' => 'width:58px;'],
                     'format' => 'raw',
                     'value' => function ($model) {
                         if (isset($model->end_time)) {
@@ -341,7 +376,7 @@ $statusClass = $quizActive == 1 ? 'dot-green' : 'dot-red';
                 [
                     'attribute' => 'user_agent',
                     'label' => 'User Agent',
-                    'headerOptions' => ['style' => 'width:90px;'],
+                    'headerOptions' => ['style' => 'width:84px;'],
                     'value' => function ($model) {
                         // Split the user_agent by spaces and return the first word
                         return $model->user_agent ? strtok($model->user_agent, ' ') : '';
@@ -354,7 +389,7 @@ $statusClass = $quizActive == 1 ? 'dot-green' : 'dot-red';
                 [
                     'attribute' => 'ip_address',
                     'label' => 'IP',
-                    'headerOptions' => ['style' => 'width:60px;'],
+                    'headerOptions' => ['style' => 'width:54px;'],
                 ],
                 [
                     'class' => ActionColumn::class,

@@ -80,6 +80,8 @@ INSERT INTO `question` (`id`, `question`, `a1`, `a2`, `a3`, `a4`, `a5`, `a6`, `c
 CREATE TABLE `quiz` (
   `id` int(11) NOT NULL,
   `name` varchar(40) NOT NULL,
+  `quiz_group` varchar(40) NOT NULL,
+  `language` varchar(10) DEFAULT NULL,
   `password` varchar(20) NOT NULL,
   `active` tinyint(1) NOT NULL,
   `no_questions` int(11) DEFAULT NULL,
@@ -91,8 +93,8 @@ CREATE TABLE `quiz` (
 -- Dumping data for table `quiz`
 --
 
-INSERT INTO `quiz` (`id`, `name`, `password`, `active`, `no_questions`, `review`, `archived`) VALUES
-(31, 'Demo', 'Demo', 1, 3, 1, 0);
+INSERT INTO `quiz` (`id`, `name`, `quiz_group`, `language`, `password`, `active`, `no_questions`, `review`, `archived`) VALUES
+(31, 'Demo', 'Demo', NULL, 'Demo', 1, 3, 1, 0);
 
 -- --------------------------------------------------------
 

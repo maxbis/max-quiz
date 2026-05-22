@@ -62,25 +62,18 @@ class SubmissionController extends Controller
     public function actionIndex($quiz_id = null)
     {
         $searchModel = new SubmissionSearch();
-        $dataProvider = $searchModel->search($this->request->queryParams, $quiz_id);
+        $quizScope = $this->resolveQuizScope($quiz_id);
 
-        $quizName = 'All Quizes';
-        if ($quiz_id !== null) {
-            $quiz = Quiz::findOne($quiz_id);
-            if ($quiz !== null) {
-                $quizName = $quiz->name;
-                $quizActive = $quiz->active;
-            } else {
-                $quizName = "";
-                $quizActive = false;
-            }
-        }
+        $dataProvider = $searchModel->search($this->request->queryParams, $quiz_id, $quizScope['quizIds']);
 
         return $this->render('index', [
             'searchModel' => $searchModel,
             'dataProvider' => $dataProvider,
-            'quizName' => $quizName,
-            'quizActive' => $quizActive,
+            'quizName' => $quizScope['quizName'],
+            'quizActive' => $quizScope['quizActive'],
+            'groupedQuizzes' => $quizScope['groupedQuizzes'],
+            'showGroupedResults' => $quizScope['showGroupedResults'],
+            'selectedQuizId' => $quiz_id,
         ]);
     }
 
@@ -318,7 +311,16 @@ class SubmissionController extends Controller
 
     public function actionExport($quiz_id, $filename = null)
     {
-        $sql = "select q.name, student_nr, first_name, last_name, class,
+        $quizScope = $this->resolveQuizScope((int)$quiz_id);
+        $quizIds = $quizScope['quizIds'];
+        if (empty($quizIds)) {
+            throw new NotFoundHttpException('The requested quiz could not be found.');
+        }
+
+        $params = $this->buildQuizIdParams($quizIds);
+        $placeholders = implode(',', array_keys($params));
+
+        $sql = "select q.name, q.language, q.quiz_group, student_nr, first_name, last_name, class,
                 CASE 
                     WHEN no_correct = 0 THEN 0
                     ELSE ROUND((no_correct / CAST(s.no_questions AS DECIMAL)) * 100, 0)
@@ -328,12 +330,13 @@ class SubmissionController extends Controller
                 question_order, answer_order
                 from submission s
                 join quiz q on q.id = s.quiz_id
-                where q.id = $quiz_id";
-        $submissions = Yii::$app->db->createCommand($sql)->queryAll();
+                where q.id in ($placeholders)
+                order by q.name asc, s.start_time asc";
+        $submissions = Yii::$app->db->createCommand($sql, $params)->queryAll();
 
         $sql = "select q.id, q.correct from question q
-                join quizquestion qq on qq.question_id = q.id and qq.active=1 and qq.quiz_id = $quiz_id";
-        $correctAnswers = Yii::$app->db->createCommand($sql)->queryAll();
+                join quizquestion qq on qq.question_id = q.id and qq.active=1 and qq.quiz_id in ($placeholders)";
+        $correctAnswers = Yii::$app->db->createCommand($sql, $params)->queryAll();
         $correctAnswersIndexed = ArrayHelper::map($correctAnswers, 'id', 'correct');
         ksort($correctAnswersIndexed);
 
@@ -368,7 +371,9 @@ class SubmissionController extends Controller
 
         if ($submissions)
             $columns = [
+                'Quizgroep' => 'quiz_group',
                 'Cursus' => 'name',
+                'Lang' => 'language',
                 'Student_nr' => 'student_nr',
                 'Student' => ['first_name', 'last_name'], // Concatenate first_name and last_name
                 'Klas' => 'class',
@@ -386,8 +391,20 @@ class SubmissionController extends Controller
     // WIP: stats over this quiz
     public function actionExportStats($quiz_id, $filename = null)
     {
+        $quizScope = $this->resolveQuizScope((int)$quiz_id);
+        $quizIds = $quizScope['quizIds'];
+        if (empty($quizIds)) {
+            throw new NotFoundHttpException('The requested quiz could not be found.');
+        }
+
+        $params = $this->buildQuizIdParams($quizIds);
+        $placeholders = implode(',', array_keys($params));
+
         $sql = "
             SELECT
+                z.quiz_group quiz_group,
+                z.name quiz_name,
+                z.language language,
                 CAST(timestamp AS DATE) datum, 
                 question_id question_id,
                 q.question question,
@@ -396,14 +413,18 @@ class SubmissionController extends Controller
                 ROUND(SUM(l.correct) * 100 / SUM(1), 1) AS perc
             FROM `log`l
             join question q on q.id = l.question_id
-            WHERE quiz_id=$quiz_id
-            group by 1,2,3
-            order by 6 desc
+            join quiz z on z.id = l.quiz_id
+            WHERE l.quiz_id in ($placeholders)
+            group by 1,2,3,4,5
+            order by 8 desc
         ";
-        $submissions = Yii::$app->db->createCommand($sql)->queryAll();
+        $submissions = Yii::$app->db->createCommand($sql, $params)->queryAll();
 
         if ($submissions)
             $columns = [
+                'Quizgroep' => 'quiz_group',
+                'Cursus' => 'quiz_name',
+                'Lang' => 'language',
                 'Datum' => 'datum',
                 'Vraag ID' => 'question_id',
                 'Vraag' => 'question',
@@ -478,6 +499,61 @@ class SubmissionController extends Controller
         }
 
         return explode(" ", $list);
+    }
+
+    private function resolveQuizScope(?int $quizId): array
+    {
+        $result = [
+            'quizName' => 'All Quizes',
+            'quizActive' => false,
+            'groupedQuizzes' => [],
+            'quizIds' => [],
+            'showGroupedResults' => false,
+        ];
+
+        if ($quizId === null) {
+            return $result;
+        }
+
+        $quiz = Quiz::findOne($quizId);
+        if ($quiz === null) {
+            $result['quizName'] = '';
+            return $result;
+        }
+
+        $result['quizName'] = $quiz->name;
+        $result['quizActive'] = (bool)$quiz->active;
+        $result['quizIds'] = [(int)$quiz->id];
+
+        if (empty($quiz->quiz_group)) {
+            return $result;
+        }
+
+        $groupedQuizzes = Quiz::find()
+            ->where(['quiz_group' => $quiz->quiz_group])
+            ->orderBy(['name' => SORT_ASC, 'id' => SORT_ASC])
+            ->all();
+
+        $result['groupedQuizzes'] = $groupedQuizzes;
+
+        if (count($groupedQuizzes) > 1) {
+            $result['quizIds'] = array_map(static fn(Quiz $groupQuiz): int => (int)$groupQuiz->id, $groupedQuizzes);
+            $result['showGroupedResults'] = true;
+            $result['quizName'] = $quiz->quiz_group;
+        }
+
+        return $result;
+    }
+
+    private function buildQuizIdParams(array $quizIds): array
+    {
+        $params = [];
+
+        foreach (array_values($quizIds) as $index => $quizId) {
+            $params[':quizId' . $index] = (int)$quizId;
+        }
+
+        return $params;
     }
 
 }

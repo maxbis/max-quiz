@@ -102,8 +102,7 @@ class QuizController extends Controller
         }
         // If $show === 'all', no filter is applied
 
-        // sort on names containing a . first and second on name
-        $sql = "select * from quiz" . $archiveFilter . " order by CASE WHEN name LIKE '%.%' THEN 1 ELSE 2 END, name";
+        $sql = "select * from quiz" . $archiveFilter . " order by quiz_group asc, name asc";
         $quizes = Yii::$app->db->createCommand($sql)->queryAll();
 
         return $this->render('index2', [
@@ -247,7 +246,33 @@ class QuizController extends Controller
 
     public function actionCopy($id)
     {
-        $sql = "insert into quiz ( name, password ) select concat('copy of ',name), concat('copy_',password) from quiz where id = $id";
+        $sql = "insert into quiz (
+                    name,
+                    quiz_group,
+                    language,
+                    password,
+                    active,
+                    no_questions,
+                    review,
+                    random,
+                    blind,
+                    ip_check,
+                    archived
+                )
+                select
+                    concat('copy of ', name),
+                    concat('copy of ', quiz_group),
+                    language,
+                    concat('copy_', password),
+                    0,
+                    no_questions,
+                    review,
+                    random,
+                    blind,
+                    ip_check,
+                    archived
+                from quiz
+                where id = $id";
         Yii::$app->db->createCommand($sql)->execute();
         $sql = "select max(id) id from quiz;";
         $newId = Yii::$app->db->createCommand($sql)->queryOne()['id'];

@@ -66,6 +66,8 @@ CREATE TABLE `question` (
 CREATE TABLE `quiz` (
   `id` int(11) NOT NULL,
   `name` varchar(40) NOT NULL,
+  `quiz_group` varchar(40) NOT NULL,
+  `language` varchar(10) DEFAULT NULL,
   `password` varchar(20) NOT NULL,
   `active` tinyint(1) NOT NULL DEFAULT 0,
   `no_questions` int(11) DEFAULT NULL,
