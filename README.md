@@ -86,6 +86,11 @@ The password is stored as a SHA1 hash in the dump—change it immediately on pro
 
 Additional feature guides live under `docs/` (for example `docs/QUESTION_INDEX_PDF_DIALOG.md`, `docs/PDF_DIALOG_IMPLEMENTATION.md`, and `docs/TEST_QUIZ_AUTO_ACTIVATE.md`). Refer to them for advanced workflows like PDF exports or automatic quiz activation.
 
+Recent quiz-grouping behavior is documented here:
+
+- `docs/controllers/submission-results-grouping.md` – grouped submission page and grouped exports
+- `docs/web/overview/quiz-overview-grouping.md` – standalone overview column grouping and score aggregation
+
 ## Contributing
 
 1. Keep both SQL dumps aligned with any schema change.
@@ -93,4 +98,3 @@ Additional feature guides live under `docs/` (for example `docs/QUESTION_INDEX_P
 3. Submit pull requests or issues via GitHub.
 
 For Yii-specific help, consult the [Yii 2 Guide](https://www.yiiframework.com/doc/guide/2.0/en/start-installation).
-
