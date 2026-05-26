@@ -1,5 +1,20 @@
 <?php
 declare(strict_types=1);
+
+$normalizeComparableValue = static function (?string $value): string {
+    return trim((string)$value);
+};
+
+$buildAggregationKey = static function (?string $quizGroup, ?string $name, ?int $quizId = null) use ($normalizeComparableValue): string {
+    $normalizedGroup = $normalizeComparableValue($quizGroup);
+    $normalizedName = $normalizeComparableValue($name);
+
+    if ($normalizedGroup === '') {
+        return 'quiz:' . (string)$quizId;
+    }
+
+    return $normalizedGroup . '||' . $normalizedName;
+};
  
 $formatClass = static function (?string $value): string {
     $value = trim((string)$value);
@@ -45,17 +60,16 @@ try {
         $quizIdToGroupKey = [];
 
         foreach ($activeQuizzes as $quiz) {
-            $groupKey = trim((string)$quiz['quiz_group']);
-            if ($groupKey === '') {
-                $groupKey = trim((string)$quiz['name']);
-            }
-
+            $groupKey = $buildAggregationKey($quiz['quiz_group'] ?? null, $quiz['name'] ?? null, (int)$quiz['id']);
+            $normalizedGroup = $normalizeComparableValue($quiz['quiz_group'] ?? null);
+            $normalizedName = $normalizeComparableValue($quiz['name'] ?? null);
             $language = trim((string)($quiz['language'] ?? ''));
 
             if (!isset($quizGroups[$groupKey])) {
                 $quizGroups[$groupKey] = [
                     'key' => $groupKey,
-                    'label' => $groupKey,
+                    'label' => $normalizedName !== '' ? $normalizedName : ('Quiz ' . (int)$quiz['id']),
+                    'quiz_group' => $normalizedGroup,
                     'languages' => [],
                     'names' => [],
                     'quiz_ids' => [],
@@ -256,9 +270,9 @@ try {
                                     Name
                                 </button>
                             </th>
-                            <?php foreach ($quizGroups as $groupName => $groupQuiz): ?>
+                            <?php foreach ($quizGroups as $groupQuiz): ?>
                                 <th class="group-header" colspan="1">
-                                    <?= htmlspecialchars($groupName, ENT_QUOTES, 'UTF-8') ?>
+                                    <?= htmlspecialchars($groupQuiz['label'], ENT_QUOTES, 'UTF-8') ?>
                                 </th>
                             <?php endforeach; ?>
                             <th class="sticky-average single-header" rowspan="2">

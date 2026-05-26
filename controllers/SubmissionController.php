@@ -525,12 +525,18 @@ class SubmissionController extends Controller
         $result['quizActive'] = (bool)$quiz->active;
         $result['quizIds'] = [(int)$quiz->id];
 
-        if (empty($quiz->quiz_group)) {
+        $normalizedGroup = Quiz::normalizeComparableValue($quiz->quiz_group);
+        $normalizedName = Quiz::normalizeComparableValue($quiz->name);
+
+        if ($normalizedGroup === '') {
             return $result;
         }
 
         $groupedQuizzes = Quiz::find()
-            ->where(['quiz_group' => $quiz->quiz_group])
+            ->where(new \yii\db\Expression('TRIM(quiz_group) = :quizGroup AND TRIM(name) = :quizName', [
+                ':quizGroup' => $normalizedGroup,
+                ':quizName' => $normalizedName,
+            ]))
             ->orderBy(['name' => SORT_ASC, 'id' => SORT_ASC])
             ->all();
 
@@ -539,7 +545,6 @@ class SubmissionController extends Controller
         if (count($groupedQuizzes) > 1) {
             $result['quizIds'] = array_map(static fn(Quiz $groupQuiz): int => (int)$groupQuiz->id, $groupedQuizzes);
             $result['showGroupedResults'] = true;
-            $result['quizName'] = $quiz->quiz_group;
         }
 
         return $result;

@@ -97,4 +97,21 @@ class Quiz extends \yii\db\ActiveRecord
 
         return trim($parts[0]);
     }
+
+    public static function normalizeComparableValue(?string $value): string
+    {
+        return trim((string)$value);
+    }
+
+    public static function buildAggregationKey(?string $quizGroup, ?string $name, ?int $quizId = null): string
+    {
+        $normalizedGroup = static::normalizeComparableValue($quizGroup);
+        $normalizedName = static::normalizeComparableValue($name);
+
+        if ($normalizedGroup === '') {
+            return 'quiz:' . (string)$quizId;
+        }
+
+        return $normalizedGroup . '||' . $normalizedName;
+    }
 }
