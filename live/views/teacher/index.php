@@ -5,6 +5,16 @@ use yii\helpers\Html;
 use yii\helpers\Url;
 
 $this->title = 'Live Quiz';
+$selectedQuizId = isset($selectedQuizId) ? (int)$selectedQuizId : 0;
+$selectedQuiz = $selectedQuiz ?? null;
+$selectedQuizLabel = null;
+
+if ($selectedQuiz !== null) {
+    $selectedQuizLabel = $selectedQuiz->quiz_group . ' / ' . $selectedQuiz->name;
+    if (!empty($selectedQuiz->language)) {
+        $selectedQuizLabel .= ' [' . strtoupper((string)$selectedQuiz->language) . ']';
+    }
+}
 ?>
 
 <div class="live-admin-index">
@@ -40,9 +50,13 @@ $this->title = 'Live Quiz';
                         <option
                             value="<?= (int)$quiz->id ?>"
                             data-search="<?= Html::encode($searchText) ?>"
+                            <?= (int)$quiz->id === $selectedQuizId ? 'selected' : '' ?>
                         ><?= Html::encode($label) ?></option>
                     <?php endforeach; ?>
                 </select>
+                <div style="margin-top:8px;color:#64748b;font-size:0.92rem;">
+                    <?= $selectedQuizLabel !== null ? 'Change the quiz here if needed before starting the session.' : 'Select a quiz to start a live session.' ?>
+                </div>
                 <button type="submit" class="btn btn-primary" style="margin-top:12px;">Create Live Session</button>
             </form>
         </div>
@@ -92,6 +106,7 @@ $this->title = 'Live Quiz';
 (function () {
     const filterInput = document.getElementById('quiz_filter');
     const select = document.getElementById('quiz_id');
+    const selectedQuizId = <?= $selectedQuizId ?>;
 
     if (!filterInput || !select) {
         return;
@@ -125,10 +140,13 @@ $this->title = 'Live Quiz';
     }
 
     function renderOptions() {
-        const currentValue = select.value;
+        const currentValue = select.value || (selectedQuizId ? String(selectedQuizId) : '');
         const matcher = buildMatcher(filterInput.value);
         const matchedOptions = allOptions.filter(function (option, index) {
             if (index === 0) {
+                return true;
+            }
+            if (option.value === currentValue) {
                 return true;
             }
             return matcher === null || matcher.test(option.search);
@@ -154,5 +172,10 @@ $this->title = 'Live Quiz';
     }
 
     filterInput.addEventListener('input', renderOptions);
+    renderOptions();
+
+    if (selectedQuizId) {
+        select.value = String(selectedQuizId);
+    }
 })();
 </script>

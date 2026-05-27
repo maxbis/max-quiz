@@ -56,10 +56,24 @@ class TeacherController extends Controller
 
     public function actionIndex()
     {
+        $selectedQuizId = (int)Yii::$app->request->get('quiz_id', 0);
+        $selectedQuiz = null;
+
         $quizzes = Quiz::find()
             ->where(['archived' => 0])
             ->orderBy(['quiz_group' => SORT_ASC, 'name' => SORT_ASC])
             ->all();
+
+        foreach ($quizzes as $quiz) {
+            if ((int)$quiz->id === $selectedQuizId) {
+                $selectedQuiz = $quiz;
+                break;
+            }
+        }
+
+        if ($selectedQuiz === null) {
+            $selectedQuizId = 0;
+        }
 
         $sessions = new ActiveDataProvider([
             'query' => LiveSession::find()->with('quiz')->orderBy(['id' => SORT_DESC]),
@@ -69,6 +83,8 @@ class TeacherController extends Controller
         return $this->render('index', [
             'quizzes' => $quizzes,
             'sessions' => $sessions,
+            'selectedQuizId' => $selectedQuizId,
+            'selectedQuiz' => $selectedQuiz,
         ]);
     }
 
