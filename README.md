@@ -6,6 +6,7 @@ Max-Quiz is a Yii2-based classroom assessment platform. Teachers can build, acti
 
 - Teacher dashboard to activate quizzes, monitor submissions, and export results
 - Student screen that always serves the next unanswered question and enforces time/IP limits
+- Live quiz sub-app with teacher-paced rounds, student lobby/join flow, and a presentation screen
 - Question bank management with quick linking, bulk import/export, and printable previews
 - Progress monitoring to adjust scores or force-finish attempts
 - Dialog/PDF utilities (see `docs/`) for sharing question sets
@@ -46,7 +47,7 @@ Max-Quiz is a Yii2-based classroom assessment platform. Teachers can build, acti
    - `max-quiz-demo.sql` – schema plus demo data (sample quiz, questions, admin user).
    - `max-quiz-DB-structure.sql` – schema only if you want a clean slate.
 
-   Both dumps already include the `archived` column and create the `max-quiz` database by default. Feel free to edit the file before importing if you prefer another name. You can also apply SQL migrations manually from `migrations/` (e.g., `migrations/add_archived_to_quiz.sql`).
+   Both dumps already include the live quiz tables and create the `max-quiz` database by default. Feel free to edit the file before importing if you prefer another name. You can also apply SQL migrations manually from `migrations/`.
 
 5. **Ensure writable directories**
 
@@ -60,7 +61,7 @@ Max-Quiz is a Yii2-based classroom assessment platform. Teachers can build, acti
   php yii serve --port=8080
   ```
 
-  Visit http://localhost:8080 for the student view and http://localhost:8080/admin for the admin console. All routes are relative to the `web/` directory.
+  Visit http://localhost:8080 for the student view and http://localhost:8080/admin for the admin console. All routes are relative to the `web/` directory. The live quiz module is available at `/live/teacher/index` after login, with public student join pages under `/live/student/index`.
 
 - **Apache/Nginx**
 

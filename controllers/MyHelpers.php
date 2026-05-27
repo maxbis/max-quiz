@@ -14,7 +14,7 @@ class MyHelpers
             $remoteIP=$_SERVER['REMOTE_ADDR'];
         }
     
-        $file = "../config/ipAllowed.txt";
+        $file = \Yii::getAlias('@app/config/ipAllowed.txt');
     
         try { // read file and if not readble raise error and stop
             $lines = file($file);

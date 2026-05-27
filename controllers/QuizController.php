@@ -288,6 +288,11 @@ class QuizController extends Controller
         return $this->redirect(['question/index', 'quiz_id' => $newId]);
     }
 
+    public function actionHelp()
+    {
+        return $this->render('help');
+    }
+
     public function actionSwapQuestions($id)
     {
         $quiz = $this->findModel($id);

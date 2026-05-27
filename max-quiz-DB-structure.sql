@@ -35,6 +35,8 @@ CREATE TABLE `log` (
   `answer_no` int(11) NOT NULL,
   `correct` int(11) DEFAULT NULL,
   `no_answered` int(11) DEFAULT NULL,
+  `live_session_id` int(11) DEFAULT NULL,
+  `live_session_question_id` int(11) DEFAULT NULL,
   `timestamp` timestamp NOT NULL DEFAULT current_timestamp()
 ) ENGINE=InnoDB DEFAULT CHARSET=utf32 COLLATE=utf32_general_ci;
 
@@ -93,6 +95,77 @@ CREATE TABLE `quizquestion` (
 -- --------------------------------------------------------
 
 --
+-- Table structure for table `live_session`
+--
+
+CREATE TABLE `live_session` (
+  `id` int(11) NOT NULL,
+  `quiz_id` int(11) NOT NULL,
+  `join_code` varchar(16) NOT NULL,
+  `status` varchar(32) NOT NULL DEFAULT 'lobby',
+  `current_question_index` int(11) NOT NULL DEFAULT 0,
+  `question_count` int(11) NOT NULL DEFAULT 0,
+  `created_by_user_id` int(11) DEFAULT NULL,
+  `started_at` datetime DEFAULT NULL,
+  `ended_at` datetime DEFAULT NULL,
+  `created_at` datetime NOT NULL DEFAULT current_timestamp(),
+  `updated_at` datetime NOT NULL DEFAULT current_timestamp() ON UPDATE current_timestamp()
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `live_session_question`
+--
+
+CREATE TABLE `live_session_question` (
+  `id` int(11) NOT NULL,
+  `live_session_id` int(11) NOT NULL,
+  `question_id` int(11) NOT NULL,
+  `question_order` int(11) NOT NULL,
+  `opened_at` datetime DEFAULT NULL,
+  `closed_at` datetime DEFAULT NULL,
+  `created_at` datetime NOT NULL DEFAULT current_timestamp(),
+  `updated_at` datetime NOT NULL DEFAULT current_timestamp() ON UPDATE current_timestamp()
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `live_session_rank_snapshot`
+--
+
+CREATE TABLE `live_session_rank_snapshot` (
+  `id` int(11) NOT NULL,
+  `live_session_id` int(11) NOT NULL,
+  `live_session_question_id` int(11) NOT NULL,
+  `submission_id` int(11) NOT NULL,
+  `question_order` int(11) NOT NULL,
+  `rank_position` int(11) NOT NULL,
+  `score` int(11) NOT NULL DEFAULT 0,
+  `previous_rank` int(11) DEFAULT NULL,
+  `rank_delta` int(11) NOT NULL DEFAULT 0,
+  `created_at` datetime NOT NULL DEFAULT current_timestamp()
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `live_session_submission`
+--
+
+CREATE TABLE `live_session_submission` (
+  `id` int(11) NOT NULL,
+  `live_session_id` int(11) NOT NULL,
+  `submission_id` int(11) NOT NULL,
+  `joined_at` datetime NOT NULL DEFAULT current_timestamp(),
+  `created_at` datetime NOT NULL DEFAULT current_timestamp(),
+  `updated_at` datetime NOT NULL DEFAULT current_timestamp() ON UPDATE current_timestamp()
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+-- --------------------------------------------------------
+
+--
 -- Table structure for table `submission`
 --
 
@@ -137,7 +210,41 @@ CREATE TABLE `tbl_user` (
 -- Indexes for table `log`
 --
 ALTER TABLE `log`
-  ADD PRIMARY KEY (`id`);
+  ADD PRIMARY KEY (`id`),
+  ADD KEY `idx_log_live_session` (`live_session_id`),
+  ADD KEY `idx_log_live_session_question` (`live_session_question_id`),
+  ADD UNIQUE KEY `ux_log_live_answer` (`live_session_question_id`,`submission_id`);
+
+--
+-- Indexes for table `live_session`
+--
+ALTER TABLE `live_session`
+  ADD PRIMARY KEY (`id`),
+  ADD UNIQUE KEY `ux_live_session_join_code` (`join_code`),
+  ADD KEY `idx_live_session_quiz` (`quiz_id`);
+
+--
+-- Indexes for table `live_session_question`
+--
+ALTER TABLE `live_session_question`
+  ADD PRIMARY KEY (`id`),
+  ADD UNIQUE KEY `ux_live_session_question_order` (`live_session_id`,`question_order`),
+  ADD KEY `idx_live_session_question_question` (`question_id`);
+
+--
+-- Indexes for table `live_session_rank_snapshot`
+--
+ALTER TABLE `live_session_rank_snapshot`
+  ADD PRIMARY KEY (`id`),
+  ADD KEY `idx_live_snapshot_lookup` (`live_session_id`,`question_order`),
+  ADD UNIQUE KEY `ux_live_snapshot_entry` (`live_session_question_id`,`submission_id`);
+
+--
+-- Indexes for table `live_session_submission`
+--
+ALTER TABLE `live_session_submission`
+  ADD PRIMARY KEY (`id`),
+  ADD UNIQUE KEY `ux_live_session_submission_link` (`live_session_id`,`submission_id`);
 
 --
 -- Indexes for table `question`
@@ -189,6 +296,30 @@ ALTER TABLE `log`
 -- AUTO_INCREMENT for table `question`
 --
 ALTER TABLE `question`
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT;
+
+--
+-- AUTO_INCREMENT for table `live_session`
+--
+ALTER TABLE `live_session`
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT;
+
+--
+-- AUTO_INCREMENT for table `live_session_question`
+--
+ALTER TABLE `live_session_question`
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT;
+
+--
+-- AUTO_INCREMENT for table `live_session_rank_snapshot`
+--
+ALTER TABLE `live_session_rank_snapshot`
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT;
+
+--
+-- AUTO_INCREMENT for table `live_session_submission`
+--
+ALTER TABLE `live_session_submission`
   MODIFY `id` int(11) NOT NULL AUTO_INCREMENT;
 
 --

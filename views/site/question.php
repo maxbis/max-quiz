@@ -22,18 +22,21 @@ require_once Yii::getAlias('@app/views/include/functions.php');
 
 
 // for proper formatting the answer, I need to know if long words occur.
-function hasLongAnswer($string, $maxLength = 60)
-{
-    if (strlen($string) > 70)
-        return true;
-
-    $words = explode(' ', $string);
-    foreach ($words as $word) {
-        if (strlen($word) > $maxLength) {
+if (!function_exists('hasLongAnswer')) {
+    function hasLongAnswer($string, $maxLength = 60)
+    {
+        if (strlen($string) > 70)
             return true;
+
+        $words = explode(' ', $string);
+        foreach ($words as $word) {
+            if (strlen($word) > $maxLength) {
+                return true;
+            }
         }
+
+        return false;
     }
-    return false;
 }
 
 $selectedRecords = Yii::$app->session->get('selectedQuestionIds', []);

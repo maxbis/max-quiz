@@ -63,6 +63,7 @@ $this->registerLinkTag(['rel' => 'icon', 'type' => 'image/x-icon', 'href' => Yii
                     ['label' => 'Quizzes', 'url' => ['/quiz']],
                     // ['label' => 'Questions', 'url' => ['/question?show=-1']],
                     ['label' => 'Questions', 'url' => ['/question/index-raw']],
+                    ['label' => 'Live Quiz', 'url' => ['/live/teacher/index']],
                     ['label' => 'Student View', 'url' => ['/submission/create']],
                     // ['label' => 'Progress', 'url' => ['/submission']],
                     Yii::$app->user->isGuest

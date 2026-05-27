@@ -1105,6 +1105,8 @@ $this->registerJs($regradeScript);
     <p style='margin-top:30px;'>
         <?= Html::a('➕ New Quiz', ['create'], ['title' => 'Create New Quiz', 'class' => 'btn btn-outline-success quiz-button']) ?>
         &nbsp;&nbsp;&nbsp;
+        <?= Html::a('❓ Help', ['help'], ['title' => 'Open quiz help', 'class' => 'btn btn-outline-info quiz-button']) ?>
+        &nbsp;&nbsp;&nbsp;
         <?= Html::a('Disable All', ['index', 'reset' => 1], ['title' => 'Disbale all quizes', 'class' => 'btn btn-outline-success quiz-button']) ?>
         <span id="overview-button-gap" style="<?= $showOverviewButton ? '' : 'display:none;' ?>">&nbsp;&nbsp;&nbsp;</span>
         <?= Html::a('Overview' , ['/overview'], [
