@@ -222,16 +222,22 @@ $csrfToken = Yii::$app->request->getCsrfToken();
             return;
         }
 
-        if (!data.canControl || !data.advanceAction) {
+        if (!data.canControl || (!data.advanceAction && !data.finishAction)) {
             panel.innerHTML = '';
             return;
         }
 
-        const buttonClass = data.advanceAction.type === 'close_question' ? 'screen-control-button warning' : 'screen-control-button';
-        panel.innerHTML = '<form method="post" action="' + escapeHtml(data.advanceAction.url) + '" class="screen-control-form">'
-            + '<input type="hidden" name="' + escapeHtml(csrfParam) + '" value="' + escapeHtml(csrfToken) + '">'
-            + '<button type="submit" class="' + buttonClass + '">' + escapeHtml(data.advanceAction.label) + '</button>'
-            + '</form>'
+        const advanceMarkup = data.advanceAction
+            ? (function () {
+                const buttonClass = data.advanceAction.type === 'close_question' ? 'screen-control-button warning' : 'screen-control-button';
+                return '<form method="post" action="' + escapeHtml(data.advanceAction.url) + '" class="screen-control-form">'
+                    + '<input type="hidden" name="' + escapeHtml(csrfParam) + '" value="' + escapeHtml(csrfToken) + '">'
+                    + '<button type="submit" class="' + buttonClass + '">' + escapeHtml(data.advanceAction.label) + '</button>'
+                    + '</form>';
+            })()
+            : '';
+
+        panel.innerHTML = advanceMarkup
             + (data.finishAction ? '<form method="post" action="' + escapeHtml(data.finishAction.url) + '" class="screen-control-form" data-confirm="Finish this live session now?">'
                 + '<input type="hidden" name="' + escapeHtml(csrfParam) + '" value="' + escapeHtml(csrfToken) + '">'
                 + '<button type="submit" class="screen-control-button danger">' + escapeHtml(data.finishAction.label) + '</button>'

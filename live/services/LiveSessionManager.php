@@ -41,6 +41,17 @@ class LiveSessionManager
             throw new Exception('Selected quiz has no active questions.');
         }
 
+        $questionIds = array_map('intval', $questionIds);
+
+        if ((int)$quiz->random === 1) {
+            shuffle($questionIds);
+        }
+
+        $maxQuestions = (int)$quiz->no_questions;
+        if ($maxQuestions > 0 && count($questionIds) > $maxQuestions) {
+            $questionIds = array_slice($questionIds, 0, $maxQuestions);
+        }
+
         $transaction = Yii::$app->db->beginTransaction();
         try {
             $session = new LiveSession([
