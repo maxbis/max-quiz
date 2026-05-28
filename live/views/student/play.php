@@ -27,7 +27,6 @@ $csrfParam = Yii::$app->request->csrfParam;
         .answer-btn:disabled { cursor:default; transform:none; box-shadow:none; opacity:0.58; }
         .answer-btn.answer-selected { background:#d1fae5; border-color:#10b981; color:#065f46; opacity:1; box-shadow:0 0 0 3px rgba(16, 185, 129, 0.12); }
         .answer-btn.answer-selected:disabled { opacity:1; }
-        .answer-selected-badge { display:inline-flex; align-items:center; gap:6px; margin-left:10px; padding:4px 10px; border-radius:999px; background:#10b981; color:#ecfdf5; font-size:0.74rem; font-weight:800; text-transform:uppercase; letter-spacing:0.04em; }
         .status-card { margin-top:22px; background:#0f172a; color:white; border-radius:22px; padding:24px; }
         .leaderboard { margin-top:22px; background:white; border-radius:24px; padding:24px; box-shadow:0 16px 40px rgba(15, 23, 42, 0.12); }
         table { width:100%; border-collapse:collapse; }
@@ -98,10 +97,8 @@ $csrfParam = Yii::$app->request->csrfParam;
                     const disabled = answered ? 'disabled' : '';
                     const isSelected = answered && selectedAnswerNo === Number(answer.answer_no);
                     const selectedClass = isSelected ? ' answer-selected' : '';
-                    const selectedBadge = isSelected ? '<span class="answer-selected-badge">Selected</span>' : '';
                     return '<button class="answer-btn' + selectedClass + '" ' + disabled + ' onclick="submitAnswer(' + answer.answer_no + ')">'
                         + '<strong>' + answer.answer_no + '.</strong> ' + escapeHtml(answer.label)
-                        + selectedBadge
                         + '</button>';
                 }).join('') + '</div>';
             return;
