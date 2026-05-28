@@ -30,10 +30,10 @@ class ScreenController extends Controller
         return [
             'access' => [
                 'class' => AccessControl::class,
-                'only' => ['advance'],
+                'only' => ['advance', 'finish'],
                 'rules' => [
                     [
-                        'actions' => ['advance'],
+                        'actions' => ['advance', 'finish'],
                         'allow' => true,
                         'roles' => ['@'],
                     ],
@@ -43,6 +43,7 @@ class ScreenController extends Controller
                 'class' => VerbFilter::class,
                 'actions' => [
                     'advance' => ['POST'],
+                    'finish' => ['POST'],
                 ],
             ],
         ];
@@ -69,6 +70,7 @@ class ScreenController extends Controller
         $answerCount = 0;
         $correctCount = 0;
         $advanceAction = null;
+        $finishAction = null;
 
         if ($currentQuestion !== null) {
             $row = (new Query())
@@ -135,6 +137,13 @@ class ScreenController extends Controller
             ];
         }
 
+        if ($session->status !== LiveSession::STATUS_FINISHED) {
+            $finishAction = [
+                'label' => 'Finish Session',
+                'url' => \yii\helpers\Url::to(['/live/screen/finish', 'code' => $session->join_code]),
+            ];
+        }
+
         return [
             'ok' => true,
             'session' => [
@@ -153,6 +162,7 @@ class ScreenController extends Controller
                 'correctPercent' => $answerCount > 0 ? (int)round(($correctCount / $answerCount) * 100) : 0,
             ],
             'advanceAction' => $advanceAction,
+            'finishAction' => $finishAction,
             'canControl' => !Yii::$app->user->isGuest,
             'top' => $presentation['top'],
             'movers' => $presentation['movers'],
@@ -174,6 +184,29 @@ class ScreenController extends Controller
             } else {
                 throw new \RuntimeException('This session cannot be advanced right now.');
             }
+
+            return ['ok' => true];
+        } catch (\Throwable $throwable) {
+            Yii::$app->response->statusCode = 400;
+            return [
+                'ok' => false,
+                'message' => $throwable->getMessage(),
+            ];
+        }
+    }
+
+    public function actionFinish(string $code): array
+    {
+        Yii::$app->response->format = Response::FORMAT_JSON;
+
+        $session = $this->findSessionByCode($code);
+
+        try {
+            if ($session->status === LiveSession::STATUS_FINISHED) {
+                throw new \RuntimeException('This session is already finished.');
+            }
+
+            $this->sessionManager->finishSession($session);
 
             return ['ok' => true];
         } catch (\Throwable $throwable) {

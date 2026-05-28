@@ -27,6 +27,7 @@ $csrfToken = Yii::$app->request->getCsrfToken();
         .screen-control-form { margin-top:14px; }
         .screen-control-button { width:100%; min-height:72px; border:0; border-radius:18px; padding:16px 18px; display:flex; align-items:center; justify-content:center; text-align:center; white-space:nowrap; font:inherit; font-size:1.05rem; font-weight:800; cursor:pointer; color:#f0fdfa; background:linear-gradient(135deg, #0f766e 0%, #0f9a76 100%); box-shadow:0 14px 30px rgba(15, 118, 110, 0.28); }
         .screen-control-button.warning { color:#fffaf0; background:linear-gradient(135deg, #f59e0b 0%, #fb7185 100%); box-shadow:0 14px 30px rgba(251, 113, 133, 0.24); }
+        .screen-control-button.danger { min-height:54px; margin-top:12px; color:#fff5f5; background:linear-gradient(135deg, #dc2626 0%, #ef4444 100%); box-shadow:0 14px 30px rgba(239, 68, 68, 0.22); }
         .screen-control-button:disabled { opacity:0.7; cursor:wait; }
         .screen-control-hint { margin-top:10px; font-size:0.95rem; line-height:1.45; color:#cbd5e1; }
         .screen-control-error { margin-top:10px; color:#fecaca; font-size:0.92rem; line-height:1.45; }
@@ -105,7 +106,7 @@ $csrfToken = Yii::$app->request->getCsrfToken();
     const csrfParam = <?= json_encode($csrfParam) ?>;
     const csrfToken = <?= json_encode($csrfToken) ?>;
     let latestQuestion = null;
-    let advanceRequestInFlight = false;
+    let controlRequestInFlight = false;
     let advanceErrorMessage = '';
 
     async function fetchState() {
@@ -117,16 +118,20 @@ $csrfToken = Yii::$app->request->getCsrfToken();
         render(data);
     }
 
-    async function submitAdvanceAction(event) {
+    async function submitControlAction(event) {
         event.preventDefault();
 
         const form = event.currentTarget;
         const button = form.querySelector('button[type="submit"]');
         advanceErrorMessage = '';
+        const confirmMessage = form.dataset.confirm || '';
+        if (confirmMessage && !window.confirm(confirmMessage)) {
+            return;
+        }
         if (button) {
             button.disabled = true;
         }
-        advanceRequestInFlight = true;
+        controlRequestInFlight = true;
 
         try {
             const response = await fetch(form.action, {
@@ -149,7 +154,7 @@ $csrfToken = Yii::$app->request->getCsrfToken();
         } catch (error) {
             advanceErrorMessage = error.message || 'The session could not be advanced.';
         } finally {
-            advanceRequestInFlight = false;
+            controlRequestInFlight = false;
             if (button) {
                 button.disabled = false;
             }
@@ -227,18 +232,20 @@ $csrfToken = Yii::$app->request->getCsrfToken();
             + '<input type="hidden" name="' + escapeHtml(csrfParam) + '" value="' + escapeHtml(csrfToken) + '">'
             + '<button type="submit" class="' + buttonClass + '">' + escapeHtml(data.advanceAction.label) + '</button>'
             + '</form>'
+            + (data.finishAction ? '<form method="post" action="' + escapeHtml(data.finishAction.url) + '" class="screen-control-form" data-confirm="Finish this live session now?">'
+                + '<input type="hidden" name="' + escapeHtml(csrfParam) + '" value="' + escapeHtml(csrfToken) + '">'
+                + '<button type="submit" class="screen-control-button danger">' + escapeHtml(data.finishAction.label) + '</button>'
+                + '</form>' : '')
             + '<div class="screen-control-hint">Teacher shortcut for the current next step.</div>';
 
-        const form = panel.querySelector('.screen-control-form');
-        if (form) {
-            form.addEventListener('submit', submitAdvanceAction);
-        }
+        panel.querySelectorAll('.screen-control-form').forEach(form => {
+            form.addEventListener('submit', submitControlAction);
+        });
 
-        if (advanceRequestInFlight) {
-            const button = panel.querySelector('button[type="submit"]');
-            if (button) {
+        if (controlRequestInFlight) {
+            panel.querySelectorAll('button[type="submit"]').forEach(button => {
                 button.disabled = true;
-            }
+            });
         }
 
         if (advanceErrorMessage) {
