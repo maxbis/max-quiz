@@ -12,7 +12,7 @@ use yii\db\Query;
 
 class LiveSessionManager
 {
-    public function createSession(int $quizId, ?int $userId = null, string $scoringMode = LiveSession::SCORING_MODE_CORRECT_ONLY): LiveSession
+    public function createSession(int $quizId, ?int $userId = null, string $scoringMode = LiveSession::SCORING_MODE_CORRECT_DIFFICULTY_BONUS): LiveSession
     {
         $quiz = Quiz::findOne($quizId);
         if ($quiz === null) {

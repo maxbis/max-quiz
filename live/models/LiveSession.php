@@ -43,8 +43,8 @@ class LiveSession extends ActiveRecord
     public static function scoringModeOptions(): array
     {
         return [
-            self::SCORING_MODE_CORRECT_ONLY => 'Correct only',
             self::SCORING_MODE_CORRECT_DIFFICULTY_BONUS => 'Correct + difficulty bonus',
+            self::SCORING_MODE_CORRECT_ONLY => 'Correct only',
         ];
     }
 

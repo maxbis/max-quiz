@@ -92,7 +92,7 @@ class TeacherController extends Controller
     public function actionCreate()
     {
         $quizId = (int)Yii::$app->request->post('quiz_id');
-        $scoringMode = (string)Yii::$app->request->post('scoring_mode', LiveSession::SCORING_MODE_CORRECT_ONLY);
+        $scoringMode = (string)Yii::$app->request->post('scoring_mode', LiveSession::SCORING_MODE_CORRECT_DIFFICULTY_BONUS);
         try {
             $session = $this->sessionManager->createSession(
                 $quizId,

@@ -120,16 +120,19 @@ class StudentController extends Controller
         $currentQuestion = $this->sessionManager->getCurrentSessionQuestion($session);
         $questionPayload = null;
         $answeredCurrentQuestion = false;
+        $selectedAnswerNo = null;
 
         if ($currentQuestion !== null) {
             $questionPayload = $this->buildQuestionPayload($currentQuestion);
-            $answeredCurrentQuestion = (new Query())
+            $selectedAnswerNo = (new Query())
                 ->from('log')
+                ->select('answer_no')
                 ->where([
                     'submission_id' => $submission['id'],
                     'live_session_question_id' => $currentQuestion->id,
                 ])
-                ->exists();
+                ->scalar();
+            $answeredCurrentQuestion = $selectedAnswerNo !== false && $selectedAnswerNo !== null;
         }
 
         $presentation = $this->leaderboardService->buildPresentationData($session, $currentQuestion);
@@ -158,6 +161,7 @@ class StudentController extends Controller
             ],
             'question' => $questionPayload,
             'answeredCurrentQuestion' => $answeredCurrentQuestion,
+            'selectedAnswerNo' => $selectedAnswerNo !== null && $selectedAnswerNo !== false ? (int)$selectedAnswerNo : null,
             'top' => $presentation['top'],
         ];
     }

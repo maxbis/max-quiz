@@ -199,13 +199,13 @@ if ($selectedQuiz !== null) {
             </div>
             <div class="live-admin-field">
                 <label for="scoring_mode">Scoring</label>
-                <select id="scoring_mode" name="scoring_mode" class="form-select" style="width:100%;">
+                    <select id="scoring_mode" name="scoring_mode" class="form-select" style="width:100%;">
                     <?php foreach ($scoringModes as $value => $label): ?>
-                        <option value="<?= Html::encode($value) ?>" <?= $value === \app\live\models\LiveSession::SCORING_MODE_CORRECT_ONLY ? 'selected' : '' ?>><?= Html::encode($label) ?></option>
+                        <option value="<?= Html::encode($value) ?>" <?= $value === \app\live\models\LiveSession::SCORING_MODE_CORRECT_DIFFICULTY_BONUS ? 'selected' : '' ?>><?= Html::encode($label) ?></option>
                     <?php endforeach; ?>
                 </select>
                 <div class="live-admin-help">
-                    <strong>Correct only</strong> gives points for correct answers only. <strong>Correct + difficulty bonus</strong> adds bonus points when fewer students answer a question correctly.
+                    <strong>Correct + difficulty bonus</strong> is the default. It adds bonus points when fewer students answer a question correctly. <strong>Correct only</strong> gives points for correct answers only.
                 </div>
             </div>
             <div class="live-admin-field live-admin-submit-field">
