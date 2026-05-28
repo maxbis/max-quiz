@@ -98,7 +98,7 @@ $currentLeader = $presentation['top'][0] ?? null;
 
     .live-metrics {
         display: grid;
-        grid-template-columns: repeat(3, minmax(0, 1fr));
+        grid-template-columns: repeat(4, minmax(0, 1fr));
         gap: 14px;
         margin-top: 18px;
         margin-bottom: 22px;
@@ -418,6 +418,11 @@ $currentLeader = $presentation['top'][0] ?? null;
                         <span class="live-metric-label">Current Leader</span>
                         <span class="live-metric-value"><?= $currentLeader ? (int)$currentLeader['score'] : 0 ?></span>
                         <span class="live-metric-sub"><?= Html::encode($currentLeader['name'] ?? 'No leader yet') ?></span>
+                    </div>
+                    <div class="live-metric">
+                        <span class="live-metric-label">Scoring</span>
+                        <span class="live-metric-value" style="font-size:1.2rem;line-height:1.2;letter-spacing:-0.02em;"><?= Html::encode($session->getScoringModeLabel()) ?></span>
+                        <span class="live-metric-sub">Selected for this session.</span>
                     </div>
                 </div>
 

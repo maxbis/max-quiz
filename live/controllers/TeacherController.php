@@ -85,14 +85,20 @@ class TeacherController extends Controller
             'sessions' => $sessions,
             'selectedQuizId' => $selectedQuizId,
             'selectedQuiz' => $selectedQuiz,
+            'scoringModes' => LiveSession::scoringModeOptions(),
         ]);
     }
 
     public function actionCreate()
     {
         $quizId = (int)Yii::$app->request->post('quiz_id');
+        $scoringMode = (string)Yii::$app->request->post('scoring_mode', LiveSession::SCORING_MODE_CORRECT_ONLY);
         try {
-            $session = $this->sessionManager->createSession($quizId, Yii::$app->user->id ? (int)Yii::$app->user->id : null);
+            $session = $this->sessionManager->createSession(
+                $quizId,
+                Yii::$app->user->id ? (int)Yii::$app->user->id : null,
+                $scoringMode
+            );
         } catch (\Throwable $throwable) {
             Yii::$app->session->setFlash('error', $throwable->getMessage());
             return $this->redirect(['index']);

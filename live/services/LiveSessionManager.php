@@ -12,11 +12,15 @@ use yii\db\Query;
 
 class LiveSessionManager
 {
-    public function createSession(int $quizId, ?int $userId = null): LiveSession
+    public function createSession(int $quizId, ?int $userId = null, string $scoringMode = LiveSession::SCORING_MODE_CORRECT_ONLY): LiveSession
     {
         $quiz = Quiz::findOne($quizId);
         if ($quiz === null) {
             throw new Exception('Quiz not found.');
+        }
+
+        if (!array_key_exists($scoringMode, LiveSession::scoringModeOptions())) {
+            throw new Exception('Invalid scoring mode.');
         }
 
         $quizQuestionSchema = Yii::$app->db->schema->getTableSchema('quizquestion');
@@ -43,6 +47,7 @@ class LiveSessionManager
                 'quiz_id' => $quizId,
                 'join_code' => $this->generateJoinCode(),
                 'status' => LiveSession::STATUS_LOBBY,
+                'scoring_mode' => $scoringMode,
                 'current_question_index' => 0,
                 'question_count' => count($questionIds),
                 'created_by_user_id' => $userId,

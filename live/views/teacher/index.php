@@ -8,6 +8,7 @@ $this->title = 'Live Quiz';
 $selectedQuizId = isset($selectedQuizId) ? (int)$selectedQuizId : 0;
 $selectedQuiz = $selectedQuiz ?? null;
 $selectedQuizLabel = null;
+$scoringModes = $scoringModes ?? [];
 
 if ($selectedQuiz !== null) {
     $selectedQuizLabel = $selectedQuiz->quiz_group . ' / ' . $selectedQuiz->name;
@@ -56,6 +57,15 @@ if ($selectedQuiz !== null) {
                 </select>
                 <div style="margin-top:8px;color:#64748b;font-size:0.92rem;">
                     <?= $selectedQuizLabel !== null ? 'Change the quiz here if needed before starting the session.' : 'Select a quiz to start a live session.' ?>
+                </div>
+                <label for="scoring_mode" style="display:block;margin-top:14px;margin-bottom:8px;font-weight:600;">Scoring</label>
+                <select id="scoring_mode" name="scoring_mode" class="form-select" style="width:100%;">
+                    <?php foreach ($scoringModes as $value => $label): ?>
+                        <option value="<?= Html::encode($value) ?>" <?= $value === \app\live\models\LiveSession::SCORING_MODE_CORRECT_ONLY ? 'selected' : '' ?>><?= Html::encode($label) ?></option>
+                    <?php endforeach; ?>
+                </select>
+                <div style="margin-top:8px;color:#64748b;font-size:0.92rem;">
+                    <strong>Correct only</strong> gives points for correct answers only. <strong>Correct + difficulty bonus</strong> adds bonus points when fewer students answer a question correctly.
                 </div>
                 <button type="submit" class="btn btn-primary" style="margin-top:12px;">Create Live Session</button>
             </form>

@@ -134,9 +134,11 @@ class StudentController extends Controller
 
         $presentation = $this->leaderboardService->buildPresentationData($session, $currentQuestion);
         $myRank = null;
+        $myScore = 0;
         foreach ($presentation['leaderboard'] as $entry) {
             if ((int)$entry['submission_id'] === (int)$submission['id']) {
                 $myRank = $entry['rank'];
+                $myScore = (int)$entry['score'];
                 break;
             }
         }
@@ -151,7 +153,7 @@ class StudentController extends Controller
             ],
             'player' => [
                 'name' => trim((string)$submission['first_name'] . ' ' . (string)$submission['last_name']),
-                'score' => (int)$submission['no_correct'],
+                'score' => $myScore,
                 'rank' => $myRank,
             ],
             'question' => $questionPayload,

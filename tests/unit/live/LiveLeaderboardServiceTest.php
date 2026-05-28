@@ -10,6 +10,22 @@ use Codeception\Test\Unit;
 
 class LiveLeaderboardServiceTest extends Unit
 {
+    public function testCalculateDifficultyBonusUsesQuestionDifficultyBands(): void
+    {
+        $service = new LiveLeaderboardService();
+
+        $this->assertSame(10, $service->calculateDifficultyBonus(1, 20));
+        $this->assertSame(10, $service->calculateDifficultyBonus(2, 20));
+        $this->assertSame(5, $service->calculateDifficultyBonus(3, 20));
+        $this->assertSame(5, $service->calculateDifficultyBonus(4, 20));
+        $this->assertSame(2, $service->calculateDifficultyBonus(5, 20));
+        $this->assertSame(2, $service->calculateDifficultyBonus(6, 20));
+        $this->assertSame(1, $service->calculateDifficultyBonus(7, 20));
+        $this->assertSame(1, $service->calculateDifficultyBonus(10, 20));
+        $this->assertSame(0, $service->calculateDifficultyBonus(11, 20));
+        $this->assertSame(0, $service->calculateDifficultyBonus(0, 20));
+    }
+
     public function testBuildPresentationDataUsesSnapshotDeltas(): void
     {
         $session = new LiveSession([
