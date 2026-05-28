@@ -137,7 +137,8 @@ class ScreenController extends Controller
             ];
         }
 
-        if ($session->status !== LiveSession::STATUS_FINISHED) {
+        if ($session->status === LiveSession::STATUS_LEADERBOARD
+            && (int)$session->current_question_index >= (int)$session->question_count) {
             $finishAction = [
                 'label' => 'Finish Session',
                 'url' => \yii\helpers\Url::to(['/live/screen/finish', 'code' => $session->join_code]),
