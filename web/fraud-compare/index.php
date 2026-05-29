@@ -82,10 +82,46 @@ function formatOneInOdds(?float $value): string
 
     $inverse = 1 / $value;
     if ($inverse < 1000) {
-        return '1:' . number_format($inverse, 1);
+        return '1:' . number_format(round($inverse), 0, '.', ',');
     }
 
-    return '1:' . sprintf('%.2e', $inverse);
+    $scientific = sprintf('%.0E', $inverse);
+    return '1:' . str_replace('E+', 'E+', strtoupper($scientific));
+}
+
+function binomialTailProbability(int $trials, int $successesOrMore, float $probability): ?float
+{
+    if ($trials < 0 || $successesOrMore < 0 || $successesOrMore > $trials) {
+        return null;
+    }
+
+    if ($probability < 0.0 || $probability > 1.0) {
+        return null;
+    }
+
+    if ($successesOrMore === 0) {
+        return 1.0;
+    }
+
+    if ($probability === 0.0) {
+        return 0.0;
+    }
+
+    if ($probability === 1.0) {
+        return 1.0;
+    }
+
+    $tail = 0.0;
+    for ($k = $successesOrMore; $k <= $trials; $k++) {
+        $combination = 1.0;
+        for ($i = 1; $i <= $k; $i++) {
+            $combination *= ($trials - ($k - $i)) / $i;
+        }
+
+        $tail += $combination * ($probability ** $k) * ((1.0 - $probability) ** ($trials - $k));
+    }
+
+    return min(1.0, max(0.0, $tail));
 }
 
 function currentPageUrl(): string
@@ -466,6 +502,8 @@ if ($submitted && $errors === []) {
                 if ($studentCount < 2) {
                     $errors[] = 'At least two students with submissions are required for all-student comparison.';
                 } else {
+                    $baselineProbability = null;
+
                     for ($leftIndex = 0; $leftIndex < $studentCount - 1; $leftIndex++) {
                         for ($rightIndex = $leftIndex + 1; $rightIndex < $studentCount; $rightIndex++) {
                             $leftSubmission = $students[$leftIndex];
@@ -479,23 +517,30 @@ if ($submitted && $errors === []) {
                             }
 
                             if ($pairSummary['matched_questions'] > 0 && $pairSummary['close_ratio'] > 0.5) {
-                                $sameWindowChance = null;
-                                if ($baselineMatchedQuestions > 0) {
-                                    $baselineProbability = $baselineCloseRows / $baselineMatchedQuestions;
-                                    $sameWindowChance = $baselineProbability > 0.0
-                                        ? pow($baselineProbability, $pairSummary['close_rows'])
-                                        : 0.0;
-                                }
-
                                 $potentialFraudPairs[] = [
                                     'student_1' => $leftSubmission,
                                     'student_2' => $rightSubmission,
                                     'summary' => $pairSummary,
-                                    'same_window_chance' => $sameWindowChance,
                                 ];
                             }
                         }
                     }
+
+                    if ($baselineMatchedQuestions > 0) {
+                        $baselineProbability = $baselineCloseRows / $baselineMatchedQuestions;
+                    }
+
+                    foreach ($potentialFraudPairs as &$pair) {
+                        $pairSummary = $pair['summary'];
+                        $pair['same_window_chance'] = $baselineProbability !== null
+                            ? binomialTailProbability(
+                                (int)$pairSummary['matched_questions'],
+                                (int)$pairSummary['close_rows'],
+                                (float)$baselineProbability
+                            )
+                            : null;
+                    }
+                    unset($pair);
 
                     usort($potentialFraudPairs, static function (array $left, array $right): int {
                         $ratioCompare = $right['summary']['close_ratio'] <=> $left['summary']['close_ratio'];
@@ -892,6 +937,43 @@ if ($submitted && $errors === []) {
             color: var(--muted);
         }
 
+        .help-label {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            position: relative;
+            cursor: help;
+        }
+
+        .help-label::after {
+            content: attr(data-help);
+            position: absolute;
+            left: 50%;
+            top: calc(100% + 10px);
+            transform: translateX(-50%);
+            width: min(300px, 70vw);
+            padding: 10px 12px;
+            border-radius: 12px;
+            background: #1f1b17;
+            color: #fff;
+            font-size: 0.78rem;
+            line-height: 1.4;
+            text-transform: none;
+            letter-spacing: normal;
+            font-weight: 500;
+            white-space: normal;
+            box-shadow: 0 12px 28px rgba(0, 0, 0, 0.18);
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.15s ease;
+            z-index: 20;
+        }
+
+        .help-label:hover::after,
+        .help-label:focus-visible::after {
+            opacity: 1;
+        }
+
         @media (max-width: 900px) {
             .form-grid,
             .meta-grid,
@@ -1234,7 +1316,15 @@ if ($submitted && $errors === []) {
                                             <th>Matched Questions</th>
                                             <th>Close Rows</th>
                                             <th>Close %</th>
-                                            <th>1:N</th>
+                                            <th>
+                                                <span
+                                                    class="help-label"
+                                                    tabindex="0"
+                                                    data-help="Baseline rarity under the quiz model. Calculated as 1 divided by the binomial tail probability P(X >= close rows), with X ~ Binomial(matched questions, quiz baseline P(within 15s)). This is a rarity score under the baseline model, not the probability that the pair is innocent or guilty."
+                                                >
+                                                    Rarity 1:N
+                                                </span>
+                                            </th>
                                             <th>Smallest Diff</th>
                                             <th>Average Diff</th>
                                         </tr>
