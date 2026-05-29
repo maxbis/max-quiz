@@ -79,14 +79,17 @@ class ScreenController extends Controller
                 ->one();
 
             if ($row) {
-                $answers = [];
-                for ($i = 1; $i <= 6; $i++) {
-                    $value = trim((string)($row['a' . $i] ?? ''));
-                    if ($value !== '') {
-                        $answers[] = [
-                            'answer_no' => $i,
-                            'label' => $value,
+                $answers = $this->buildShuffledAnswers($currentQuestion->id, $row);
+                $correctAnswer = null;
+                $correctAnswerNo = null;
+                foreach ($answers as $answer) {
+                    if ((int)$answer['answer_no'] === (int)$row['correct']) {
+                        $correctAnswerNo = (int)$answer['display_no'];
+                        $correctAnswer = [
+                            'answer_no' => (int)$answer['display_no'],
+                            'label' => (string)$answer['label'],
                         ];
+                        break;
                     }
                 }
 
@@ -94,11 +97,7 @@ class ScreenController extends Controller
                     'order' => (int)$currentQuestion->question_order,
                     'text' => (string)$row['question'],
                     'answers' => $answers,
-                    'correctAnswerNo' => (int)$row['correct'],
-                ];
-                $correctAnswer = [
-                    'answer_no' => (int)$row['correct'],
-                    'label' => (string)($row['a' . (int)$row['correct']] ?? ''),
+                    'correctAnswerNo' => $correctAnswerNo,
                 ];
             }
 
@@ -227,5 +226,32 @@ class ScreenController extends Controller
         }
 
         return $session;
+    }
+
+    private function buildShuffledAnswers(int $sessionQuestionId, array $question): array
+    {
+        $answers = [];
+        for ($i = 1; $i <= 6; $i++) {
+            $value = trim((string)($question['a' . $i] ?? ''));
+            if ($value !== '') {
+                $answers[] = [
+                    'answer_no' => $i,
+                    'label' => $value,
+                    'sort_key' => hash('sha256', $sessionQuestionId . ':' . $question['id'] . ':' . $i),
+                ];
+            }
+        }
+
+        usort($answers, static function (array $left, array $right): int {
+            return strcmp($left['sort_key'], $right['sort_key']);
+        });
+
+        foreach ($answers as $index => &$answer) {
+            $answer['display_no'] = $index + 1;
+            unset($answer['sort_key']);
+        }
+        unset($answer);
+
+        return $answers;
     }
 }

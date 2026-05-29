@@ -603,6 +603,12 @@ if ($submitted && $errors === []) {
             min-width: 880px;
         }
 
+        .pair-link-row {
+            color: inherit;
+            text-decoration: none;
+            display: contents;
+        }
+
         .metric,
         .submission-card {
             border-radius: 18px;
@@ -676,6 +682,16 @@ if ($submitted && $errors === []) {
 
         tbody tr.missing-row {
             background: #faf8f3;
+        }
+
+        tbody tr.clickable-row {
+            cursor: pointer;
+            transition: background-color 0.16s ease;
+        }
+
+        tbody tr.clickable-row:hover,
+        tbody tr.clickable-row:focus-within {
+            background: #ffe9da;
         }
 
         .question-label {
@@ -1020,27 +1036,36 @@ if ($submitted && $errors === []) {
                                             $leftName = trim((string)$pair['student_1']['first_name'] . ' ' . (string)$pair['student_1']['last_name']);
                                             $rightName = trim((string)$pair['student_2']['first_name'] . ' ' . (string)$pair['student_2']['last_name']);
                                             $pairSummary = $pair['summary'];
+                                            $compareUrl = currentPageUrl()
+                                                . '?quiz_id=' . rawurlencode($quizIdInput)
+                                                . '&student_1=' . rawurlencode((string)$pair['student_1']['student_nr'])
+                                                . '&student_2=' . rawurlencode((string)$pair['student_2']['student_nr'])
+                                                . '&action=compare';
                                             ?>
-                                            <tr class="close-row">
+                                            <tr class="close-row clickable-row" onclick="window.location.href='<?= h($compareUrl) ?>';">
                                                 <td>
-                                                    <div class="cell-stack">
-                                                        <div><strong><?= h($leftName) ?></strong></div>
-                                                        <small><?= h((string)$pair['student_1']['student_nr']) ?><?= $pair['student_1']['class'] !== '' ? ' - ' . h((string)$pair['student_1']['class']) : '' ?></small>
-                                                        <small>Submission <?= h((string)$pair['student_1']['id']) ?></small>
-                                                    </div>
+                                                    <a class="pair-link-row" href="<?= h($compareUrl) ?>">
+                                                        <div class="cell-stack">
+                                                            <div><strong><?= h($leftName) ?></strong></div>
+                                                            <small><?= h((string)$pair['student_1']['student_nr']) ?><?= $pair['student_1']['class'] !== '' ? ' - ' . h((string)$pair['student_1']['class']) : '' ?></small>
+                                                            <small>Submission <?= h((string)$pair['student_1']['id']) ?></small>
+                                                        </div>
+                                                    </a>
                                                 </td>
                                                 <td>
-                                                    <div class="cell-stack">
-                                                        <div><strong><?= h($rightName) ?></strong></div>
-                                                        <small><?= h((string)$pair['student_2']['student_nr']) ?><?= $pair['student_2']['class'] !== '' ? ' - ' . h((string)$pair['student_2']['class']) : '' ?></small>
-                                                        <small>Submission <?= h((string)$pair['student_2']['id']) ?></small>
-                                                    </div>
+                                                    <a class="pair-link-row" href="<?= h($compareUrl) ?>">
+                                                        <div class="cell-stack">
+                                                            <div><strong><?= h($rightName) ?></strong></div>
+                                                            <small><?= h((string)$pair['student_2']['student_nr']) ?><?= $pair['student_2']['class'] !== '' ? ' - ' . h((string)$pair['student_2']['class']) : '' ?></small>
+                                                            <small>Submission <?= h((string)$pair['student_2']['id']) ?></small>
+                                                        </div>
+                                                    </a>
                                                 </td>
-                                                <td><?= h((string)$pairSummary['matched_questions']) ?></td>
-                                                <td><?= h((string)$pairSummary['close_rows']) ?></td>
-                                                <td><?= h(number_format($pairSummary['close_ratio'] * 100, 1)) ?>%</td>
-                                                <td><?= h($pairSummary['smallest_diff'] !== null ? (string)$pairSummary['smallest_diff'] . 's' : '—') ?></td>
-                                                <td><?= h($pairSummary['average_diff'] !== null ? number_format((float)$pairSummary['average_diff'], 1) . 's' : '—') ?></td>
+                                                <td><a class="pair-link-row" href="<?= h($compareUrl) ?>"><?= h((string)$pairSummary['matched_questions']) ?></a></td>
+                                                <td><a class="pair-link-row" href="<?= h($compareUrl) ?>"><?= h((string)$pairSummary['close_rows']) ?></a></td>
+                                                <td><a class="pair-link-row" href="<?= h($compareUrl) ?>"><?= h(number_format($pairSummary['close_ratio'] * 100, 1)) ?>%</a></td>
+                                                <td><a class="pair-link-row" href="<?= h($compareUrl) ?>"><?= h($pairSummary['smallest_diff'] !== null ? (string)$pairSummary['smallest_diff'] . 's' : '—') ?></a></td>
+                                                <td><a class="pair-link-row" href="<?= h($compareUrl) ?>"><?= h($pairSummary['average_diff'] !== null ? number_format((float)$pairSummary['average_diff'], 1) . 's' : '—') ?></a></td>
                                             </tr>
                                         <?php endforeach; ?>
                                     </tbody>

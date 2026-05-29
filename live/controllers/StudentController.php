@@ -347,16 +347,7 @@ class StudentController extends Controller
             ->where(['id' => $sessionQuestion->question_id])
             ->one();
 
-        $answers = [];
-        for ($i = 1; $i <= 6; $i++) {
-            $value = trim((string)($question['a' . $i] ?? ''));
-            if ($value !== '') {
-                $answers[] = [
-                    'answer_no' => $i,
-                    'label' => $value,
-                ];
-            }
-        }
+        $answers = $this->buildShuffledAnswers($sessionQuestion, $question);
 
         return [
             'id' => (int)$question['id'],
@@ -364,6 +355,33 @@ class StudentController extends Controller
             'text' => (string)$question['question'],
             'answers' => $answers,
         ];
+    }
+
+    private function buildShuffledAnswers(LiveSessionQuestion $sessionQuestion, array $question): array
+    {
+        $answers = [];
+        for ($i = 1; $i <= 6; $i++) {
+            $value = trim((string)($question['a' . $i] ?? ''));
+            if ($value !== '') {
+                $answers[] = [
+                    'answer_no' => $i,
+                    'label' => $value,
+                    'sort_key' => hash('sha256', $sessionQuestion->id . ':' . $question['id'] . ':' . $i),
+                ];
+            }
+        }
+
+        usort($answers, static function (array $left, array $right): int {
+            return strcmp($left['sort_key'], $right['sort_key']);
+        });
+
+        foreach ($answers as $index => &$answer) {
+            $answer['display_no'] = $index + 1;
+            unset($answer['sort_key']);
+        }
+        unset($answer);
+
+        return $answers;
     }
 
     private function replaceAnswerAtPosition(string $answerOrder, int $index, int $answerNo): string

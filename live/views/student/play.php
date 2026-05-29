@@ -98,7 +98,7 @@ $csrfParam = Yii::$app->request->csrfParam;
                     const isSelected = answered && selectedAnswerNo === Number(answer.answer_no);
                     const selectedClass = isSelected ? ' answer-selected' : '';
                     return '<button class="answer-btn' + selectedClass + '" ' + disabled + ' onclick="submitAnswer(' + answer.answer_no + ')">'
-                        + '<strong>' + answer.answer_no + '.</strong> ' + escapeHtml(answer.label)
+                        + '<strong>' + answer.display_no + '.</strong> ' + escapeHtml(answer.label)
                         + '</button>';
                 }).join('') + '</div>';
             return;

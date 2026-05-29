@@ -183,7 +183,7 @@ $csrfToken = Yii::$app->request->getCsrfToken();
         if (data.session.status === 'question_open' && data.question) {
             content.innerHTML = '<div class="card question">'
                 + '<div class="question-text">' + escapeHtml(data.question.text).replace(/\n/g, '<br>') + '</div>'
-                + '<div class="answers">' + data.question.answers.map(answer => '<div class="answer"><strong>' + answer.answer_no + '.</strong> ' + escapeHtml(answer.label) + '</div>').join('') + '</div>'
+                + '<div class="answers">' + data.question.answers.map(answer => '<div class="answer"><strong>' + answer.display_no + '.</strong> ' + escapeHtml(answer.label) + '</div>').join('') + '</div>'
                 + '<div class="question-metrics">'
                 + '<div class="question-metric"><span class="question-metric-label">Answers received</span><span class="question-metric-value">' + data.answerCount + ' / ' + data.totalPlayers + '</span></div>'
                 + '<div class="question-metric"><span class="question-metric-label">Students joined</span><span class="question-metric-value">' + data.totalPlayers + '</span></div>'
@@ -299,9 +299,9 @@ $csrfToken = Yii::$app->request->getCsrfToken();
         document.getElementById('explain-title').textContent = 'Question ' + latestQuestion.order;
         document.getElementById('explain-question').innerHTML = escapeHtml(latestQuestion.text).replace(/\n/g, '<br>');
         document.getElementById('explain-answers').innerHTML = latestQuestion.answers.map(answer => {
-            const isCorrect = Number(answer.answer_no) === Number(latestQuestion.correctAnswerNo);
+            const isCorrect = Number(answer.display_no) === Number(latestQuestion.correctAnswerNo);
             return '<div class=\"explain-answer' + (isCorrect ? ' correct-answer' : '') + '\">'
-                + '<strong>' + answer.answer_no + '.</strong> ' + escapeHtml(answer.label)
+                + '<strong>' + answer.display_no + '.</strong> ' + escapeHtml(answer.label)
                 + '</div>';
         }).join('');
 

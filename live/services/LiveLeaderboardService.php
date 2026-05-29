@@ -13,12 +13,16 @@ class LiveLeaderboardService
     public const TOP_LIMIT = 5;
     public const MOVER_LIMIT = 5;
     private const BASE_CORRECT_POINTS = 10;
+    private const FIRST_CORRECT_BONUS_POINTS = 1;
 
     public function buildLeaderboard(LiveSession $session): array
     {
         if ($session->scoring_mode === LiveSession::SCORING_MODE_CORRECT_DIFFICULTY_BONUS) {
             return $this->buildDifficultyBonusLeaderboard($session);
         }
+
+        $firstCorrectBonuses = $this->getFirstCorrectBonuses((int)$session->id);
+        $firstCorrectBonusCounts = $firstCorrectBonuses['counts'];
 
         $rows = (new Query())
             ->select([
@@ -48,16 +52,35 @@ class LiveLeaderboardService
         $rank = 0;
         foreach ($rows as $row) {
             $rank++;
+            $submissionId = (int)$row['submission_id'];
             $leaderboard[] = [
                 'rank' => $rank,
-                'submission_id' => (int)$row['submission_id'],
+                'submission_id' => $submissionId,
                 'name' => trim((string)$row['first_name'] . ' ' . (string)$row['last_name']),
                 'class' => trim((string)$row['class']),
-                'score' => (int)$row['score'],
+                'score' => (int)$row['score'] + (($firstCorrectBonusCounts[$submissionId] ?? 0) * self::FIRST_CORRECT_BONUS_POINTS),
                 'correct_answers' => (int)$row['correct_answers'],
                 'latest_correct_at' => $row['latest_correct_at'],
             ];
         }
+
+        usort($leaderboard, static function (array $left, array $right): int {
+            if ($left['score'] !== $right['score']) {
+                return $right['score'] <=> $left['score'];
+            }
+            if ($left['correct_answers'] !== $right['correct_answers']) {
+                return $right['correct_answers'] <=> $left['correct_answers'];
+            }
+            if ($left['latest_correct_at'] !== $right['latest_correct_at']) {
+                return ($left['latest_correct_at'] ?? '9999-12-31 23:59:59') <=> ($right['latest_correct_at'] ?? '9999-12-31 23:59:59');
+            }
+            return $left['submission_id'] <=> $right['submission_id'];
+        });
+
+        foreach ($leaderboard as $index => &$entry) {
+            $entry['rank'] = $index + 1;
+        }
+        unset($entry);
 
         return $leaderboard;
     }
@@ -208,6 +231,8 @@ class LiveLeaderboardService
             ->from('live_session_submission')
             ->where(['live_session_id' => $session->id])
             ->count('*');
+        $firstCorrectBonuses = $this->getFirstCorrectBonuses((int)$session->id);
+        $firstCorrectWinnersByQuestion = $firstCorrectBonuses['byQuestion'];
 
         $questionBonuses = [];
         if ($totalPlayers > 0) {
@@ -274,6 +299,9 @@ class LiveLeaderboardService
             $questionId = (int)($row['live_session_question_id'] ?? 0);
             $bonus = $questionBonuses[$questionId] ?? 0;
             $scores[$submissionId]['score'] += self::BASE_CORRECT_POINTS + $bonus;
+            if (($firstCorrectWinnersByQuestion[$questionId] ?? null) === $submissionId) {
+                $scores[$submissionId]['score'] += self::FIRST_CORRECT_BONUS_POINTS;
+            }
             $scores[$submissionId]['correct_answers'] += 1;
 
             $timestamp = $row['timestamp'] ?? null;
@@ -302,5 +330,46 @@ class LiveLeaderboardService
         unset($entry);
 
         return $leaderboard;
+    }
+
+    private function getFirstCorrectBonuses(int $sessionId): array
+    {
+        $rows = (new Query())
+            ->select([
+                'id',
+                'submission_id',
+                'live_session_question_id',
+                'timestamp',
+            ])
+            ->from('log')
+            ->where([
+                'live_session_id' => $sessionId,
+                'correct' => 1,
+            ])
+            ->andWhere(['not', ['live_session_question_id' => null]])
+            ->orderBy([
+                'live_session_question_id' => SORT_ASC,
+                'timestamp' => SORT_ASC,
+                'id' => SORT_ASC,
+            ])
+            ->all();
+
+        $counts = [];
+        $winnersByQuestion = [];
+        foreach ($rows as $row) {
+            $questionId = (int)$row['live_session_question_id'];
+            if (isset($winnersByQuestion[$questionId])) {
+                continue;
+            }
+
+            $submissionId = (int)$row['submission_id'];
+            $winnersByQuestion[$questionId] = $submissionId;
+            $counts[$submissionId] = ($counts[$submissionId] ?? 0) + 1;
+        }
+
+        return [
+            'counts' => $counts,
+            'byQuestion' => $winnersByQuestion,
+        ];
     }
 }
