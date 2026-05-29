@@ -40,6 +40,19 @@ function formatBool(?int $value): string
     return $value === 1 ? 'Yes' : 'No';
 }
 
+function formatDuration(?float $seconds): string
+{
+    if ($seconds === null) {
+        return '—';
+    }
+
+    $totalSeconds = (int)round($seconds);
+    $minutes = intdiv($totalSeconds, 60);
+    $remainingSeconds = $totalSeconds % 60;
+
+    return sprintf('%d:%02d', $minutes, $remainingSeconds);
+}
+
 function currentPageUrl(): string
 {
     $requestUri = $_SERVER['REQUEST_URI'] ?? '/fraud-compare/';
@@ -167,6 +180,55 @@ function analyzeSubmissionPair(array $leftSubmission, array $rightSubmission, ar
     ];
 }
 
+/**
+ * @param array<int, array<string, mixed>> $submissions
+ * @return array{count:int, average_seconds:?float, stdev_seconds:?float}
+ */
+function buildDurationStats(array $submissions): array
+{
+    $durations = [];
+
+    foreach ($submissions as $submission) {
+        $startTime = $submission['start_time'] ?? null;
+        $endTime = $submission['end_time'] ?? null;
+
+        if (!is_string($startTime) || !is_string($endTime) || trim($startTime) === '' || trim($endTime) === '') {
+            continue;
+        }
+
+        $duration = strtotime($endTime) - strtotime($startTime);
+        if ($duration >= 0) {
+            $durations[] = (float)$duration;
+        }
+    }
+
+    $count = count($durations);
+    if ($count === 0) {
+        return [
+            'count' => 0,
+            'average_seconds' => null,
+            'stdev_seconds' => null,
+        ];
+    }
+
+    $average = array_sum($durations) / $count;
+    if ($count === 1) {
+        $stdev = 0.0;
+    } else {
+        $varianceSum = 0.0;
+        foreach ($durations as $duration) {
+            $varianceSum += ($duration - $average) ** 2;
+        }
+        $stdev = sqrt($varianceSum / ($count - 1));
+    }
+
+    return [
+        'count' => $count,
+        'average_seconds' => $average,
+        'stdev_seconds' => $stdev,
+    ];
+}
+
 $quizIdInput = normalizeInput('quiz_id');
 $student1Input = normalizeInput('student_1');
 $student2Input = normalizeInput('student_2');
@@ -187,6 +249,7 @@ $questionMeta = [];
 $comparisonRows = [];
 $summary = null;
 $potentialFraudPairs = [];
+$durationStats = null;
 
 if ($submitted) {
     if (!isDigits($quizIdInput)) {
@@ -346,6 +409,7 @@ if ($submitted && $errors === []) {
             if ($activeAction === 'all_pairs') {
                 $students = array_values($latestSubmissions);
                 $studentCount = count($students);
+                $durationStats = buildDurationStats($students);
 
                 if ($studentCount < 2) {
                     $errors[] = 'At least two students with submissions are required for all-student comparison.';
@@ -716,11 +780,9 @@ if ($submitted && $errors === []) {
             gap: 6px;
         }
 
-        .cell-stack.earliest {
-            background: #e6f6df;
-            border: 1px solid #b7dfaa;
-            border-radius: 14px;
-            padding: 10px 12px;
+        .earliest-timestamp {
+            color: #2f8f46;
+            font-weight: 700;
         }
 
         .cell-stack small {
@@ -868,6 +930,12 @@ if ($submitted && $errors === []) {
                     <?php
                     $student1Submission = $selectedSubmissions[$student1Input] ?? null;
                     $student2Submission = $selectedSubmissions[$student2Input] ?? null;
+                    $student1Header = $student1Submission !== null
+                        ? trim((string)$student1Submission['first_name'] . ' ' . (string)$student1Submission['last_name'])
+                        : 'Student 1';
+                    $student2Header = $student2Submission !== null
+                        ? trim((string)$student2Submission['first_name'] . ' ' . (string)$student2Submission['last_name'])
+                        : 'Student 2';
                     ?>
 
                     <section class="card">
@@ -944,8 +1012,8 @@ if ($submitted && $errors === []) {
                                         <thead>
                                             <tr>
                                                 <th>Question</th>
-                                                <th>Student 1</th>
-                                                <th>Student 2</th>
+                                                <th><?= h($student1Header) ?></th>
+                                                <th><?= h($student2Header) ?></th>
                                                 <th>Diff</th>
                                                 <th>Flag</th>
                                             </tr>
@@ -986,7 +1054,7 @@ if ($submitted && $errors === []) {
                                                                 <div><strong>Q# <?= h((string)$left['question_no']) ?></strong></div>
                                                                 <small>Answer: <?= h((string)$left['answer_no']) ?></small>
                                                                 <small>Correct: <?= h(formatBool($left['correct'])) ?></small>
-                                                                <small><?= h(formatTimestamp($left['timestamp'])) ?></small>
+                                                                <small class="<?= $leftIsEarlier ? 'earliest-timestamp' : '' ?>"><?= h(formatTimestamp($left['timestamp'])) ?></small>
                                                             </div>
                                                         <?php endif; ?>
                                                     </td>
@@ -998,7 +1066,7 @@ if ($submitted && $errors === []) {
                                                                 <div><strong>Q# <?= h((string)$right['question_no']) ?></strong></div>
                                                                 <small>Answer: <?= h((string)$right['answer_no']) ?></small>
                                                                 <small>Correct: <?= h(formatBool($right['correct'])) ?></small>
-                                                                <small><?= h(formatTimestamp($right['timestamp'])) ?></small>
+                                                                <small class="<?= $rightIsEarlier ? 'earliest-timestamp' : '' ?>"><?= h(formatTimestamp($right['timestamp'])) ?></small>
                                                             </div>
                                                         <?php endif; ?>
                                                     </td>
@@ -1025,6 +1093,31 @@ if ($submitted && $errors === []) {
                 <?php endif; ?>
 
                 <?php if ($submitted && $errors === [] && $connectionError === null && $queryError === null && $activeAction === 'all_pairs'): ?>
+                    <section class="card">
+                        <h2>Timing Stats</h2>
+                        <p class="muted">
+                            Based on the latest completed submission per student in this quiz.
+                        </p>
+                        <div class="summary-grid">
+                            <div class="metric">
+                                <span class="eyebrow">Completed Students</span>
+                                <strong><?= h((string)($durationStats['count'] ?? 0)) ?></strong>
+                            </div>
+                            <div class="metric">
+                                <span class="eyebrow">Average Total Time</span>
+                                <strong><?= h(formatDuration(isset($durationStats['average_seconds']) ? (float)$durationStats['average_seconds'] : null)) ?></strong>
+                            </div>
+                            <div class="metric">
+                                <span class="eyebrow">Std Dev Total Time</span>
+                                <strong><?= h(formatDuration(isset($durationStats['stdev_seconds']) ? (float)$durationStats['stdev_seconds'] : null)) ?></strong>
+                            </div>
+                            <div class="metric">
+                                <span class="eyebrow">Average Seconds</span>
+                                <strong><?= h(isset($durationStats['average_seconds']) && $durationStats['average_seconds'] !== null ? number_format((float)$durationStats['average_seconds'], 1) . 's' : '—') ?></strong>
+                            </div>
+                        </div>
+                    </section>
+
                     <section class="card">
                         <h2>Potential Fraud Couples</h2>
                         <p class="muted">
