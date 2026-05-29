@@ -716,6 +716,13 @@ if ($submitted && $errors === []) {
             gap: 6px;
         }
 
+        .cell-stack.earliest {
+            background: #e6f6df;
+            border: 1px solid #b7dfaa;
+            border-radius: 14px;
+            padding: 10px 12px;
+        }
+
         .cell-stack small {
             color: var(--muted);
         }
@@ -950,6 +957,16 @@ if ($submitted && $errors === []) {
                                                 $right = $row['student_2'];
                                                 $isMissing = $left === null || $right === null;
                                                 $rowClass = $row['is_close'] ? 'close-row' : ($isMissing ? 'missing-row' : '');
+                                                $leftIsEarlier = $left !== null
+                                                    && $right !== null
+                                                    && $left['timestamp'] !== null
+                                                    && $right['timestamp'] !== null
+                                                    && strtotime($left['timestamp']) < strtotime($right['timestamp']);
+                                                $rightIsEarlier = $left !== null
+                                                    && $right !== null
+                                                    && $left['timestamp'] !== null
+                                                    && $right['timestamp'] !== null
+                                                    && strtotime($right['timestamp']) < strtotime($left['timestamp']);
                                                 ?>
                                                 <tr class="<?= h($rowClass) ?>">
                                                     <td>
@@ -965,7 +982,7 @@ if ($submitted && $errors === []) {
                                                         <?php if ($left === null): ?>
                                                             <span class="muted">No answer submitted</span>
                                                         <?php else: ?>
-                                                            <div class="cell-stack">
+                                                            <div class="cell-stack<?= $leftIsEarlier ? ' earliest' : '' ?>">
                                                                 <div><strong>Q# <?= h((string)$left['question_no']) ?></strong></div>
                                                                 <small>Answer: <?= h((string)$left['answer_no']) ?></small>
                                                                 <small>Correct: <?= h(formatBool($left['correct'])) ?></small>
@@ -977,7 +994,7 @@ if ($submitted && $errors === []) {
                                                         <?php if ($right === null): ?>
                                                             <span class="muted">No answer submitted</span>
                                                         <?php else: ?>
-                                                            <div class="cell-stack">
+                                                            <div class="cell-stack<?= $rightIsEarlier ? ' earliest' : '' ?>">
                                                                 <div><strong>Q# <?= h((string)$right['question_no']) ?></strong></div>
                                                                 <small>Answer: <?= h((string)$right['answer_no']) ?></small>
                                                                 <small>Correct: <?= h(formatBool($right['correct'])) ?></small>
