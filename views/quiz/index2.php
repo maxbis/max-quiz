@@ -1059,6 +1059,10 @@ $this->registerJs($regradeScript);
                                     <?= Html::a('✏️ Edit', ['/quiz/update', 'id' => $quiz['id']], ['class' => 'dropdown-item', 'title' => 'Edit Quiz']) ?>
                                     <?= Html::a('👁️ View', ['/question/list', 'quiz_id' => $quiz['id']], ['class' => 'dropdown-item', 'title' => 'View Questions']) ?>
                                     <?= Html::a('🏷️ Labels/Sort', ['/quiz/edit-labels', 'id' => $quiz['id']], ['class' => 'dropdown-item', 'title' => 'Edit Question Labels']) ?>
+                                    <?= Html::a('🕵️ Fraud detection', 'fraud-compare/?quiz_id=' . (int)$quiz['id'] . '&student_1=&student_2=&action=all_pairs', [
+                                        'class' => 'dropdown-item',
+                                        'title' => 'Open fraud detection for this quiz',
+                                    ]) ?>
                                     <?= Html::a('🎤 Live Quiz', ['/live/teacher/index', 'quiz_id' => $quiz['id']], [
                                         'class' => 'dropdown-item',
                                         'title' => 'Open Live Quiz with this quiz preselected',
