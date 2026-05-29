@@ -59,9 +59,119 @@ function parentUrl(): string
     return rtrim($parentPath, '/') . '/';
 }
 
+/**
+ * @param array<int, array{label: string, question: string}> $questionMeta
+ * @param array<int, array{question_id:int, question_no:?int, answer_no:?int, correct:?int, timestamp:?string}> $leftLogs
+ * @param array<int, array{question_id:int, question_no:?int, answer_no:?int, correct:?int, timestamp:?string}> $rightLogs
+ * @return array<int, array<string, mixed>>
+ */
+function buildComparisonRows(array $questionMeta, array $leftLogs, array $rightLogs): array
+{
+    $comparisonRows = [];
+    $questionIds = array_unique(array_merge(
+        array_map('intval', array_keys($leftLogs)),
+        array_map('intval', array_keys($rightLogs))
+    ));
+
+    foreach ($questionIds as $questionId) {
+        $left = $leftLogs[$questionId] ?? null;
+        $right = $rightLogs[$questionId] ?? null;
+        $diffSeconds = null;
+
+        if ($left !== null && $right !== null && $left['timestamp'] !== null && $right['timestamp'] !== null) {
+            $diffSeconds = abs(strtotime($left['timestamp']) - strtotime($right['timestamp']));
+        }
+
+        $comparisonRows[] = [
+            'question_id' => $questionId,
+            'label' => $questionMeta[$questionId]['label'] ?? '',
+            'question' => $questionMeta[$questionId]['question'] ?? '',
+            'student_1' => $left,
+            'student_2' => $right,
+            'diff_seconds' => $diffSeconds,
+            'is_close' => $diffSeconds !== null && $diffSeconds <= SUSPICIOUS_SECONDS,
+        ];
+    }
+
+    usort($comparisonRows, static function (array $left, array $right): int {
+        $leftOrder = min(
+            $left['student_1']['question_no'] ?? PHP_INT_MAX,
+            $left['student_2']['question_no'] ?? PHP_INT_MAX
+        );
+        $rightOrder = min(
+            $right['student_1']['question_no'] ?? PHP_INT_MAX,
+            $right['student_2']['question_no'] ?? PHP_INT_MAX
+        );
+
+        if ($leftOrder === $rightOrder) {
+            return $left['question_id'] <=> $right['question_id'];
+        }
+
+        return $leftOrder <=> $rightOrder;
+    });
+
+    return $comparisonRows;
+}
+
+/**
+ * @param array<int, array<string, mixed>> $comparisonRows
+ * @return array{matched_questions:int, close_rows:int, smallest_diff:?int, average_diff:?float, close_ratio:float}
+ */
+function buildSummary(array $comparisonRows): array
+{
+    $matchedRows = array_values(array_filter(
+        $comparisonRows,
+        static fn(array $row): bool => $row['diff_seconds'] !== null
+    ));
+
+    $closeRows = array_values(array_filter(
+        $matchedRows,
+        static fn(array $row): bool => $row['is_close'] === true
+    ));
+
+    $diffValues = array_map(
+        static fn(array $row): int => (int)$row['diff_seconds'],
+        $matchedRows
+    );
+
+    $matchedCount = count($matchedRows);
+    $closeCount = count($closeRows);
+
+    return [
+        'matched_questions' => $matchedCount,
+        'close_rows' => $closeCount,
+        'smallest_diff' => $diffValues !== [] ? min($diffValues) : null,
+        'average_diff' => $diffValues !== [] ? (array_sum($diffValues) / count($diffValues)) : null,
+        'close_ratio' => $matchedCount > 0 ? $closeCount / $matchedCount : 0.0,
+    ];
+}
+
+/**
+ * @param array<string, mixed> $leftSubmission
+ * @param array<string, mixed> $rightSubmission
+ * @param array<int, array<int, array{question_id:int, question_no:?int, answer_no:?int, correct:?int, timestamp:?string}>> $logsBySubmissionId
+ * @param array<int, array{label: string, question: string}> $questionMeta
+ * @return array{rows: array<int, array<string, mixed>>, summary: array{matched_questions:int, close_rows:int, smallest_diff:?int, average_diff:?float, close_ratio:float}}
+ */
+function analyzeSubmissionPair(array $leftSubmission, array $rightSubmission, array $logsBySubmissionId, array $questionMeta): array
+{
+    $comparisonRows = buildComparisonRows(
+        $questionMeta,
+        $logsBySubmissionId[(int)$leftSubmission['id']] ?? [],
+        $logsBySubmissionId[(int)$rightSubmission['id']] ?? []
+    );
+
+    return [
+        'rows' => $comparisonRows,
+        'summary' => buildSummary($comparisonRows),
+    ];
+}
+
 $quizIdInput = normalizeInput('quiz_id');
 $student1Input = normalizeInput('student_1');
 $student2Input = normalizeInput('student_2');
+$actionInput = normalizeInput('action');
+$activeAction = $actionInput === 'all_pairs' ? 'all_pairs' : 'compare';
 $hasQuizLookup = $quizIdInput !== '';
 $submitted = $quizIdInput !== '' || $student1Input !== '' || $student2Input !== '';
 
@@ -71,21 +181,28 @@ $queryError = null;
 $quiz = null;
 $studentOptions = [];
 $selectedSubmissions = [];
+$latestSubmissions = [];
+$logsBySubmissionId = [];
+$questionMeta = [];
 $comparisonRows = [];
 $summary = null;
+$potentialFraudPairs = [];
 
 if ($submitted) {
     if (!isDigits($quizIdInput)) {
         $errors[] = 'Quiz ID must be a number.';
     }
-    if ($student1Input !== '' && !isDigits($student1Input)) {
+    if ($activeAction === 'compare' && $student1Input !== '' && !isDigits($student1Input)) {
         $errors[] = 'Student 1 must be a number.';
     }
-    if ($student2Input !== '' && !isDigits($student2Input)) {
+    if ($activeAction === 'compare' && $student2Input !== '' && !isDigits($student2Input)) {
         $errors[] = 'Student 2 must be a number.';
     }
-    if ($student1Input !== '' && $student2Input !== '' && $student1Input === $student2Input) {
+    if ($activeAction === 'compare' && $student1Input !== '' && $student2Input !== '' && $student1Input === $student2Input) {
         $errors[] = 'Student 1 and Student 2 must be different.';
+    }
+    if ($activeAction === 'compare' && ($student1Input !== '' || $student2Input !== '') && ($student1Input === '' || $student2Input === '')) {
+        $errors[] = 'Select both students to run a direct comparison.';
     }
 }
 
@@ -121,10 +238,18 @@ if ($submitted && $errors === []) {
 
             $studentOptionStmt = $pdo->prepare('
                 SELECT
+                    s.id,
                     s.student_nr,
                     s.first_name,
                     s.last_name,
                     s.class,
+                    s.start_time,
+                    s.end_time,
+                    s.last_updated,
+                    s.no_answered,
+                    s.no_correct,
+                    s.no_questions,
+                    s.quiz_id,
                     COALESCE(s.end_time, s.last_updated, s.start_time) AS sort_time
                 FROM submission s
                 WHERE s.quiz_id = :quiz_id
@@ -139,6 +264,7 @@ if ($submitted && $errors === []) {
                     continue;
                 }
 
+                $latestSubmissions[$studentNr] = $studentRow;
                 $studentOptions[$studentNr] = [
                     'student_nr' => $studentNr,
                     'full_name' => trim((string)$studentRow['first_name'] . ' ' . (string)$studentRow['last_name']),
@@ -157,166 +283,106 @@ if ($submitted && $errors === []) {
                 return $leftName <=> $rightName;
             });
 
-            if ($student1Input !== '' && $student2Input !== '') {
-                $submissionStmt = $pdo->prepare('
+            if ($latestSubmissions !== []) {
+                $submissionIds = array_map(
+                    static fn(array $submission): int => (int)$submission['id'],
+                    array_values($latestSubmissions)
+                );
+                $logPlaceholders = implode(',', array_fill(0, count($submissionIds), '?'));
+                $logStmt = $pdo->prepare("
                     SELECT
-                        s.id,
-                        s.quiz_id,
-                        s.student_nr,
-                        s.first_name,
-                        s.last_name,
-                        s.class,
-                        s.start_time,
-                        s.end_time,
-                        s.last_updated,
-                        s.no_answered,
-                        s.no_correct,
-                        s.no_questions,
-                        COALESCE(s.end_time, s.last_updated, s.start_time) AS sort_time
-                    FROM submission s
-                    WHERE s.quiz_id = :quiz_id
-                      AND s.student_nr IN (:student_1, :student_2)
-                    ORDER BY s.student_nr ASC, sort_time DESC, s.id DESC
-                ');
-                $submissionStmt->execute([
-                    'quiz_id' => (int)$quizIdInput,
-                    'student_1' => (int)$student1Input,
-                    'student_2' => (int)$student2Input,
-                ]);
+                        l.id,
+                        l.submission_id,
+                        l.question_id,
+                        l.no_answered,
+                        l.answer_no,
+                        l.correct,
+                        l.timestamp,
+                        q.label,
+                        q.question
+                    FROM log l
+                    LEFT JOIN question q
+                      ON q.id = l.question_id
+                    WHERE l.submission_id IN ($logPlaceholders)
+                    ORDER BY l.submission_id ASC, l.no_answered ASC, l.id ASC
+                ");
+                $logStmt->execute($submissionIds);
 
-                foreach ($submissionStmt->fetchAll() as $submission) {
-                    $studentNr = (string)$submission['student_nr'];
-                    if (!isset($selectedSubmissions[$studentNr])) {
-                        $selectedSubmissions[$studentNr] = $submission;
+                foreach ($logStmt->fetchAll() as $logRow) {
+                    $submissionId = (int)$logRow['submission_id'];
+                    $questionId = (int)$logRow['question_id'];
+                    $logsBySubmissionId[$submissionId][$questionId] = [
+                        'question_id' => $questionId,
+                        'question_no' => isset($logRow['no_answered']) ? ((int)$logRow['no_answered'] + 1) : null,
+                        'answer_no' => isset($logRow['answer_no']) ? (int)$logRow['answer_no'] : null,
+                        'correct' => isset($logRow['correct']) ? (int)$logRow['correct'] : null,
+                        'timestamp' => $logRow['timestamp'] ?? null,
+                    ];
+
+                    if (!isset($questionMeta[$questionId])) {
+                        $questionMeta[$questionId] = [
+                            'label' => trim((string)($logRow['label'] ?? '')),
+                            'question' => trim((string)($logRow['question'] ?? '')),
+                        ];
                     }
                 }
+            }
 
-                $student1Submission = $selectedSubmissions[$student1Input] ?? null;
-                $student2Submission = $selectedSubmissions[$student2Input] ?? null;
+            if ($activeAction === 'compare' && $student1Input !== '' && $student2Input !== '') {
+                $student1Submission = $latestSubmissions[$student1Input] ?? null;
+                $student2Submission = $latestSubmissions[$student2Input] ?? null;
+                $selectedSubmissions = array_filter([
+                    $student1Input => $student1Submission,
+                    $student2Input => $student2Submission,
+                ]);
 
                 if ($student1Submission !== null && $student2Submission !== null) {
-                    $logStmt = $pdo->prepare('
-                        SELECT
-                            l.id,
-                            l.submission_id,
-                            l.question_id,
-                            l.no_answered,
-                            l.answer_no,
-                            l.correct,
-                            l.timestamp,
-                            q.label,
-                            q.question
-                        FROM log l
-                        LEFT JOIN question q
-                          ON q.id = l.question_id
-                        WHERE l.submission_id IN (:submission_1, :submission_2)
-                        ORDER BY l.submission_id ASC, l.no_answered ASC, l.id ASC
-                    ');
-                    $logStmt->execute([
-                        'submission_1' => (int)$student1Submission['id'],
-                        'submission_2' => (int)$student2Submission['id'],
-                    ]);
+                    $pairAnalysis = analyzeSubmissionPair($student1Submission, $student2Submission, $logsBySubmissionId, $questionMeta);
+                    $comparisonRows = $pairAnalysis['rows'];
+                    $summary = $pairAnalysis['summary'];
+                }
+            }
 
-                    $logsByStudent = [
-                        $student1Input => [],
-                        $student2Input => [],
-                    ];
-                    $questionMeta = [];
+            if ($activeAction === 'all_pairs') {
+                $students = array_values($latestSubmissions);
+                $studentCount = count($students);
 
-                    foreach ($logStmt->fetchAll() as $logRow) {
-                        $studentKey = null;
-                        if ((int)$logRow['submission_id'] === (int)$student1Submission['id']) {
-                            $studentKey = $student1Input;
-                        } elseif ((int)$logRow['submission_id'] === (int)$student2Submission['id']) {
-                            $studentKey = $student2Input;
-                        }
+                if ($studentCount < 2) {
+                    $errors[] = 'At least two students with submissions are required for all-student comparison.';
+                } else {
+                    for ($leftIndex = 0; $leftIndex < $studentCount - 1; $leftIndex++) {
+                        for ($rightIndex = $leftIndex + 1; $rightIndex < $studentCount; $rightIndex++) {
+                            $leftSubmission = $students[$leftIndex];
+                            $rightSubmission = $students[$rightIndex];
+                            $pairAnalysis = analyzeSubmissionPair($leftSubmission, $rightSubmission, $logsBySubmissionId, $questionMeta);
+                            $pairSummary = $pairAnalysis['summary'];
 
-                        if ($studentKey === null) {
-                            continue;
-                        }
-
-                        $questionId = (int)$logRow['question_id'];
-                        $entry = [
-                            'question_id' => $questionId,
-                            'question_no' => isset($logRow['no_answered']) ? ((int)$logRow['no_answered'] + 1) : null,
-                            'answer_no' => isset($logRow['answer_no']) ? (int)$logRow['answer_no'] : null,
-                            'correct' => isset($logRow['correct']) ? (int)$logRow['correct'] : null,
-                            'timestamp' => $logRow['timestamp'] ?? null,
-                        ];
-
-                        $logsByStudent[$studentKey][$questionId] = $entry;
-
-                        if (!isset($questionMeta[$questionId])) {
-                            $questionMeta[$questionId] = [
-                                'label' => trim((string)($logRow['label'] ?? '')),
-                                'question' => trim((string)($logRow['question'] ?? '')),
-                            ];
+                            if ($pairSummary['matched_questions'] > 0 && $pairSummary['close_ratio'] > 0.5) {
+                                $potentialFraudPairs[] = [
+                                    'student_1' => $leftSubmission,
+                                    'student_2' => $rightSubmission,
+                                    'summary' => $pairSummary,
+                                ];
+                            }
                         }
                     }
 
-                    $questionIds = array_unique(array_merge(
-                        array_map('intval', array_keys($logsByStudent[$student1Input])),
-                        array_map('intval', array_keys($logsByStudent[$student2Input]))
-                    ));
-
-                    foreach ($questionIds as $questionId) {
-                        $left = $logsByStudent[$student1Input][$questionId] ?? null;
-                        $right = $logsByStudent[$student2Input][$questionId] ?? null;
-                        $diffSeconds = null;
-
-                        if ($left !== null && $right !== null && $left['timestamp'] !== null && $right['timestamp'] !== null) {
-                            $diffSeconds = abs(strtotime($left['timestamp']) - strtotime($right['timestamp']));
+                    usort($potentialFraudPairs, static function (array $left, array $right): int {
+                        $ratioCompare = $right['summary']['close_ratio'] <=> $left['summary']['close_ratio'];
+                        if ($ratioCompare !== 0) {
+                            return $ratioCompare;
                         }
 
-                        $comparisonRows[] = [
-                            'question_id' => $questionId,
-                            'label' => $questionMeta[$questionId]['label'] ?? '',
-                            'question' => $questionMeta[$questionId]['question'] ?? '',
-                            'student_1' => $left,
-                            'student_2' => $right,
-                            'diff_seconds' => $diffSeconds,
-                            'is_close' => $diffSeconds !== null && $diffSeconds <= SUSPICIOUS_SECONDS,
-                        ];
-                    }
-
-                    usort($comparisonRows, static function (array $left, array $right): int {
-                        $leftOrder = min(
-                            $left['student_1']['question_no'] ?? PHP_INT_MAX,
-                            $left['student_2']['question_no'] ?? PHP_INT_MAX
-                        );
-                        $rightOrder = min(
-                            $right['student_1']['question_no'] ?? PHP_INT_MAX,
-                            $right['student_2']['question_no'] ?? PHP_INT_MAX
-                        );
-
-                        if ($leftOrder === $rightOrder) {
-                            return $left['question_id'] <=> $right['question_id'];
+                        $closeCompare = $right['summary']['close_rows'] <=> $left['summary']['close_rows'];
+                        if ($closeCompare !== 0) {
+                            return $closeCompare;
                         }
 
-                        return $leftOrder <=> $rightOrder;
+                        return strcmp(
+                            trim((string)$left['student_1']['first_name'] . ' ' . (string)$left['student_1']['last_name']),
+                            trim((string)$right['student_1']['first_name'] . ' ' . (string)$right['student_1']['last_name'])
+                        );
                     });
-
-                    $matchedRows = array_values(array_filter(
-                        $comparisonRows,
-                        static fn(array $row): bool => $row['diff_seconds'] !== null
-                    ));
-
-                    $closeRows = array_values(array_filter(
-                        $matchedRows,
-                        static fn(array $row): bool => $row['is_close'] === true
-                    ));
-
-                    $diffValues = array_map(
-                        static fn(array $row): int => (int)$row['diff_seconds'],
-                        $matchedRows
-                    );
-
-                    $summary = [
-                        'matched_questions' => count($matchedRows),
-                        'close_rows' => count($closeRows),
-                        'smallest_diff' => $diffValues !== [] ? min($diffValues) : null,
-                        'average_diff' => $diffValues !== [] ? (array_sum($diffValues) / count($diffValues)) : null,
-                    ];
                 }
             }
         } catch (PDOException $exception) {
@@ -533,6 +599,10 @@ if ($submitted && $errors === []) {
             grid-template-columns: repeat(4, minmax(0, 1fr));
         }
 
+        .pair-table {
+            min-width: 880px;
+        }
+
         .metric,
         .submission-card {
             border-radius: 18px;
@@ -747,7 +817,8 @@ if ($submitted && $errors === []) {
                             </div>
                         </div>
                         <div class="actions">
-                            <button class="button" type="submit">Compare</button>
+                            <button class="button" type="submit" name="action" value="compare">Compare</button>
+                            <button class="button secondary" type="submit" name="action" value="all_pairs">Compare All Students</button>
                             <a class="button secondary" href="<?= h(currentPageUrl()) ?>">Reset</a>
                             <?php if ($hasQuizLookup && $studentOptions === [] && $errors === [] && $connectionError === null && $queryError === null): ?>
                                 <span class="muted">No students found yet for this quiz.</span>
@@ -770,7 +841,7 @@ if ($submitted && $errors === []) {
                     </section>
                 <?php endif; ?>
 
-                <?php if ($submitted && $errors === [] && $connectionError === null && $queryError === null): ?>
+                <?php if ($submitted && $errors === [] && $connectionError === null && $queryError === null && $activeAction === 'compare'): ?>
                     <?php
                     $student1Submission = $selectedSubmissions[$student1Input] ?? null;
                     $student2Submission = $selectedSubmissions[$student2Input] ?? null;
@@ -918,6 +989,65 @@ if ($submitted && $errors === []) {
                             <?php endif; ?>
                         </section>
                     <?php endif; ?>
+                <?php endif; ?>
+
+                <?php if ($submitted && $errors === [] && $connectionError === null && $queryError === null && $activeAction === 'all_pairs'): ?>
+                    <section class="card">
+                        <h2>Potential Fraud Couples</h2>
+                        <p class="muted">
+                            Students are listed here when more than 50% of their matched answer rows were flagged close within <?= h((string)SUSPICIOUS_SECONDS) ?> seconds.
+                        </p>
+
+                        <?php if ($potentialFraudPairs === []): ?>
+                            <div class="message warn">No potential fraud couples found for this quiz using the current threshold.</div>
+                        <?php else: ?>
+                            <div class="table-wrap">
+                                <table class="pair-table">
+                                    <thead>
+                                        <tr>
+                                            <th>Student 1</th>
+                                            <th>Student 2</th>
+                                            <th>Matched Questions</th>
+                                            <th>Close Rows</th>
+                                            <th>Close %</th>
+                                            <th>Smallest Diff</th>
+                                            <th>Average Diff</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <?php foreach ($potentialFraudPairs as $pair): ?>
+                                            <?php
+                                            $leftName = trim((string)$pair['student_1']['first_name'] . ' ' . (string)$pair['student_1']['last_name']);
+                                            $rightName = trim((string)$pair['student_2']['first_name'] . ' ' . (string)$pair['student_2']['last_name']);
+                                            $pairSummary = $pair['summary'];
+                                            ?>
+                                            <tr class="close-row">
+                                                <td>
+                                                    <div class="cell-stack">
+                                                        <div><strong><?= h($leftName) ?></strong></div>
+                                                        <small><?= h((string)$pair['student_1']['student_nr']) ?><?= $pair['student_1']['class'] !== '' ? ' - ' . h((string)$pair['student_1']['class']) : '' ?></small>
+                                                        <small>Submission <?= h((string)$pair['student_1']['id']) ?></small>
+                                                    </div>
+                                                </td>
+                                                <td>
+                                                    <div class="cell-stack">
+                                                        <div><strong><?= h($rightName) ?></strong></div>
+                                                        <small><?= h((string)$pair['student_2']['student_nr']) ?><?= $pair['student_2']['class'] !== '' ? ' - ' . h((string)$pair['student_2']['class']) : '' ?></small>
+                                                        <small>Submission <?= h((string)$pair['student_2']['id']) ?></small>
+                                                    </div>
+                                                </td>
+                                                <td><?= h((string)$pairSummary['matched_questions']) ?></td>
+                                                <td><?= h((string)$pairSummary['close_rows']) ?></td>
+                                                <td><?= h(number_format($pairSummary['close_ratio'] * 100, 1)) ?>%</td>
+                                                <td><?= h($pairSummary['smallest_diff'] !== null ? (string)$pairSummary['smallest_diff'] . 's' : '—') ?></td>
+                                                <td><?= h($pairSummary['average_diff'] !== null ? number_format((float)$pairSummary['average_diff'], 1) . 's' : '—') ?></td>
+                                            </tr>
+                                        <?php endforeach; ?>
+                                    </tbody>
+                                </table>
+                            </div>
+                        <?php endif; ?>
+                    </section>
                 <?php endif; ?>
             </div>
         </section>
