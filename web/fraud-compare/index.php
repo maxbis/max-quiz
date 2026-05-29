@@ -53,6 +53,41 @@ function formatDuration(?float $seconds): string
     return sprintf('%d:%02d', $minutes, $remainingSeconds);
 }
 
+function formatProbability(?float $value): string
+{
+    if ($value === null) {
+        return '—';
+    }
+
+    if ($value <= 0.0) {
+        return '0';
+    }
+
+    if ($value >= 0.001) {
+        return number_format($value * 100, 4) . '%';
+    }
+
+    return sprintf('%.2e', $value);
+}
+
+function formatOneInOdds(?float $value): string
+{
+    if ($value === null) {
+        return '—';
+    }
+
+    if ($value <= 0.0) {
+        return '1:∞';
+    }
+
+    $inverse = 1 / $value;
+    if ($inverse < 1000) {
+        return '1:' . number_format($inverse, 1);
+    }
+
+    return '1:' . sprintf('%.2e', $inverse);
+}
+
 function currentPageUrl(): string
 {
     $requestUri = $_SERVER['REQUEST_URI'] ?? '/fraud-compare/';
@@ -182,23 +217,36 @@ function analyzeSubmissionPair(array $leftSubmission, array $rightSubmission, ar
 
 /**
  * @param array<int, array<string, mixed>> $submissions
+ * @param array<int, array<int, array{question_id:int, question_no:?int, answer_no:?int, correct:?int, timestamp:?string}>> $logsBySubmissionId
  * @return array{count:int, average_seconds:?float, stdev_seconds:?float}
  */
-function buildDurationStats(array $submissions): array
+function buildQuestionTimingStats(array $submissions, array $logsBySubmissionId): array
 {
     $durations = [];
 
     foreach ($submissions as $submission) {
         $startTime = $submission['start_time'] ?? null;
-        $endTime = $submission['end_time'] ?? null;
-
-        if (!is_string($startTime) || !is_string($endTime) || trim($startTime) === '' || trim($endTime) === '') {
+        if (!is_string($startTime) || trim($startTime) === '') {
             continue;
         }
 
-        $duration = strtotime($endTime) - strtotime($startTime);
-        if ($duration >= 0) {
-            $durations[] = (float)$duration;
+        $startTimestamp = strtotime($startTime);
+        $logs = $logsBySubmissionId[(int)$submission['id']] ?? [];
+
+        $previousTimestamp = $startTimestamp;
+        foreach ($logs as $entry) {
+            $answerTimestamp = $entry['timestamp'] ?? null;
+            if (!is_string($answerTimestamp) || trim($answerTimestamp) === '') {
+                continue;
+            }
+
+            $currentTimestamp = strtotime($answerTimestamp);
+            $duration = $currentTimestamp - $previousTimestamp;
+            if ($duration >= 0) {
+                $durations[] = (float)$duration;
+            }
+
+            $previousTimestamp = $currentTimestamp;
         }
     }
 
@@ -250,6 +298,7 @@ $comparisonRows = [];
 $summary = null;
 $potentialFraudPairs = [];
 $durationStats = null;
+$baselineStats = null;
 
 if ($submitted) {
     if (!isDigits($quizIdInput)) {
@@ -409,7 +458,10 @@ if ($submitted && $errors === []) {
             if ($activeAction === 'all_pairs') {
                 $students = array_values($latestSubmissions);
                 $studentCount = count($students);
-                $durationStats = buildDurationStats($students);
+                $durationStats = buildQuestionTimingStats($students, $logsBySubmissionId);
+                $baselineMatchedQuestions = 0;
+                $baselineCloseRows = 0;
+                $baselinePairsCompared = 0;
 
                 if ($studentCount < 2) {
                     $errors[] = 'At least two students with submissions are required for all-student comparison.';
@@ -420,12 +472,26 @@ if ($submitted && $errors === []) {
                             $rightSubmission = $students[$rightIndex];
                             $pairAnalysis = analyzeSubmissionPair($leftSubmission, $rightSubmission, $logsBySubmissionId, $questionMeta);
                             $pairSummary = $pairAnalysis['summary'];
+                            if ($pairSummary['matched_questions'] > 0) {
+                                $baselinePairsCompared++;
+                                $baselineMatchedQuestions += $pairSummary['matched_questions'];
+                                $baselineCloseRows += $pairSummary['close_rows'];
+                            }
 
                             if ($pairSummary['matched_questions'] > 0 && $pairSummary['close_ratio'] > 0.5) {
+                                $sameWindowChance = null;
+                                if ($baselineMatchedQuestions > 0) {
+                                    $baselineProbability = $baselineCloseRows / $baselineMatchedQuestions;
+                                    $sameWindowChance = $baselineProbability > 0.0
+                                        ? pow($baselineProbability, $pairSummary['close_rows'])
+                                        : 0.0;
+                                }
+
                                 $potentialFraudPairs[] = [
                                     'student_1' => $leftSubmission,
                                     'student_2' => $rightSubmission,
                                     'summary' => $pairSummary,
+                                    'same_window_chance' => $sameWindowChance,
                                 ];
                             }
                         }
@@ -447,6 +513,13 @@ if ($submitted && $errors === []) {
                             trim((string)$right['student_1']['first_name'] . ' ' . (string)$right['student_1']['last_name'])
                         );
                     });
+
+                    $baselineStats = [
+                        'pairs_compared' => $baselinePairsCompared,
+                        'matched_questions' => $baselineMatchedQuestions,
+                        'close_rows' => $baselineCloseRows,
+                        'close_probability' => $baselineMatchedQuestions > 0 ? $baselineCloseRows / $baselineMatchedQuestions : null,
+                    ];
                 }
             }
         } catch (PDOException $exception) {
@@ -1096,24 +1169,49 @@ if ($submitted && $errors === []) {
                     <section class="card">
                         <h2>Timing Stats</h2>
                         <p class="muted">
-                            Based on the latest completed submission per student in this quiz.
+                            Based on all answered questions in the latest submission per student for this quiz.
                         </p>
                         <div class="summary-grid">
                             <div class="metric">
-                                <span class="eyebrow">Completed Students</span>
+                                <span class="eyebrow">Answered Questions</span>
                                 <strong><?= h((string)($durationStats['count'] ?? 0)) ?></strong>
                             </div>
                             <div class="metric">
-                                <span class="eyebrow">Average Total Time</span>
+                                <span class="eyebrow">Average Answer Time</span>
                                 <strong><?= h(formatDuration(isset($durationStats['average_seconds']) ? (float)$durationStats['average_seconds'] : null)) ?></strong>
                             </div>
                             <div class="metric">
-                                <span class="eyebrow">Std Dev Total Time</span>
+                                <span class="eyebrow">Std Dev Answer Time</span>
                                 <strong><?= h(formatDuration(isset($durationStats['stdev_seconds']) ? (float)$durationStats['stdev_seconds'] : null)) ?></strong>
                             </div>
                             <div class="metric">
                                 <span class="eyebrow">Average Seconds</span>
                                 <strong><?= h(isset($durationStats['average_seconds']) && $durationStats['average_seconds'] !== null ? number_format((float)$durationStats['average_seconds'], 1) . 's' : '—') ?></strong>
+                            </div>
+                        </div>
+                    </section>
+
+                    <section class="card">
+                        <h2>Quiz Baseline</h2>
+                        <p class="muted">
+                            Empirical probability that any two students answer the same matched question within <?= h((string)SUSPICIOUS_SECONDS) ?> seconds, based on all student pairs in this quiz.
+                        </p>
+                        <div class="summary-grid">
+                            <div class="metric">
+                                <span class="eyebrow">Pairs Compared</span>
+                                <strong><?= h((string)($baselineStats['pairs_compared'] ?? 0)) ?></strong>
+                            </div>
+                            <div class="metric">
+                                <span class="eyebrow">Matched Answer Pairs</span>
+                                <strong><?= h((string)($baselineStats['matched_questions'] ?? 0)) ?></strong>
+                            </div>
+                            <div class="metric">
+                                <span class="eyebrow">Close Answer Pairs</span>
+                                <strong><?= h((string)($baselineStats['close_rows'] ?? 0)) ?></strong>
+                            </div>
+                            <div class="metric">
+                                <span class="eyebrow">P(Within <?= h((string)SUSPICIOUS_SECONDS) ?>s)</span>
+                                <strong><?= h(isset($baselineStats['close_probability']) && $baselineStats['close_probability'] !== null ? number_format((float)$baselineStats['close_probability'] * 100, 2) . '%' : '—') ?></strong>
                             </div>
                         </div>
                     </section>
@@ -1136,6 +1234,7 @@ if ($submitted && $errors === []) {
                                             <th>Matched Questions</th>
                                             <th>Close Rows</th>
                                             <th>Close %</th>
+                                            <th>1:N</th>
                                             <th>Smallest Diff</th>
                                             <th>Average Diff</th>
                                         </tr>
@@ -1146,6 +1245,7 @@ if ($submitted && $errors === []) {
                                             $leftName = trim((string)$pair['student_1']['first_name'] . ' ' . (string)$pair['student_1']['last_name']);
                                             $rightName = trim((string)$pair['student_2']['first_name'] . ' ' . (string)$pair['student_2']['last_name']);
                                             $pairSummary = $pair['summary'];
+                                            $sameWindowChance = $pair['same_window_chance'] ?? null;
                                             $compareUrl = currentPageUrl()
                                                 . '?quiz_id=' . rawurlencode($quizIdInput)
                                                 . '&student_1=' . rawurlencode((string)$pair['student_1']['student_nr'])
@@ -1174,6 +1274,7 @@ if ($submitted && $errors === []) {
                                                 <td><a class="pair-link-row" href="<?= h($compareUrl) ?>"><?= h((string)$pairSummary['matched_questions']) ?></a></td>
                                                 <td><a class="pair-link-row" href="<?= h($compareUrl) ?>"><?= h((string)$pairSummary['close_rows']) ?></a></td>
                                                 <td><a class="pair-link-row" href="<?= h($compareUrl) ?>"><?= h(number_format($pairSummary['close_ratio'] * 100, 1)) ?>%</a></td>
+                                                <td><a class="pair-link-row" href="<?= h($compareUrl) ?>"><?= h(formatOneInOdds($sameWindowChance !== null ? (float)$sameWindowChance : null)) ?></a></td>
                                                 <td><a class="pair-link-row" href="<?= h($compareUrl) ?>"><?= h($pairSummary['smallest_diff'] !== null ? (string)$pairSummary['smallest_diff'] . 's' : '—') ?></a></td>
                                                 <td><a class="pair-link-row" href="<?= h($compareUrl) ?>"><?= h($pairSummary['average_diff'] !== null ? number_format((float)$pairSummary['average_diff'], 1) . 's' : '—') ?></a></td>
                                             </tr>
