@@ -317,6 +317,10 @@ $quizIdInput = normalizeInput('quiz_id');
 $student1Input = normalizeInput('student_1');
 $student2Input = normalizeInput('student_2');
 $actionInput = normalizeInput('action');
+$thresholdOptions = [10, 25, 50, 75, 90];
+$thresholdInput = normalizeInput('close_threshold');
+$selectedThresholdPercent = in_array((int)$thresholdInput, $thresholdOptions, true) ? (int)$thresholdInput : 50;
+$selectedThresholdRatio = $selectedThresholdPercent / 100;
 $activeAction = $actionInput === 'all_pairs' ? 'all_pairs' : 'compare';
 $hasQuizLookup = $quizIdInput !== '';
 $submitted = $quizIdInput !== '' || $student1Input !== '' || $student2Input !== '';
@@ -516,7 +520,7 @@ if ($submitted && $errors === []) {
                                 $baselineCloseRows += $pairSummary['close_rows'];
                             }
 
-                            if ($pairSummary['matched_questions'] > 0 && $pairSummary['close_ratio'] > 0.5) {
+                            if ($pairSummary['matched_questions'] > 0 && $pairSummary['close_ratio'] > $selectedThresholdRatio) {
                                 $potentialFraudPairs[] = [
                                     'student_1' => $leftSubmission,
                                     'student_2' => $rightSubmission,
@@ -1055,6 +1059,16 @@ if ($submitted && $errors === []) {
                                     <?php endforeach; ?>
                                 </select>
                             </div>
+                            <div>
+                                <label for="close_threshold">All-Pairs Threshold</label>
+                                <select id="close_threshold" name="close_threshold">
+                                    <?php foreach ($thresholdOptions as $thresholdOption): ?>
+                                        <option value="<?= h((string)$thresholdOption) ?>" <?= $selectedThresholdPercent === $thresholdOption ? 'selected' : '' ?>>
+                                            <?= h((string)$thresholdOption) ?>%
+                                        </option>
+                                    <?php endforeach; ?>
+                                </select>
+                            </div>
                         </div>
                         <div class="actions">
                             <button class="button" type="submit" name="action" value="compare">Compare</button>
@@ -1301,7 +1315,7 @@ if ($submitted && $errors === []) {
                     <section class="card">
                         <h2>Potential Fraud Couples</h2>
                         <p class="muted">
-                            Students are listed here when more than 50% of their matched answer rows were flagged close within <?= h((string)SUSPICIOUS_SECONDS) ?> seconds.
+                            Students are listed here when more than <?= h((string)$selectedThresholdPercent) ?>% of their matched answer rows were flagged close within <?= h((string)SUSPICIOUS_SECONDS) ?> seconds.
                         </p>
 
                         <?php if ($potentialFraudPairs === []): ?>
