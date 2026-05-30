@@ -2,6 +2,7 @@
 declare(strict_types=1);
 
 const SUSPICIOUS_SECONDS = 15;
+const PERMUTATION_RUNS = 100000;
 
 /**
  * @param mixed $value
@@ -89,6 +90,19 @@ function formatOneInOdds(?float $value): string
     return '1:' . str_replace('E+', 'E+', strtoupper($scientific));
 }
 
+function formatPValue(?float $value): string
+{
+    if ($value === null) {
+        return '—';
+    }
+
+    if ($value >= 0.001) {
+        return number_format($value, 4);
+    }
+
+    return sprintf('%.2E', $value);
+}
+
 function binomialTailProbability(int $trials, int $successesOrMore, float $probability): ?float
 {
     if ($trials < 0 || $successesOrMore < 0 || $successesOrMore > $trials) {
@@ -141,6 +155,54 @@ function parentUrl(): string
     }
 
     return rtrim($parentPath, '/') . '/';
+}
+
+function buildCanonicalPairKey(string $leftStudentNr, string $rightStudentNr): string
+{
+    return strcmp($leftStudentNr, $rightStudentNr) <= 0
+        ? $leftStudentNr . '|' . $rightStudentNr
+        : $rightStudentNr . '|' . $leftStudentNr;
+}
+
+/**
+ * @param array<int, string> $studentIds
+ * @return array<int, string>
+ */
+function buildDerangement(array $studentIds): array
+{
+    $count = count($studentIds);
+    if ($count <= 1) {
+        return $studentIds;
+    }
+
+    if ($count === 2) {
+        return [$studentIds[1], $studentIds[0]];
+    }
+
+    $candidate = $studentIds;
+    for ($attempt = 0; $attempt < 50; $attempt++) {
+        $candidate = $studentIds;
+        shuffle($candidate);
+        $isDerangement = true;
+        foreach ($studentIds as $index => $studentId) {
+            if ($candidate[$index] === $studentId) {
+                $isDerangement = false;
+                break;
+            }
+        }
+
+        if ($isDerangement) {
+            return $candidate;
+        }
+    }
+
+    $candidate = $studentIds;
+    $first = array_shift($candidate);
+    if ($first !== null) {
+        $candidate[] = $first;
+    }
+
+    return $candidate;
 }
 
 /**
@@ -339,6 +401,7 @@ $summary = null;
 $potentialFraudPairs = [];
 $durationStats = null;
 $baselineStats = null;
+$permutationNullScores = [];
 
 if ($submitted) {
     if (!isDigits($quizIdInput)) {
@@ -507,6 +570,11 @@ if ($submitted && $errors === []) {
                     $errors[] = 'At least two students with submissions are required for all-student comparison.';
                 } else {
                     $baselineProbability = null;
+                    $pairSummaryByKey = [];
+                    $studentIds = [];
+                    foreach ($students as $student) {
+                        $studentIds[] = (string)$student['student_nr'];
+                    }
 
                     for ($leftIndex = 0; $leftIndex < $studentCount - 1; $leftIndex++) {
                         for ($rightIndex = $leftIndex + 1; $rightIndex < $studentCount; $rightIndex++) {
@@ -514,6 +582,8 @@ if ($submitted && $errors === []) {
                             $rightSubmission = $students[$rightIndex];
                             $pairAnalysis = analyzeSubmissionPair($leftSubmission, $rightSubmission, $logsBySubmissionId, $questionMeta);
                             $pairSummary = $pairAnalysis['summary'];
+                            $pairKey = buildCanonicalPairKey((string)$leftSubmission['student_nr'], (string)$rightSubmission['student_nr']);
+                            $pairSummaryByKey[$pairKey] = $pairSummary;
                             if ($pairSummary['matched_questions'] > 0) {
                                 $baselinePairsCompared++;
                                 $baselineMatchedQuestions += $pairSummary['matched_questions'];
@@ -534,14 +604,46 @@ if ($submitted && $errors === []) {
                         $baselineProbability = $baselineCloseRows / $baselineMatchedQuestions;
                     }
 
+                    if ($studentCount >= 2 && $pairSummaryByKey !== []) {
+                        for ($run = 0; $run < PERMUTATION_RUNS; $run++) {
+                            $permutedStudentIds = buildDerangement($studentIds);
+                            $seenPairKeys = [];
+
+                            foreach ($studentIds as $index => $leftStudentId) {
+                                $rightStudentId = $permutedStudentIds[$index] ?? null;
+                                if ($rightStudentId === null) {
+                                    continue;
+                                }
+
+                                $pairKey = buildCanonicalPairKey($leftStudentId, $rightStudentId);
+                                if (isset($seenPairKeys[$pairKey]) || !isset($pairSummaryByKey[$pairKey])) {
+                                    continue;
+                                }
+
+                                $seenPairKeys[$pairKey] = true;
+                                $permutationNullScores[] = (float)$pairSummaryByKey[$pairKey]['close_ratio'];
+                            }
+                        }
+                    }
+
                     foreach ($potentialFraudPairs as &$pair) {
                         $pairSummary = $pair['summary'];
+                        $pairKey = buildCanonicalPairKey((string)$pair['student_1']['student_nr'], (string)$pair['student_2']['student_nr']);
                         $pair['same_window_chance'] = $baselineProbability !== null
                             ? binomialTailProbability(
                                 (int)$pairSummary['matched_questions'],
                                 (int)$pairSummary['close_rows'],
                                 (float)$baselineProbability
                             )
+                            : null;
+                        $permutationExtremeCount = 0;
+                        foreach ($permutationNullScores as $nullScore) {
+                            if ($nullScore >= (float)$pairSummary['close_ratio']) {
+                                $permutationExtremeCount++;
+                            }
+                        }
+                        $pair['permutation_p_value'] = $permutationNullScores !== []
+                            ? (1 + $permutationExtremeCount) / (1 + count($permutationNullScores))
                             : null;
                     }
                     unset($pair);
@@ -1334,6 +1436,15 @@ if ($submitted && $errors === []) {
                                                 <span
                                                     class="help-label"
                                                     tabindex="0"
+                                                    data-help="<?= h('The p-value shows how often a result this unusual would appear just by chance if students were paired randomly. Here it is estimated using ' . number_format(PERMUTATION_RUNS, 0, '.', ',') . ' simulated reshuffles of student pairings within the same quiz. A smaller p-value means the pair stands out more.') ?>"
+                                                >
+                                                    Perm. p
+                                                </span>
+                                            </th>
+                                            <th>
+                                                <span
+                                                    class="help-label"
+                                                    tabindex="0"
                                                     data-help="Baseline rarity under the quiz model. Calculated as 1 divided by the binomial tail probability P(X >= close rows), with X ~ Binomial(matched questions, quiz baseline P(within 15s)). This is a rarity score under the baseline model, not the probability that the pair is innocent or guilty."
                                                 >
                                                     Rarity 1:N
@@ -1350,6 +1461,7 @@ if ($submitted && $errors === []) {
                                             $rightName = trim((string)$pair['student_2']['first_name'] . ' ' . (string)$pair['student_2']['last_name']);
                                             $pairSummary = $pair['summary'];
                                             $sameWindowChance = $pair['same_window_chance'] ?? null;
+                                            $permutationPValue = $pair['permutation_p_value'] ?? null;
                                             $compareUrl = currentPageUrl()
                                                 . '?quiz_id=' . rawurlencode($quizIdInput)
                                                 . '&student_1=' . rawurlencode((string)$pair['student_1']['student_nr'])
@@ -1378,6 +1490,7 @@ if ($submitted && $errors === []) {
                                                 <td><a class="pair-link-row" href="<?= h($compareUrl) ?>"><?= h((string)$pairSummary['matched_questions']) ?></a></td>
                                                 <td><a class="pair-link-row" href="<?= h($compareUrl) ?>"><?= h((string)$pairSummary['close_rows']) ?></a></td>
                                                 <td><a class="pair-link-row" href="<?= h($compareUrl) ?>"><?= h(number_format($pairSummary['close_ratio'] * 100, 1)) ?>%</a></td>
+                                                <td><a class="pair-link-row" href="<?= h($compareUrl) ?>"><?= h(formatPValue($permutationPValue !== null ? (float)$permutationPValue : null)) ?></a></td>
                                                 <td><a class="pair-link-row" href="<?= h($compareUrl) ?>"><?= h(formatOneInOdds($sameWindowChance !== null ? (float)$sameWindowChance : null)) ?></a></td>
                                                 <td><a class="pair-link-row" href="<?= h($compareUrl) ?>"><?= h($pairSummary['smallest_diff'] !== null ? (string)$pairSummary['smallest_diff'] . 's' : '—') ?></a></td>
                                                 <td><a class="pair-link-row" href="<?= h($compareUrl) ?>"><?= h($pairSummary['average_diff'] !== null ? number_format((float)$pairSummary['average_diff'], 1) . 's' : '—') ?></a></td>
