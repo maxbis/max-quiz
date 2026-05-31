@@ -103,6 +103,46 @@ function formatPValue(?float $value): string
     return sprintf('%.2E', $value);
 }
 
+/**
+ * @param array<int, ?float> $pValuesByIndex
+ * @return array<int, ?float>
+ */
+function formatPercent(?float $value, int $decimals = 1): string
+{
+    if ($value === null) {
+        return '—';
+    }
+
+    return number_format($value * 100, $decimals) . '%';
+}
+
+function formatSignedPercentPoints(?float $value, int $decimals = 1): string
+{
+    if ($value === null) {
+        return '—';
+    }
+
+    $prefix = $value > 0 ? '+' : '';
+    return $prefix . number_format($value * 100, $decimals) . '%';
+}
+
+function formatSignedSeconds(?int $seconds): string
+{
+    if ($seconds === null) {
+        return '—';
+    }
+
+    if ($seconds > 0) {
+        return '+' . $seconds . 's';
+    }
+
+    if ($seconds < 0) {
+        return (string)$seconds . 's';
+    }
+
+    return '0s';
+}
+
 function binomialTailProbability(int $trials, int $successesOrMore, float $probability): ?float
 {
     if ($trials < 0 || $successesOrMore < 0 || $successesOrMore > $trials) {
@@ -162,6 +202,25 @@ function buildCanonicalPairKey(string $leftStudentNr, string $rightStudentNr): s
     return strcmp($leftStudentNr, $rightStudentNr) <= 0
         ? $leftStudentNr . '|' . $rightStudentNr
         : $rightStudentNr . '|' . $leftStudentNr;
+}
+
+function comparePairExtremeness(array $leftSummary, array $rightSummary): int
+{
+    $comparisons = [
+        (($leftSummary['close_ratio'] ?? 0.0) <=> ($rightSummary['close_ratio'] ?? 0.0)),
+        (($leftSummary['dominant_leader_ratio'] ?? -1.0) <=> ($rightSummary['dominant_leader_ratio'] ?? -1.0)),
+        (($leftSummary['longest_same_leader_close_run'] ?? 0) <=> ($rightSummary['longest_same_leader_close_run'] ?? 0)),
+        (($leftSummary['longest_close_streak'] ?? 0) <=> ($rightSummary['longest_close_streak'] ?? 0)),
+        (($leftSummary['close_rows'] ?? 0) <=> ($rightSummary['close_rows'] ?? 0)),
+    ];
+
+    foreach ($comparisons as $comparison) {
+        if ($comparison !== 0) {
+            return $comparison;
+        }
+    }
+
+    return 0;
 }
 
 /**
@@ -225,7 +284,21 @@ function buildComparisonRows(array $questionMeta, array $leftLogs, array $rightL
         $diffSeconds = null;
 
         if ($left !== null && $right !== null && $left['timestamp'] !== null && $right['timestamp'] !== null) {
-            $diffSeconds = abs(strtotime($left['timestamp']) - strtotime($right['timestamp']));
+            $signedDiffSeconds = strtotime($left['timestamp']) - strtotime($right['timestamp']);
+            $diffSeconds = abs($signedDiffSeconds);
+        } else {
+            $signedDiffSeconds = null;
+        }
+
+        $closeLeader = null;
+        if ($diffSeconds !== null && $diffSeconds <= SUSPICIOUS_SECONDS && $signedDiffSeconds !== null) {
+            if ($signedDiffSeconds < 0) {
+                $closeLeader = 'student_1';
+            } elseif ($signedDiffSeconds > 0) {
+                $closeLeader = 'student_2';
+            } else {
+                $closeLeader = 'tie';
+            }
         }
 
         $comparisonRows[] = [
@@ -235,7 +308,9 @@ function buildComparisonRows(array $questionMeta, array $leftLogs, array $rightL
             'student_1' => $left,
             'student_2' => $right,
             'diff_seconds' => $diffSeconds,
+            'signed_diff_seconds' => $signedDiffSeconds,
             'is_close' => $diffSeconds !== null && $diffSeconds <= SUSPICIOUS_SECONDS,
+            'close_leader' => $closeLeader,
         ];
     }
 
@@ -261,7 +336,7 @@ function buildComparisonRows(array $questionMeta, array $leftLogs, array $rightL
 
 /**
  * @param array<int, array<string, mixed>> $comparisonRows
- * @return array{matched_questions:int, close_rows:int, smallest_diff:?int, average_diff:?float, close_ratio:float}
+ * @return array{matched_questions:int, close_rows:int, smallest_diff:?int, average_diff:?float, close_ratio:float, longest_close_streak:int, close_rows_with_leader:int, dominant_close_leader:?string, dominant_close_lead_count:int, dominant_leader_ratio:?float, longest_same_leader_close_run:int}
  */
 function buildSummary(array $comparisonRows): array
 {
@@ -282,6 +357,63 @@ function buildSummary(array $comparisonRows): array
 
     $matchedCount = count($matchedRows);
     $closeCount = count($closeRows);
+    $currentCloseStreak = 0;
+    $longestCloseStreak = 0;
+    $closeLeaderCounts = [
+        'student_1' => 0,
+        'student_2' => 0,
+    ];
+    $closeRowsWithLeader = 0;
+    $currentSameLeaderCloseRun = 0;
+    $longestSameLeaderCloseRun = 0;
+    $previousCloseLeader = null;
+
+    foreach ($matchedRows as $row) {
+        if ($row['is_close'] === true) {
+            $currentCloseStreak++;
+            if ($currentCloseStreak > $longestCloseStreak) {
+                $longestCloseStreak = $currentCloseStreak;
+            }
+
+            $closeLeader = $row['close_leader'] ?? null;
+            if ($closeLeader === 'student_1' || $closeLeader === 'student_2') {
+                $closeLeaderCounts[$closeLeader]++;
+                $closeRowsWithLeader++;
+
+                if ($previousCloseLeader === $closeLeader) {
+                    $currentSameLeaderCloseRun++;
+                } else {
+                    $currentSameLeaderCloseRun = 1;
+                }
+
+                if ($currentSameLeaderCloseRun > $longestSameLeaderCloseRun) {
+                    $longestSameLeaderCloseRun = $currentSameLeaderCloseRun;
+                }
+
+                $previousCloseLeader = $closeLeader;
+            } else {
+                $currentSameLeaderCloseRun = 0;
+                $previousCloseLeader = null;
+            }
+        } else {
+            $currentCloseStreak = 0;
+            $currentSameLeaderCloseRun = 0;
+            $previousCloseLeader = null;
+        }
+    }
+
+    $dominantCloseLeader = null;
+    $dominantCloseLeadCount = 0;
+    if ($closeLeaderCounts['student_1'] > $closeLeaderCounts['student_2']) {
+        $dominantCloseLeader = 'student_1';
+        $dominantCloseLeadCount = $closeLeaderCounts['student_1'];
+    } elseif ($closeLeaderCounts['student_2'] > $closeLeaderCounts['student_1']) {
+        $dominantCloseLeader = 'student_2';
+        $dominantCloseLeadCount = $closeLeaderCounts['student_2'];
+    } elseif ($closeLeaderCounts['student_1'] > 0) {
+        $dominantCloseLeader = 'tie';
+        $dominantCloseLeadCount = $closeLeaderCounts['student_1'];
+    }
 
     return [
         'matched_questions' => $matchedCount,
@@ -289,6 +421,12 @@ function buildSummary(array $comparisonRows): array
         'smallest_diff' => $diffValues !== [] ? min($diffValues) : null,
         'average_diff' => $diffValues !== [] ? (array_sum($diffValues) / count($diffValues)) : null,
         'close_ratio' => $matchedCount > 0 ? $closeCount / $matchedCount : 0.0,
+        'longest_close_streak' => $longestCloseStreak,
+        'close_rows_with_leader' => $closeRowsWithLeader,
+        'dominant_close_leader' => $dominantCloseLeader,
+        'dominant_close_lead_count' => $dominantCloseLeadCount,
+        'dominant_leader_ratio' => $closeRowsWithLeader > 0 ? $dominantCloseLeadCount / $closeRowsWithLeader : null,
+        'longest_same_leader_close_run' => $longestSameLeaderCloseRun,
     ];
 }
 
@@ -297,7 +435,7 @@ function buildSummary(array $comparisonRows): array
  * @param array<string, mixed> $rightSubmission
  * @param array<int, array<int, array{question_id:int, question_no:?int, answer_no:?int, correct:?int, timestamp:?string}>> $logsBySubmissionId
  * @param array<int, array{label: string, question: string}> $questionMeta
- * @return array{rows: array<int, array<string, mixed>>, summary: array{matched_questions:int, close_rows:int, smallest_diff:?int, average_diff:?float, close_ratio:float}}
+ * @return array{rows: array<int, array<string, mixed>>, summary: array{matched_questions:int, close_rows:int, smallest_diff:?int, average_diff:?float, close_ratio:float, longest_close_streak:int, close_rows_with_leader:int, dominant_close_leader:?string, dominant_close_lead_count:int, dominant_leader_ratio:?float, longest_same_leader_close_run:int}}
  */
 function analyzeSubmissionPair(array $leftSubmission, array $rightSubmission, array $logsBySubmissionId, array $questionMeta): array
 {
@@ -402,6 +540,7 @@ $potentialFraudPairs = [];
 $durationStats = null;
 $baselineStats = null;
 $permutationNullScores = [];
+$comparePairSignals = null;
 
 if ($submitted) {
     if (!isDigits($quizIdInput)) {
@@ -555,6 +694,98 @@ if ($submitted && $errors === []) {
                     $pairAnalysis = analyzeSubmissionPair($student1Submission, $student2Submission, $logsBySubmissionId, $questionMeta);
                     $comparisonRows = $pairAnalysis['rows'];
                     $summary = $pairAnalysis['summary'];
+
+                    $students = array_values($latestSubmissions);
+                    $studentCount = count($students);
+                    if ($studentCount >= 2) {
+                        $baselineMatchedQuestions = 0;
+                        $baselineCloseRows = 0;
+                        $baselineProbability = null;
+                        $pairSummaryByKey = [];
+                        $studentIds = [];
+
+                        foreach ($students as $student) {
+                            $studentIds[] = (string)$student['student_nr'];
+                        }
+
+                        for ($leftIndex = 0; $leftIndex < $studentCount - 1; $leftIndex++) {
+                            for ($rightIndex = $leftIndex + 1; $rightIndex < $studentCount; $rightIndex++) {
+                                $leftSubmission = $students[$leftIndex];
+                                $rightSubmission = $students[$rightIndex];
+                                $allPairAnalysis = analyzeSubmissionPair($leftSubmission, $rightSubmission, $logsBySubmissionId, $questionMeta);
+                                $allPairSummary = $allPairAnalysis['summary'];
+                                $pairKey = buildCanonicalPairKey((string)$leftSubmission['student_nr'], (string)$rightSubmission['student_nr']);
+                                $pairSummaryByKey[$pairKey] = $allPairSummary;
+
+                                if ($allPairSummary['matched_questions'] > 0) {
+                                    $baselineMatchedQuestions += $allPairSummary['matched_questions'];
+                                    $baselineCloseRows += $allPairSummary['close_rows'];
+                                }
+                            }
+                        }
+
+                        if ($baselineMatchedQuestions > 0) {
+                            $baselineProbability = $baselineCloseRows / $baselineMatchedQuestions;
+                        }
+
+                        $comparePermutationNullScores = [];
+                        if ($pairSummaryByKey !== []) {
+                            for ($run = 0; $run < PERMUTATION_RUNS; $run++) {
+                                $permutedStudentIds = buildDerangement($studentIds);
+                                $seenPairKeys = [];
+
+                                foreach ($studentIds as $index => $leftStudentId) {
+                                    $rightStudentId = $permutedStudentIds[$index] ?? null;
+                                    if ($rightStudentId === null) {
+                                        continue;
+                                    }
+
+                                    $pairKey = buildCanonicalPairKey($leftStudentId, $rightStudentId);
+                                    if (isset($seenPairKeys[$pairKey]) || !isset($pairSummaryByKey[$pairKey])) {
+                                        continue;
+                                    }
+
+                                    $seenPairKeys[$pairKey] = true;
+                                    $comparePermutationNullScores[] = $pairSummaryByKey[$pairKey];
+                                }
+                            }
+                        }
+
+                        $selectedPairKey = buildCanonicalPairKey((string)$student1Submission['student_nr'], (string)$student2Submission['student_nr']);
+                        $selectedPairSummary = $pairSummaryByKey[$selectedPairKey] ?? $summary;
+                        $selectedPairPValue = null;
+                        if ($comparePermutationNullScores !== []) {
+                            $permutationExtremeCount = 0;
+                            foreach ($comparePermutationNullScores as $nullSummary) {
+                                if (comparePairExtremeness($nullSummary, $selectedPairSummary) >= 0) {
+                                    $permutationExtremeCount++;
+                                }
+                            }
+                            $selectedPairPValue = (1 + $permutationExtremeCount) / (1 + count($comparePermutationNullScores));
+                        }
+
+                        $comparePairSignals = [
+                            'matched_questions' => $selectedPairSummary['matched_questions'],
+                            'close_rows' => $selectedPairSummary['close_rows'],
+                            'close_ratio' => $selectedPairSummary['close_ratio'],
+                            'longest_close_streak' => $selectedPairSummary['longest_close_streak'],
+                            'dominant_close_leader' => $selectedPairSummary['dominant_close_leader'],
+                            'dominant_close_lead_count' => $selectedPairSummary['dominant_close_lead_count'],
+                            'dominant_leader_ratio' => $selectedPairSummary['dominant_leader_ratio'],
+                            'longest_same_leader_close_run' => $selectedPairSummary['longest_same_leader_close_run'],
+                            'smallest_diff' => $selectedPairSummary['smallest_diff'],
+                            'average_diff' => $selectedPairSummary['average_diff'],
+                            'expected_close_ratio' => $baselineProbability,
+                            'permutation_p_value' => $selectedPairPValue,
+                            'rarity_one_in' => $baselineProbability !== null
+                                ? binomialTailProbability(
+                                    (int)$selectedPairSummary['matched_questions'],
+                                    (int)$selectedPairSummary['close_rows'],
+                                    (float)$baselineProbability
+                                )
+                                : null,
+                        ];
+                    }
                 }
             }
 
@@ -621,14 +852,13 @@ if ($submitted && $errors === []) {
                                 }
 
                                 $seenPairKeys[$pairKey] = true;
-                                $permutationNullScores[] = (float)$pairSummaryByKey[$pairKey]['close_ratio'];
+                                $permutationNullScores[] = $pairSummaryByKey[$pairKey];
                             }
                         }
                     }
 
                     foreach ($potentialFraudPairs as &$pair) {
                         $pairSummary = $pair['summary'];
-                        $pairKey = buildCanonicalPairKey((string)$pair['student_1']['student_nr'], (string)$pair['student_2']['student_nr']);
                         $pair['same_window_chance'] = $baselineProbability !== null
                             ? binomialTailProbability(
                                 (int)$pairSummary['matched_questions'],
@@ -637,8 +867,8 @@ if ($submitted && $errors === []) {
                             )
                             : null;
                         $permutationExtremeCount = 0;
-                        foreach ($permutationNullScores as $nullScore) {
-                            if ($nullScore >= (float)$pairSummary['close_ratio']) {
+                        foreach ($permutationNullScores as $nullSummary) {
+                            if (comparePairExtremeness($nullSummary, $pairSummary) >= 0) {
                                 $permutationExtremeCount++;
                             }
                         }
@@ -652,6 +882,11 @@ if ($submitted && $errors === []) {
                         $ratioCompare = $right['summary']['close_ratio'] <=> $left['summary']['close_ratio'];
                         if ($ratioCompare !== 0) {
                             return $ratioCompare;
+                        }
+
+                        $streakCompare = $right['summary']['longest_close_streak'] <=> $left['summary']['longest_close_streak'];
+                        if ($streakCompare !== 0) {
+                            return $streakCompare;
                         }
 
                         $closeCompare = $right['summary']['close_rows'] <=> $left['summary']['close_rows'];
@@ -1278,13 +1513,27 @@ if ($submitted && $errors === []) {
                             <?php if ($comparisonRows === []): ?>
                                 <div class="message warn">No answer log rows were found for the selected submissions.</div>
                             <?php else: ?>
+                                <?php
+                                $dominantLeaderKey = $comparePairSignals['dominant_close_leader'] ?? null;
+                                $student1DisplayHeader = $student1Header;
+                                $student2DisplayHeader = $student2Header;
+                                $student1ColumnKey = 'student_1';
+                                $student2ColumnKey = 'student_2';
+
+                                if ($dominantLeaderKey === 'student_2') {
+                                    $student1DisplayHeader = $student2Header;
+                                    $student2DisplayHeader = $student1Header;
+                                    $student1ColumnKey = 'student_2';
+                                    $student2ColumnKey = 'student_1';
+                                }
+                                ?>
                                 <div class="table-wrap">
                                     <table>
                                         <thead>
                                             <tr>
                                                 <th>Question</th>
-                                                <th><?= h($student1Header) ?></th>
-                                                <th><?= h($student2Header) ?></th>
+                                                <th><?= h($student1DisplayHeader) ?></th>
+                                                <th><?= h($student2DisplayHeader) ?></th>
                                                 <th>Diff</th>
                                                 <th>Flag</th>
                                             </tr>
@@ -1292,8 +1541,8 @@ if ($submitted && $errors === []) {
                                         <tbody>
                                             <?php foreach ($comparisonRows as $row): ?>
                                                 <?php
-                                                $left = $row['student_1'];
-                                                $right = $row['student_2'];
+                                                $left = $row[$student1ColumnKey];
+                                                $right = $row[$student2ColumnKey];
                                                 $isMissing = $left === null || $right === null;
                                                 $rowClass = $row['is_close'] ? 'close-row' : ($isMissing ? 'missing-row' : '');
                                                 $leftIsEarlier = $left !== null
@@ -1306,6 +1555,22 @@ if ($submitted && $errors === []) {
                                                     && $left['timestamp'] !== null
                                                     && $right['timestamp'] !== null
                                                     && strtotime($right['timestamp']) < strtotime($left['timestamp']);
+                                                $signedDiffSeconds = null;
+                                                if (is_int($row['diff_seconds'] ?? null)) {
+                                                    $signedDiffSeconds = (int)$row['diff_seconds'];
+
+                                                    if (($row['close_leader'] ?? null) === null || ($row['close_leader'] ?? null) === 'tie') {
+                                                        $signedDiffSeconds = 0;
+                                                    } elseif ($dominantLeaderKey === 'student_2') {
+                                                        $signedDiffSeconds = ($row['close_leader'] ?? null) === 'student_2'
+                                                            ? $signedDiffSeconds
+                                                            : -$signedDiffSeconds;
+                                                    } else {
+                                                        $signedDiffSeconds = ($row['close_leader'] ?? null) === 'student_1'
+                                                            ? $signedDiffSeconds
+                                                            : -$signedDiffSeconds;
+                                                    }
+                                                }
                                                 ?>
                                                 <tr class="<?= h($rowClass) ?>">
                                                     <td>
@@ -1342,7 +1607,7 @@ if ($submitted && $errors === []) {
                                                         <?php endif; ?>
                                                     </td>
                                                     <td>
-                                                        <?= h($row['diff_seconds'] !== null ? (string)$row['diff_seconds'] . 's' : '—') ?>
+                                                        <?= h(formatSignedSeconds($signedDiffSeconds)) ?>
                                                     </td>
                                                     <td>
                                                         <?php if ($row['diff_seconds'] === null): ?>
@@ -1360,6 +1625,82 @@ if ($submitted && $errors === []) {
                                 </div>
                             <?php endif; ?>
                         </section>
+
+                        <?php if ($comparePairSignals !== null): ?>
+                            <section class="card">
+                                <h2>Fraud Signals</h2>
+                                <p class="muted">
+                                    This repeats the same pair-level summary used in the overview. It combines the direct timing result for this pair with quiz-wide baseline and permutation comparisons, so you can inspect the detailed question table and the high-level indicators on one page.
+                                </p>
+                                <div class="summary-grid">
+                                    <div class="metric">
+                                        <span class="eyebrow">Matched Questions</span>
+                                        <strong><?= h((string)$comparePairSignals['matched_questions']) ?></strong>
+                                    </div>
+                                    <div class="metric">
+                                        <span class="eyebrow">Close Rows</span>
+                                        <strong><?= h((string)$comparePairSignals['close_rows']) ?></strong>
+                                    </div>
+                                    <div class="metric">
+                                        <span class="eyebrow">Expected Close %</span>
+                                        <strong><?= h(formatPercent(isset($comparePairSignals['expected_close_ratio']) ? (float)$comparePairSignals['expected_close_ratio'] : null)) ?></strong>
+                                    </div>
+                                    <div class="metric">
+                                        <span class="eyebrow">Observed Close %</span>
+                                        <strong><?= h(formatPercent((float)$comparePairSignals['close_ratio'])) ?></strong>
+                                    </div>
+                                    <div class="metric">
+                                        <span class="eyebrow">Longest Close Run</span>
+                                        <strong><?= h((string)$comparePairSignals['longest_close_streak']) ?></strong>
+                                    </div>
+                                    <div class="metric">
+                                        <span class="eyebrow">Dominant Leader</span>
+                                        <strong><?php
+                                            if (($comparePairSignals['dominant_close_leader'] ?? null) === 'student_1') {
+                                                echo h($student1Header);
+                                            } elseif (($comparePairSignals['dominant_close_leader'] ?? null) === 'student_2') {
+                                                echo h($student2Header);
+                                            } elseif (($comparePairSignals['dominant_close_leader'] ?? null) === 'tie') {
+                                                echo h('Mixed');
+                                            } else {
+                                                echo h('—');
+                                            }
+                                        ?></strong>
+                                    </div>
+                                    <div class="metric">
+                                        <span class="eyebrow">Same-Leader Close %</span>
+                                        <strong><?= h(formatPercent(isset($comparePairSignals['dominant_leader_ratio']) ? (float)$comparePairSignals['dominant_leader_ratio'] : null)) ?></strong>
+                                    </div>
+                                    <div class="metric">
+                                        <span class="eyebrow">Longest Same-Leader Run</span>
+                                        <strong><?= h((string)($comparePairSignals['longest_same_leader_close_run'] ?? 0)) ?></strong>
+                                    </div>
+                                    <div class="metric">
+                                        <span class="eyebrow">Perm. p</span>
+                                        <strong><?= h(formatPValue($comparePairSignals['permutation_p_value'] !== null ? (float)$comparePairSignals['permutation_p_value'] : null)) ?></strong>
+                                    </div>
+                                    <div class="metric">
+                                        <span class="eyebrow">Rarity 1:N</span>
+                                        <strong><?= h(formatOneInOdds($comparePairSignals['rarity_one_in'] !== null ? (float)$comparePairSignals['rarity_one_in'] : null)) ?></strong>
+                                    </div>
+                                    <div class="metric">
+                                        <span class="eyebrow">Smallest Diff</span>
+                                        <strong><?= h($comparePairSignals['smallest_diff'] !== null ? (string)$comparePairSignals['smallest_diff'] . 's' : '—') ?></strong>
+                                    </div>
+                                    <div class="metric">
+                                        <span class="eyebrow">Average Diff</span>
+                                        <strong><?= h($comparePairSignals['average_diff'] !== null ? number_format((float)$comparePairSignals['average_diff'], 1) . 's' : '—') ?></strong>
+                                    </div>
+                                </div>
+                                <p class="muted">
+                                    <strong>Perm. p</strong> shows how often a result this unusual would happen by chance if students were paired randomly in the same quiz. It now compares not only how many close rows the pair has, but also how consistently the same student stays ahead during close rows. A smaller value means the pair stands out more.
+                                </p>
+                                <p class="muted">
+                                    <strong>Rarity 1:N</strong> Rarity score estimates how rare this level of closeness is under the timing baseline model according to a binomial distribution.
+                                </p>
+            
+                            </section>
+                        <?php endif; ?>
                     <?php endif; ?>
                 <?php endif; ?>
 
@@ -1436,7 +1777,7 @@ if ($submitted && $errors === []) {
                                                 <span
                                                     class="help-label"
                                                     tabindex="0"
-                                                    data-help="<?= h('The p-value shows how often a result this unusual would appear just by chance if students were paired randomly. Here it is estimated using ' . number_format(PERMUTATION_RUNS, 0, '.', ',') . ' simulated reshuffles of student pairings within the same quiz. A smaller p-value means the pair stands out more.') ?>"
+                                                    data-help="<?= h('The p-value shows how often a result this unusual would appear just by chance if students were paired randomly. Here it is estimated using ' . number_format(PERMUTATION_RUNS, 0, '.', ',') . ' simulated reshuffles of student pairings within the same quiz. It now considers both how many close rows the pair has and how consistently the same student stays ahead on those close rows. A smaller p-value means the pair stands out more.') ?>"
                                                 >
                                                     Perm. p
                                                 </span>
@@ -1445,7 +1786,7 @@ if ($submitted && $errors === []) {
                                                 <span
                                                     class="help-label"
                                                     tabindex="0"
-                                                    data-help="Baseline rarity under the quiz model. Calculated as 1 divided by the binomial tail probability P(X >= close rows), with X ~ Binomial(matched questions, quiz baseline P(within 15s)). This is a rarity score under the baseline model, not the probability that the pair is innocent or guilty."
+                                                    data-help="Baseline rarity under the quiz model. Calculated as 1 divided by the binomial tail probability P(X >= close rows), with X ~ Binomial(matched questions, quiz baseline P(within 15s)). This is a rarity score under the baseline model."
                                                 >
                                                     Rarity 1:N
                                                 </span>
@@ -1489,7 +1830,7 @@ if ($submitted && $errors === []) {
                                                 </td>
                                                 <td><a class="pair-link-row" href="<?= h($compareUrl) ?>"><?= h((string)$pairSummary['matched_questions']) ?></a></td>
                                                 <td><a class="pair-link-row" href="<?= h($compareUrl) ?>"><?= h((string)$pairSummary['close_rows']) ?></a></td>
-                                                <td><a class="pair-link-row" href="<?= h($compareUrl) ?>"><?= h(number_format($pairSummary['close_ratio'] * 100, 1)) ?>%</a></td>
+                                                <td><a class="pair-link-row" href="<?= h($compareUrl) ?>"><?= h(formatPercent((float)$pairSummary['close_ratio'])) ?></a></td>
                                                 <td><a class="pair-link-row" href="<?= h($compareUrl) ?>"><?= h(formatPValue($permutationPValue !== null ? (float)$permutationPValue : null)) ?></a></td>
                                                 <td><a class="pair-link-row" href="<?= h($compareUrl) ?>"><?= h(formatOneInOdds($sameWindowChance !== null ? (float)$sameWindowChance : null)) ?></a></td>
                                                 <td><a class="pair-link-row" href="<?= h($compareUrl) ?>"><?= h($pairSummary['smallest_diff'] !== null ? (string)$pairSummary['smallest_diff'] . 's' : '—') ?></a></td>
