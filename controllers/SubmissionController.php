@@ -4,6 +4,7 @@ namespace app\controllers;
 
 use app\models\Submission;
 use app\models\SubmissionSearch;
+use app\services\QuizQuestionOrderService;
 use yii\web\Controller;
 use yii\web\NotFoundHttpException;
 use yii\filters\VerbFilter;
@@ -167,21 +168,15 @@ class SubmissionController extends Controller
         $quiz_id = $quiz['id'];
         $token = $this->generateRandomToken();
 
-        $sql = "select qq.question_id 
-                from quizquestion qq 
-                join question q on qq.question_id = q.id 
-                where qq.quiz_id = $quiz_id and qq.active = 1 
-                order by COALESCE(qq.order, 0) ASC, q.id ASC";
-        $result = Yii::$app->db->createCommand($sql)->queryAll();
-        $questionIds = array_column($result, 'question_id');
+        $questionIds = (new QuizQuestionOrderService())->buildQuestionIdsForQuiz(
+            (int) $quiz_id,
+            (int) ($quiz['random'] ?? 0)
+        );
 
         if (count($questionIds) == 0) {
             return $this->redirect(Yii::$app->request->referrer);
         }
 
-        if ($quiz['random']==1) {
-            shuffle($questionIds);
-        }
         if ($quiz['no_questions']) {
             $limitArrayToN = fn(array $array, int $N) => ($N >= count($array)) ? $array : array_slice($array, 0, $N);
             $questionIds = $limitArrayToN($questionIds, $quiz['no_questions']);

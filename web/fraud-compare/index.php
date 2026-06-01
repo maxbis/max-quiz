@@ -143,6 +143,24 @@ function formatSignedSeconds(?int $seconds): string
     return '0s';
 }
 
+function formatCountAndPercent(?int $count, ?int $total): string
+{
+    if ($count === null || $total === null || $total <= 0) {
+        return '—';
+    }
+
+    return $count . ' (' . number_format(($count / $total) * 100, 0) . '%)';
+}
+
+function formatInlineAnswerShare(?int $count, ?int $total): string
+{
+    if ($count === null || $total === null || $total <= 0) {
+        return '';
+    }
+
+    return ' (' . number_format(($count / $total) * 100, 1) . '%)';
+}
+
 function binomialTailProbability(int $trials, int $successesOrMore, float $probability): ?float
 {
     if ($trials < 0 || $successesOrMore < 0 || $successesOrMore > $trials) {
@@ -202,6 +220,23 @@ function buildCanonicalPairKey(string $leftStudentNr, string $rightStudentNr): s
     return strcmp($leftStudentNr, $rightStudentNr) <= 0
         ? $leftStudentNr . '|' . $rightStudentNr
         : $rightStudentNr . '|' . $leftStudentNr;
+}
+
+/**
+ * @param array{student_1: array<string, mixed>, student_2: array<string, mixed>, summary: array<string, mixed>} $pair
+ * @return array{student_1: array<string, mixed>, student_2: array<string, mixed>, summary: array<string, mixed>}
+ */
+function placeDominantLeaderFirst(array $pair): array
+{
+    if (($pair['summary']['dominant_close_leader'] ?? null) !== 'student_2') {
+        return $pair;
+    }
+
+    return [
+        'student_1' => $pair['student_2'],
+        'student_2' => $pair['student_1'],
+        'summary' => $pair['summary'],
+    ];
 }
 
 function comparePairExtremeness(array $leftSummary, array $rightSummary): int
@@ -336,7 +371,7 @@ function buildComparisonRows(array $questionMeta, array $leftLogs, array $rightL
 
 /**
  * @param array<int, array<string, mixed>> $comparisonRows
- * @return array{matched_questions:int, close_rows:int, smallest_diff:?int, average_diff:?float, close_ratio:float, longest_close_streak:int, close_rows_with_leader:int, dominant_close_leader:?string, dominant_close_lead_count:int, dominant_leader_ratio:?float, longest_same_leader_close_run:int}
+ * @return array{matched_questions:int, close_rows:int, smallest_diff:?int, average_diff:?float, close_ratio:float, longest_close_streak:int, close_rows_with_leader:int, close_rows_with_wrong_answer:int, dominant_close_leader:?string, dominant_close_lead_count:int, dominant_leader_ratio:?float, longest_same_leader_close_run:int, dominant_leader_same_answer_count:int, dominant_leader_same_wrong_answer_count:int}
  */
 function buildSummary(array $comparisonRows): array
 {
@@ -364,6 +399,7 @@ function buildSummary(array $comparisonRows): array
         'student_2' => 0,
     ];
     $closeRowsWithLeader = 0;
+    $closeRowsWithWrongAnswer = 0;
     $currentSameLeaderCloseRun = 0;
     $longestSameLeaderCloseRun = 0;
     $previousCloseLeader = null;
@@ -373,6 +409,12 @@ function buildSummary(array $comparisonRows): array
             $currentCloseStreak++;
             if ($currentCloseStreak > $longestCloseStreak) {
                 $longestCloseStreak = $currentCloseStreak;
+            }
+
+            $leftCorrect = $row['student_1']['correct'] ?? null;
+            $rightCorrect = $row['student_2']['correct'] ?? null;
+            if ($leftCorrect === 0 || $rightCorrect === 0) {
+                $closeRowsWithWrongAnswer++;
             }
 
             $closeLeader = $row['close_leader'] ?? null;
@@ -415,6 +457,31 @@ function buildSummary(array $comparisonRows): array
         $dominantCloseLeadCount = $closeLeaderCounts['student_1'];
     }
 
+    $dominantLeaderSameAnswerCount = 0;
+    $dominantLeaderSameWrongAnswerCount = 0;
+
+    if ($dominantCloseLeader === 'student_1' || $dominantCloseLeader === 'student_2') {
+        foreach ($closeRows as $row) {
+            if (($row['close_leader'] ?? null) !== $dominantCloseLeader) {
+                continue;
+            }
+
+            $leftAnswer = $row['student_1']['answer_no'] ?? null;
+            $rightAnswer = $row['student_2']['answer_no'] ?? null;
+            if ($leftAnswer === null || $rightAnswer === null || $leftAnswer !== $rightAnswer) {
+                continue;
+            }
+
+            $dominantLeaderSameAnswerCount++;
+
+            $leftCorrect = $row['student_1']['correct'] ?? null;
+            $rightCorrect = $row['student_2']['correct'] ?? null;
+            if ($leftCorrect === 0 && $rightCorrect === 0) {
+                $dominantLeaderSameWrongAnswerCount++;
+            }
+        }
+    }
+
     return [
         'matched_questions' => $matchedCount,
         'close_rows' => $closeCount,
@@ -423,10 +490,13 @@ function buildSummary(array $comparisonRows): array
         'close_ratio' => $matchedCount > 0 ? $closeCount / $matchedCount : 0.0,
         'longest_close_streak' => $longestCloseStreak,
         'close_rows_with_leader' => $closeRowsWithLeader,
+        'close_rows_with_wrong_answer' => $closeRowsWithWrongAnswer,
         'dominant_close_leader' => $dominantCloseLeader,
         'dominant_close_lead_count' => $dominantCloseLeadCount,
         'dominant_leader_ratio' => $closeRowsWithLeader > 0 ? $dominantCloseLeadCount / $closeRowsWithLeader : null,
         'longest_same_leader_close_run' => $longestSameLeaderCloseRun,
+        'dominant_leader_same_answer_count' => $dominantLeaderSameAnswerCount,
+        'dominant_leader_same_wrong_answer_count' => $dominantLeaderSameWrongAnswerCount,
     ];
 }
 
@@ -435,7 +505,7 @@ function buildSummary(array $comparisonRows): array
  * @param array<string, mixed> $rightSubmission
  * @param array<int, array<int, array{question_id:int, question_no:?int, answer_no:?int, correct:?int, timestamp:?string}>> $logsBySubmissionId
  * @param array<int, array{label: string, question: string}> $questionMeta
- * @return array{rows: array<int, array<string, mixed>>, summary: array{matched_questions:int, close_rows:int, smallest_diff:?int, average_diff:?float, close_ratio:float, longest_close_streak:int, close_rows_with_leader:int, dominant_close_leader:?string, dominant_close_lead_count:int, dominant_leader_ratio:?float, longest_same_leader_close_run:int}}
+ * @return array{rows: array<int, array<string, mixed>>, summary: array{matched_questions:int, close_rows:int, smallest_diff:?int, average_diff:?float, close_ratio:float, longest_close_streak:int, close_rows_with_leader:int, close_rows_with_wrong_answer:int, dominant_close_leader:?string, dominant_close_lead_count:int, dominant_leader_ratio:?float, longest_same_leader_close_run:int, dominant_leader_same_answer_count:int, dominant_leader_same_wrong_answer_count:int}}
  */
 function analyzeSubmissionPair(array $leftSubmission, array $rightSubmission, array $logsBySubmissionId, array $questionMeta): array
 {
@@ -534,6 +604,7 @@ $selectedSubmissions = [];
 $latestSubmissions = [];
 $logsBySubmissionId = [];
 $questionMeta = [];
+$answerStatsByQuestion = [];
 $comparisonRows = [];
 $summary = null;
 $potentialFraudPairs = [];
@@ -665,13 +736,32 @@ if ($submitted && $errors === []) {
                 foreach ($logStmt->fetchAll() as $logRow) {
                     $submissionId = (int)$logRow['submission_id'];
                     $questionId = (int)$logRow['question_id'];
+                    $answerNo = isset($logRow['answer_no']) ? (int)$logRow['answer_no'] : null;
                     $logsBySubmissionId[$submissionId][$questionId] = [
                         'question_id' => $questionId,
                         'question_no' => isset($logRow['no_answered']) ? ((int)$logRow['no_answered'] + 1) : null,
-                        'answer_no' => isset($logRow['answer_no']) ? (int)$logRow['answer_no'] : null,
+                        'answer_no' => $answerNo,
                         'correct' => isset($logRow['correct']) ? (int)$logRow['correct'] : null,
                         'timestamp' => $logRow['timestamp'] ?? null,
                     ];
+
+                    if (!isset($answerStatsByQuestion[$questionId])) {
+                        $answerStatsByQuestion[$questionId] = [
+                            'total' => 0,
+                            'wrong_total' => 0,
+                            'answers' => [],
+                        ];
+                    }
+                    $answerStatsByQuestion[$questionId]['total']++;
+                    if (($logRow['correct'] ?? null) !== null && (int)$logRow['correct'] === 0) {
+                        $answerStatsByQuestion[$questionId]['wrong_total']++;
+                    }
+                    if ($answerNo !== null) {
+                        if (!isset($answerStatsByQuestion[$questionId]['answers'][$answerNo])) {
+                            $answerStatsByQuestion[$questionId]['answers'][$answerNo] = 0;
+                        }
+                        $answerStatsByQuestion[$questionId]['answers'][$answerNo]++;
+                    }
 
                     if (!isset($questionMeta[$questionId])) {
                         $questionMeta[$questionId] = [
@@ -752,12 +842,12 @@ if ($submitted && $errors === []) {
                         }
 
                         $selectedPairKey = buildCanonicalPairKey((string)$student1Submission['student_nr'], (string)$student2Submission['student_nr']);
-                        $selectedPairSummary = $pairSummaryByKey[$selectedPairKey] ?? $summary;
+                        $selectedPairPermutationSummary = $pairSummaryByKey[$selectedPairKey] ?? $summary;
                         $selectedPairPValue = null;
                         if ($comparePermutationNullScores !== []) {
                             $permutationExtremeCount = 0;
                             foreach ($comparePermutationNullScores as $nullSummary) {
-                                if (comparePairExtremeness($nullSummary, $selectedPairSummary) >= 0) {
+                                if (comparePairExtremeness($nullSummary, $selectedPairPermutationSummary) >= 0) {
                                     $permutationExtremeCount++;
                                 }
                             }
@@ -765,22 +855,26 @@ if ($submitted && $errors === []) {
                         }
 
                         $comparePairSignals = [
-                            'matched_questions' => $selectedPairSummary['matched_questions'],
-                            'close_rows' => $selectedPairSummary['close_rows'],
-                            'close_ratio' => $selectedPairSummary['close_ratio'],
-                            'longest_close_streak' => $selectedPairSummary['longest_close_streak'],
-                            'dominant_close_leader' => $selectedPairSummary['dominant_close_leader'],
-                            'dominant_close_lead_count' => $selectedPairSummary['dominant_close_lead_count'],
-                            'dominant_leader_ratio' => $selectedPairSummary['dominant_leader_ratio'],
-                            'longest_same_leader_close_run' => $selectedPairSummary['longest_same_leader_close_run'],
-                            'smallest_diff' => $selectedPairSummary['smallest_diff'],
-                            'average_diff' => $selectedPairSummary['average_diff'],
+                            'matched_questions' => $summary['matched_questions'],
+                            'close_rows' => $summary['close_rows'],
+                            'close_ratio' => $summary['close_ratio'],
+                            'longest_close_streak' => $summary['longest_close_streak'],
+                            'close_rows_with_leader' => $summary['close_rows_with_leader'],
+                            'close_rows_with_wrong_answer' => $summary['close_rows_with_wrong_answer'],
+                            'dominant_close_leader' => $summary['dominant_close_leader'],
+                            'dominant_close_lead_count' => $summary['dominant_close_lead_count'],
+                            'dominant_leader_ratio' => $summary['dominant_leader_ratio'],
+                            'longest_same_leader_close_run' => $summary['longest_same_leader_close_run'],
+                            'dominant_leader_same_answer_count' => $summary['dominant_leader_same_answer_count'],
+                            'dominant_leader_same_wrong_answer_count' => $summary['dominant_leader_same_wrong_answer_count'],
+                            'smallest_diff' => $summary['smallest_diff'],
+                            'average_diff' => $summary['average_diff'],
                             'expected_close_ratio' => $baselineProbability,
                             'permutation_p_value' => $selectedPairPValue,
                             'rarity_one_in' => $baselineProbability !== null
                                 ? binomialTailProbability(
-                                    (int)$selectedPairSummary['matched_questions'],
-                                    (int)$selectedPairSummary['close_rows'],
+                                    (int)$summary['matched_questions'],
+                                    (int)$summary['close_rows'],
                                     (float)$baselineProbability
                                 )
                                 : null,
@@ -822,11 +916,11 @@ if ($submitted && $errors === []) {
                             }
 
                             if ($pairSummary['matched_questions'] > 0 && $pairSummary['close_ratio'] > $selectedThresholdRatio) {
-                                $potentialFraudPairs[] = [
+                                $potentialFraudPairs[] = placeDominantLeaderFirst([
                                     'student_1' => $leftSubmission,
                                     'student_2' => $rightSubmission,
                                     'summary' => $pairSummary,
-                                ];
+                                ]);
                             }
                         }
                     }
@@ -1154,6 +1248,11 @@ if ($submitted && $errors === []) {
             font-size: 1.1rem;
         }
 
+        .metric small {
+            display: block;
+            margin-top: 6px;
+        }
+
         .submission-card dl {
             margin: 12px 0 0;
             display: grid;
@@ -1248,6 +1347,18 @@ if ($submitted && $errors === []) {
             color: var(--muted);
         }
 
+        .correct-status {
+            font-weight: 700;
+        }
+
+        .correct-status.yes {
+            color: #2f8f46;
+        }
+
+        .correct-status.no {
+            color: #b43a2f;
+        }
+
         .flag {
             display: inline-flex;
             align-items: center;
@@ -1260,13 +1371,18 @@ if ($submitted && $errors === []) {
         }
 
         .flag.close {
-            background: var(--warn-soft);
-            color: var(--warn);
-        }
-
-        .flag.ok {
             background: var(--accent-soft);
             color: var(--accent);
+        }
+
+        .flag.close-same {
+            background: #ffe7c7;
+            color: #9c5a10;
+        }
+
+        .flag.close-same-wrong {
+            background: var(--danger-soft);
+            color: var(--danger);
         }
 
         .flag.missing {
@@ -1442,6 +1558,20 @@ if ($submitted && $errors === []) {
                     $student2Header = $student2Submission !== null
                         ? trim((string)$student2Submission['first_name'] . ' ' . (string)$student2Submission['last_name'])
                         : 'Student 2';
+                    $dominantLeaderKey = $comparePairSignals['dominant_close_leader'] ?? null;
+                    $student1DisplayHeader = $student1Header;
+                    $student2DisplayHeader = $student2Header;
+                    $student1ColumnKey = 'student_1';
+                    $student2ColumnKey = 'student_2';
+                    $displayedSubmissions = [$student1Submission, $student2Submission];
+
+                    if ($dominantLeaderKey === 'student_2') {
+                        $student1DisplayHeader = $student2Header;
+                        $student2DisplayHeader = $student1Header;
+                        $student1ColumnKey = 'student_2';
+                        $student2ColumnKey = 'student_1';
+                        $displayedSubmissions = [$student2Submission, $student1Submission];
+                    }
                     ?>
 
                     <section class="card">
@@ -1461,7 +1591,7 @@ if ($submitted && $errors === []) {
                             </div>
                         <?php else: ?>
                             <div class="meta-grid">
-                                <?php foreach ([$student1Submission, $student2Submission] as $submission): ?>
+                                <?php foreach ($displayedSubmissions as $submission): ?>
                                     <article class="submission-card">
                                         <span class="eyebrow">Student <?= h((string)$submission['student_nr']) ?></span>
                                         <strong><?= h(trim((string)$submission['first_name'] . ' ' . (string)$submission['last_name'])) ?></strong>
@@ -1513,20 +1643,6 @@ if ($submitted && $errors === []) {
                             <?php if ($comparisonRows === []): ?>
                                 <div class="message warn">No answer log rows were found for the selected submissions.</div>
                             <?php else: ?>
-                                <?php
-                                $dominantLeaderKey = $comparePairSignals['dominant_close_leader'] ?? null;
-                                $student1DisplayHeader = $student1Header;
-                                $student2DisplayHeader = $student2Header;
-                                $student1ColumnKey = 'student_1';
-                                $student2ColumnKey = 'student_2';
-
-                                if ($dominantLeaderKey === 'student_2') {
-                                    $student1DisplayHeader = $student2Header;
-                                    $student2DisplayHeader = $student1Header;
-                                    $student1ColumnKey = 'student_2';
-                                    $student2ColumnKey = 'student_1';
-                                }
-                                ?>
                                 <div class="table-wrap">
                                     <table>
                                         <thead>
@@ -1557,19 +1673,42 @@ if ($submitted && $errors === []) {
                                                     && strtotime($right['timestamp']) < strtotime($left['timestamp']);
                                                 $signedDiffSeconds = null;
                                                 if (is_int($row['diff_seconds'] ?? null)) {
-                                                    $signedDiffSeconds = (int)$row['diff_seconds'];
-
-                                                    if (($row['close_leader'] ?? null) === null || ($row['close_leader'] ?? null) === 'tie') {
-                                                        $signedDiffSeconds = 0;
-                                                    } elseif ($dominantLeaderKey === 'student_2') {
-                                                        $signedDiffSeconds = ($row['close_leader'] ?? null) === 'student_2'
-                                                            ? $signedDiffSeconds
-                                                            : -$signedDiffSeconds;
+                                                    if ($leftIsEarlier) {
+                                                        $signedDiffSeconds = (int)$row['diff_seconds'];
+                                                    } elseif ($rightIsEarlier) {
+                                                        $signedDiffSeconds = -((int)$row['diff_seconds']);
                                                     } else {
-                                                        $signedDiffSeconds = ($row['close_leader'] ?? null) === 'student_1'
-                                                            ? $signedDiffSeconds
-                                                            : -$signedDiffSeconds;
+                                                        $signedDiffSeconds = 0;
                                                     }
+                                                }
+                                                $leftCorrectText = $left !== null ? formatBool($left['correct']) : '—';
+                                                $leftCorrectClass = $leftCorrectText === 'Yes'
+                                                    ? 'yes'
+                                                    : ($leftCorrectText === 'No' ? 'no' : '');
+                                                $rightCorrectText = $right !== null ? formatBool($right['correct']) : '—';
+                                                $rightCorrectClass = $rightCorrectText === 'Yes'
+                                                    ? 'yes'
+                                                    : ($rightCorrectText === 'No' ? 'no' : '');
+                                                $sameAnswer = $left !== null
+                                                    && $right !== null
+                                                    && ($left['answer_no'] ?? null) !== null
+                                                    && ($right['answer_no'] ?? null) !== null
+                                                    && (string)$left['answer_no'] === (string)$right['answer_no'];
+                                                $sameWrongAnswer = $sameAnswer
+                                                    && (($left['correct'] ?? null) === 0)
+                                                    && (($right['correct'] ?? null) === 0);
+                                                $wrongAnswerShareSuffix = '';
+                                                if ($row['is_close'] && $sameWrongAnswer) {
+                                                    $questionId = (int)$row['question_id'];
+                                                    $sharedAnswerNo = $left['answer_no'] ?? null;
+                                                    $answerCount = $sharedAnswerNo !== null
+                                                        ? ($answerStatsByQuestion[$questionId]['answers'][$sharedAnswerNo] ?? null)
+                                                        : null;
+                                                    $answerTotal = $answerStatsByQuestion[$questionId]['wrong_total'] ?? null;
+                                                    $wrongAnswerShareSuffix = formatInlineAnswerShare(
+                                                        is_int($answerCount) ? $answerCount : null,
+                                                        is_int($answerTotal) ? $answerTotal : null
+                                                    );
                                                 }
                                                 ?>
                                                 <tr class="<?= h($rowClass) ?>">
@@ -1588,8 +1727,8 @@ if ($submitted && $errors === []) {
                                                         <?php else: ?>
                                                             <div class="cell-stack<?= $leftIsEarlier ? ' earliest' : '' ?>">
                                                                 <div><strong>Q# <?= h((string)$left['question_no']) ?></strong></div>
-                                                                <small>Answer: <?= h((string)$left['answer_no']) ?></small>
-                                                                <small>Correct: <?= h(formatBool($left['correct'])) ?></small>
+                                                                <small>Answer: <?= h((string)$left['answer_no']) ?><?= h($wrongAnswerShareSuffix) ?></small>
+                                                                <small>Correct: <span class="correct-status <?= h($leftCorrectClass) ?>"><?= h($leftCorrectText) ?></span></small>
                                                                 <small class="<?= $leftIsEarlier ? 'earliest-timestamp' : '' ?>"><?= h(formatTimestamp($left['timestamp'])) ?></small>
                                                             </div>
                                                         <?php endif; ?>
@@ -1600,8 +1739,8 @@ if ($submitted && $errors === []) {
                                                         <?php else: ?>
                                                             <div class="cell-stack<?= $rightIsEarlier ? ' earliest' : '' ?>">
                                                                 <div><strong>Q# <?= h((string)$right['question_no']) ?></strong></div>
-                                                                <small>Answer: <?= h((string)$right['answer_no']) ?></small>
-                                                                <small>Correct: <?= h(formatBool($right['correct'])) ?></small>
+                                                                <small>Answer: <?= h((string)$right['answer_no']) ?><?= h($wrongAnswerShareSuffix) ?></small>
+                                                                <small>Correct: <span class="correct-status <?= h($rightCorrectClass) ?>"><?= h($rightCorrectText) ?></span></small>
                                                                 <small class="<?= $rightIsEarlier ? 'earliest-timestamp' : '' ?>"><?= h(formatTimestamp($right['timestamp'])) ?></small>
                                                             </div>
                                                         <?php endif; ?>
@@ -1612,10 +1751,14 @@ if ($submitted && $errors === []) {
                                                     <td>
                                                         <?php if ($row['diff_seconds'] === null): ?>
                                                             <span class="flag missing">Missing answer</span>
+                                                        <?php elseif ($row['is_close'] && $sameWrongAnswer): ?>
+                                                            <span class="flag close-same-wrong">Close + Same</span>
+                                                        <?php elseif ($row['is_close'] && $sameAnswer): ?>
+                                                            <span class="flag close-same">Close + Same</span>
                                                         <?php elseif ($row['is_close']): ?>
                                                             <span class="flag close">Close</span>
                                                         <?php else: ?>
-                                                            <span class="flag ok">OK</span>
+                                                            <span class="muted">—</span>
                                                         <?php endif; ?>
                                                     </td>
                                                 </tr>
@@ -1666,14 +1809,79 @@ if ($submitted && $errors === []) {
                                                 echo h('—');
                                             }
                                         ?></strong>
+                                        <small class="muted"><?php
+                                            $dominantLeadCount = isset($comparePairSignals['dominant_close_lead_count'])
+                                                ? (int)$comparePairSignals['dominant_close_lead_count']
+                                                : 0;
+                                            $closeRowsWithLeader = isset($comparePairSignals['close_rows_with_leader'])
+                                                ? (int)$comparePairSignals['close_rows_with_leader']
+                                                : 0;
+                                            $tiedCloseRows = max(0, (int)$comparePairSignals['close_rows'] - $closeRowsWithLeader);
+
+                                            if (($comparePairSignals['dominant_close_leader'] ?? null) === 'tie') {
+                                                echo h($dominantLeadCount . ' vs ' . $dominantLeadCount . ' close-row leads');
+                                            } elseif (($comparePairSignals['dominant_close_leader'] ?? null) === 'student_1' || ($comparePairSignals['dominant_close_leader'] ?? null) === 'student_2') {
+                                                $detail = $dominantLeadCount . ' of ' . $closeRowsWithLeader . ' non-tied close rows';
+                                                if ($tiedCloseRows > 0) {
+                                                    $detail .= ' (' . $tiedCloseRows . ' tied)';
+                                                }
+                                                echo h($detail);
+                                            } else {
+                                                echo h('No non-tied close rows');
+                                            }
+                                        ?></small>
                                     </div>
                                     <div class="metric">
-                                        <span class="eyebrow">Same-Leader Close %</span>
+                                        <span class="eyebrow">Leader Ahead Consistency</span>
                                         <strong><?= h(formatPercent(isset($comparePairSignals['dominant_leader_ratio']) ? (float)$comparePairSignals['dominant_leader_ratio'] : null)) ?></strong>
+                                        <small class="muted"><?php
+                                            if (($comparePairSignals['dominant_close_leader'] ?? null) === 'student_1' || ($comparePairSignals['dominant_close_leader'] ?? null) === 'student_2') {
+                                                echo h($dominantLeadCount . ' of ' . $closeRowsWithLeader . ' non-tied close rows');
+                                            } else {
+                                                echo h('No non-tied close rows');
+                                            }
+                                        ?></small>
                                     </div>
                                     <div class="metric">
                                         <span class="eyebrow">Longest Same-Leader Run</span>
                                         <strong><?= h((string)($comparePairSignals['longest_same_leader_close_run'] ?? 0)) ?></strong>
+                                    </div>
+                                    <div class="metric">
+                                        <span class="eyebrow">Copied Answers From Leader</span>
+                                        <strong><?= h(formatCountAndPercent(
+                                            isset($comparePairSignals['dominant_leader_same_answer_count']) ? (int)$comparePairSignals['dominant_leader_same_answer_count'] : null,
+                                            isset($comparePairSignals['dominant_close_lead_count']) ? (int)$comparePairSignals['dominant_close_lead_count'] : null
+                                        )) ?></strong>
+                                        <small class="muted"><?php
+                                            $sameAnswerCount = isset($comparePairSignals['dominant_leader_same_answer_count'])
+                                                ? (int)$comparePairSignals['dominant_leader_same_answer_count']
+                                                : 0;
+                                            if (($comparePairSignals['dominant_close_leader'] ?? null) === 'student_1' || ($comparePairSignals['dominant_close_leader'] ?? null) === 'student_2') {
+                                                echo h($sameAnswerCount . ' of ' . $dominantLeadCount . ' leader-led close rows');
+                                            } else {
+                                                echo h('No leader-led close rows');
+                                            }
+                                        ?></small>
+                                    </div>
+                                    <div class="metric">
+                                        <span class="eyebrow">Copied Wrong Answers</span>
+                                        <strong><?= h(formatCountAndPercent(
+                                            isset($comparePairSignals['dominant_leader_same_wrong_answer_count']) ? (int)$comparePairSignals['dominant_leader_same_wrong_answer_count'] : null,
+                                            isset($comparePairSignals['close_rows_with_wrong_answer']) ? (int)$comparePairSignals['close_rows_with_wrong_answer'] : null
+                                        )) ?></strong>
+                                        <small class="muted"><?php
+                                            $sameWrongAnswerCount = isset($comparePairSignals['dominant_leader_same_wrong_answer_count'])
+                                                ? (int)$comparePairSignals['dominant_leader_same_wrong_answer_count']
+                                                : 0;
+                                            $closeRowsWithWrongAnswer = isset($comparePairSignals['close_rows_with_wrong_answer'])
+                                                ? (int)$comparePairSignals['close_rows_with_wrong_answer']
+                                                : 0;
+                                            if ($closeRowsWithWrongAnswer > 0) {
+                                                echo h($sameWrongAnswerCount . ' of ' . $closeRowsWithWrongAnswer . ' close rows with a wrong answer');
+                                            } else {
+                                                echo h('No close rows with a wrong answer');
+                                            }
+                                        ?></small>
                                     </div>
                                     <div class="metric">
                                         <span class="eyebrow">Perm. p</span>

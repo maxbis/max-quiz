@@ -18,6 +18,10 @@ use Yii;
  */
 class Quiz extends \yii\db\ActiveRecord
 {
+    public const ORDER_MODE_FIXED = 0;
+    public const ORDER_MODE_RANDOM = 1;
+    public const ORDER_MODE_RANDOM_LABEL_GROUPS = 2;
+
     /**
      * {@inheritdoc}
      */
@@ -58,11 +62,30 @@ class Quiz extends \yii\db\ActiveRecord
             'active' => 'Active',
             'no_questions' => 'No Questions',
             'review' => 'Review',
-            'random' => 'Random',
+            'random' => 'Question Order',
             'blind' => 'Blind',
             'ip_check' => 'IP Check',
             'archived' => 'Archived',
         ];
+    }
+
+    /**
+     * @return array<int, string>
+     */
+    public static function questionOrderModeOptions(): array
+    {
+        return [
+            self::ORDER_MODE_FIXED => 'Questions in right order',
+            self::ORDER_MODE_RANDOM => 'Random Order',
+            self::ORDER_MODE_RANDOM_LABEL_GROUPS => 'Random by Label Group',
+        ];
+    }
+
+    public static function questionOrderModeLabel(?int $mode): string
+    {
+        $options = static::questionOrderModeOptions();
+
+        return $options[$mode ?? self::ORDER_MODE_FIXED] ?? 'Unknown';
     }
 
     public function beforeValidate()

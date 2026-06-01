@@ -6,9 +6,9 @@ use app\live\models\LiveSession;
 use app\live\models\LiveSessionQuestion;
 use app\live\models\LiveSessionSubmission;
 use app\models\Quiz;
+use app\services\QuizQuestionOrderService;
 use Yii;
 use yii\db\Exception;
-use yii\db\Query;
 
 class LiveSessionManager
 {
@@ -23,29 +23,16 @@ class LiveSessionManager
             throw new Exception('Invalid scoring mode.');
         }
 
-        $quizQuestionSchema = Yii::$app->db->schema->getTableSchema('quizquestion');
-        $questionQuery = (new Query())
-            ->select('question_id')
-            ->from('quizquestion')
-            ->where(['quiz_id' => $quizId, 'active' => 1]);
-
-        if ($quizQuestionSchema !== null && isset($quizQuestionSchema->columns['order'])) {
-            $questionQuery->orderBy(['order' => SORT_ASC, 'question_id' => SORT_ASC]);
-        } else {
-            $questionQuery->orderBy(['question_id' => SORT_ASC]);
-        }
-
-        $questionIds = $questionQuery->column();
+        $questionIds = (new QuizQuestionOrderService())->buildQuestionIdsForQuiz(
+            $quizId,
+            (int) $quiz->random
+        );
 
         if (empty($questionIds)) {
             throw new Exception('Selected quiz has no active questions.');
         }
 
         $questionIds = array_map('intval', $questionIds);
-
-        if ((int)$quiz->random === 1) {
-            shuffle($questionIds);
-        }
 
         $maxQuestions = (int)$quiz->no_questions;
         if ($maxQuestions > 0 && count($questionIds) > $maxQuestions) {

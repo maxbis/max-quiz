@@ -1,5 +1,6 @@
 <?php
 
+use app\models\Quiz;
 use yii\grid\GridView;
 use yii\helpers\Html;
 use yii\helpers\Url;
@@ -25,6 +26,7 @@ $showOverviewButton = $selectedQuizCount >= 2;
 $apiUrl = Url::toRoute(['/quiz-question/active']);
 $submissionBaseUrl = Url::toRoute(['/submission']);
 $questionIndexBaseUrl = Url::toRoute(['/question/index']);
+$fraudCompareBaseUrl = rtrim(Yii::getAlias('@web'), '/') . '/fraud-compare/';
 
 $js = <<<JS
 
@@ -1047,7 +1049,7 @@ $this->registerJs($regradeScript);
                             <?= $quiz['ip_check'] ? "&#10003;" : "-" ?>
                         </td>
                         <td class="col-status grey-column">
-                            <?= $quiz['random'] ? "&#10003;" : "-" ?>
+                            <?= Html::encode(Quiz::questionOrderModeLabel(isset($quiz['random']) ? (int) $quiz['random'] : 0)) ?>
                         </td>
                         <td class="col-actions">
                             <?= Html::a('❓ Questions', ['question/index', 'quiz_id' => $quiz['id']], ['class' => 'btn quiz-button-small', 'title' => 'Show Questions']) ?>
@@ -1059,7 +1061,7 @@ $this->registerJs($regradeScript);
                                     <?= Html::a('✏️ Edit', ['/quiz/update', 'id' => $quiz['id']], ['class' => 'dropdown-item', 'title' => 'Edit Quiz']) ?>
                                     <?= Html::a('👁️ View', ['/question/list', 'quiz_id' => $quiz['id']], ['class' => 'dropdown-item', 'title' => 'View Questions']) ?>
                                     <?= Html::a('🏷️ Labels/Sort', ['/quiz/edit-labels', 'id' => $quiz['id']], ['class' => 'dropdown-item', 'title' => 'Edit Question Labels']) ?>
-                                    <?= Html::a('🕵️ Fraud detection', 'fraud-compare/?quiz_id=' . (int)$quiz['id'] . '&student_1=&student_2=&action=all_pairs', [
+                                    <?= Html::a('🕵️ Fraud detection', $fraudCompareBaseUrl . '?quiz_id=' . (int)$quiz['id'] . '&student_1=&student_2=&action=all_pairs', [
                                         'class' => 'dropdown-item',
                                         'title' => 'Open fraud detection for this quiz',
                                     ]) ?>

@@ -1,5 +1,6 @@
 <?php
 
+use app\models\Quiz;
 use yii\helpers\Html;
 use yii\widgets\ActiveForm;
 
@@ -298,9 +299,9 @@ $id = Yii::$app->request->get('id');
                 </div>
                 <div class="col-md-3">
                     <?= $form->field($model, 'random')->dropDownList(
-                        [0 => 'Questions in right order', 1 => 'Random Order'],
+                        Quiz::questionOrderModeOptions(),
                         ['prompt' => 'Select...', 'class' => 'form-control']
-                    )->label('Sequential (label,id)') ?>
+                    )->label('Question Order') ?>
                 </div>
                 <div class="col-md-6">
                     <!-- Empty space for future fields or can be removed -->

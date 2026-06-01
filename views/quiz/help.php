@@ -110,7 +110,7 @@ $this->title = 'Quiz Help';
             <li>Save the changes.</li>
             <li>Test the quiz if the order is important.</li>
         </ol>
-        <div class="quiz-help-note">If the quiz has random mode enabled, the stored student order can still be shuffled on start.</div>
+        <div class="quiz-help-note">Question Order supports three modes: fixed order, full random order, and random by label group. In label-group mode, questions inside a label block stay in order while the label blocks themselves are shuffled.</div>
     </section>
 
     <section class="quiz-help-section" id="running-classic-quiz">
