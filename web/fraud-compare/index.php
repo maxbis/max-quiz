@@ -2,7 +2,7 @@
 declare(strict_types=1);
 
 const SUSPICIOUS_SECONDS = 15;
-const PERMUTATION_RUNS = 100000;
+const PERMUTATION_RUNS = 10000;
 
 /**
  * @param mixed $value

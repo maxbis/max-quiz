@@ -12,6 +12,9 @@ use yii\bootstrap5\NavBar;
 
 AppAsset::register($this);
 
+$controllerId = Yii::$app->controller !== null ? Yii::$app->controller->uniqueId : '';
+$actionId = Yii::$app->controller !== null ? Yii::$app->controller->action->id : '';
+
 $this->registerCsrfMetaTags();
 $this->registerMetaTag(['charset' => Yii::$app->charset], 'charset');
 $this->registerMetaTag(['name' => 'viewport', 'content' => 'width=device-width, initial-scale=1, shrink-to-fit=no']);
@@ -59,12 +62,28 @@ $this->registerLinkTag(['rel' => 'icon', 'type' => 'image/x-icon', 'href' => Yii
             </a>';
             echo Nav::widget([
                 'options' => ['class' => 'navbar-nav'],
+                'activateItems' => false,
                 'items' => [
-                    ['label' => 'Quizzes', 'url' => ['/quiz']],
-                    // ['label' => 'Questions', 'url' => ['/question?show=-1']],
-                    ['label' => 'Questions', 'url' => ['/question/index-raw']],
-                    ['label' => 'Live Quiz', 'url' => ['/live/teacher/index']],
-                    ['label' => 'Student View', 'url' => ['/submission/create']],
+                    [
+                        'label' => 'Quizzes',
+                        'url' => ['/quiz'],
+                        'active' => $controllerId === 'quiz',
+                    ],
+                    [
+                        'label' => 'Questions',
+                        'url' => ['/question/index-raw'],
+                        'active' => $controllerId === 'question',
+                    ],
+                    [
+                        'label' => 'Live Quiz',
+                        'url' => ['/live/teacher/index'],
+                        'active' => str_starts_with($controllerId, 'live/'),
+                    ],
+                    [
+                        'label' => 'Student View',
+                        'url' => ['/submission/create'],
+                        'active' => $controllerId === 'submission' && $actionId === 'create',
+                    ],
                     // ['label' => 'Progress', 'url' => ['/submission']],
                     Yii::$app->user->isGuest
                         ? ['label' => 'Login', 'url' => ['/site/login']]
@@ -103,32 +122,6 @@ $this->registerLinkTag(['rel' => 'icon', 'type' => 'image/x-icon', 'href' => Yii
             </div>
         </div>
     </footer>
-
-    <script>
-    // Auto-highlight current page in navigation
-    $(document).ready(function() {
-        var currentPath = window.location.pathname;
-        
-        $('.navbar-nav .nav-link').each(function() {
-            var linkPath = $(this).attr('href');
-            if (linkPath && currentPath.includes(linkPath.replace(/^\//, ''))) {
-                $(this).addClass('active');
-            }
-        });
-        
-        // Special handling for specific routes
-        if (currentPath.includes('/question/index-raw')) {
-            $('.navbar-nav .nav-link[href*="question"]').addClass('active');
-        }
-        if (currentPath.includes('/quiz')) {
-            $('.navbar-nav .nav-link[href*="quiz"]').addClass('active');
-        }
-        if (currentPath.includes('/submission/create')) {
-            $('.navbar-nav .nav-link[href*="submission/create"]').addClass('active');
-        }
-    });
-    </script>
-
     <?php $this->endBody() ?>
 </body>
 

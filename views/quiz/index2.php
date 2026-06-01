@@ -52,6 +52,17 @@ function setGroupCollapsedState(header, collapse, animate) {
     localStorage.setItem('groupHeader_' + headerIndex, collapse);
 }
 
+function updateMasterGroupToggle() {
+    var masterToggle = $('.master-triangle').first();
+    if (!masterToggle.length) {
+        return;
+    }
+
+    var anyExpanded = $('.group-header').not('.collapsed').length > 0;
+    masterToggle.toggleClass('collapsed', !anyExpanded);
+    masterToggle.attr('title', anyExpanded ? 'Collapse all categories' : 'Expand all categories');
+}
+
 function updateActiveStatus(id, active) {
     $.ajax({
         url: '$apiUrl',
@@ -133,12 +144,17 @@ $(document).on('click', '.group-header', function() {
     var isCollapsed = header.hasClass('collapsed');
 
     setGroupCollapsedState(header, !isCollapsed, true);
+    updateMasterGroupToggle();
 });
 
-$(document).on('click', '#collapse-all-groups', function() {
+$(document).on('click', '.master-triangle', function(event) {
+    event.stopPropagation();
+
+    var anyExpanded = $('.group-header').not('.collapsed').length > 0;
     $('.group-header').each(function() {
-        setGroupCollapsedState($(this), true, true);
+        setGroupCollapsedState($(this), anyExpanded, true);
     });
+    updateMasterGroupToggle();
 });
 
 $(document).ready(function() {
@@ -160,6 +176,7 @@ $(document).ready(function() {
             }
         }
     });
+    updateMasterGroupToggle();
     
     // Enhanced filter button interactions
     $('.filter-button-group .btn').on('click', function() {
@@ -575,7 +592,8 @@ $this->registerJs($regradeScript);
     }
 
 
-    .group-header .triangle {
+    .group-header .triangle,
+    .group-header .master-triangle {
         color: #007bff;
         cursor: pointer;
         display: inline-block;
@@ -588,19 +606,64 @@ $this->registerJs($regradeScript);
         user-select: none;
     }
 
-    .group-header .triangle:hover {
+    .group-header .master-triangle {
+        color: #b35a4a;
+        background-color: rgba(179, 90, 74, 0.12);
+    }
+
+    .group-header .triangle:hover,
+    .group-header .master-triangle:hover {
         color: #0056b3;
         background-color: rgba(0, 123, 255, 0.2);
         transform: scale(1.1);
     }
 
-    .group-header.collapsed .triangle {
+    .group-header .master-triangle:hover {
+        color: #944636;
+        background-color: rgba(179, 90, 74, 0.2);
+    }
+
+    .group-header.collapsed .triangle,
+    .group-header .master-triangle.collapsed {
         transform: rotate(-90deg);
         /* Pointing right when collapsed */
     }
 
-    .group-header.collapsed .triangle:hover {
+    .group-header.collapsed .triangle:hover,
+    .group-header .master-triangle.collapsed:hover {
         transform: rotate(-90deg) scale(1.1);
+    }
+
+    .group-title {
+        display: flex;
+        align-items: center;
+        position: relative;
+    }
+
+    .group-title .master-triangle {
+        position: absolute;
+        left: -28px;
+        top: 50%;
+        transform: translateY(-50%);
+        margin-right: 0;
+    }
+
+    .group-title .triangle-slot {
+        display: inline-flex;
+        align-items: center;
+        margin-right: 8px;
+    }
+
+    .group-title .master-triangle.collapsed {
+        transform: translateY(-50%) rotate(-90deg);
+    }
+
+    .group-title .master-triangle:hover {
+        transform: translateY(-50%) scale(1.1);
+    }
+
+    .group-title .master-triangle.collapsed:hover {
+        transform: translateY(-50%) rotate(-90deg) scale(1.1);
     }
 
     .group-header td {
@@ -612,10 +675,13 @@ $this->registerJs($regradeScript);
         display: none;
         /* Initially hide the content */
     }
-
-    .group-title {
+    .group-title .group-label {
         color: darkblue;
         font-weight: 600;
+    }
+
+    .group-header.has-master-toggle .col-quiz-name {
+        overflow: visible;
     }
 
     table {
@@ -874,27 +940,6 @@ $this->registerJs($regradeScript);
         box-shadow: inset 0 2px 4px rgba(0,0,0,0.1);
     }
 
-    .group-action-btn {
-        margin-left: 12px;
-        padding: 8px 14px;
-        border: 1px solid #ced4da;
-        background: rgba(255, 255, 255, 0.78);
-        color: #6c757d;
-        border-radius: 6px;
-        font-size: 13px;
-        font-weight: 500;
-        line-height: 1.2;
-        box-shadow: 0 1px 2px rgba(0,0,0,0.04);
-        transition: all 0.2s ease;
-    }
-
-    .group-action-btn:hover {
-        background: #f8f9fa;
-        border-color: #adb5bd;
-        color: #495057;
-        box-shadow: 0 2px 5px rgba(0,0,0,0.08);
-    }
-    
     /* Archived quiz styling */
     .archived-quiz {
         opacity: 0.6;
@@ -968,9 +1013,6 @@ $this->registerJs($regradeScript);
                         'title' => 'Show all quizzes'
                     ]) ?>
                 </div>
-                <button type="button" id="collapse-all-groups" class="btn group-action-btn" title="Fold all quiz categories">
-                    Fold All
-                </button>
             </div>
             <div class="filter-right">
                 <div class="quiz-filter-container">
@@ -994,6 +1036,7 @@ $this->registerJs($regradeScript);
                 <?php
                 $lastGroup = null;
                 $index = 1;
+                $isFirstGroupHeader = true;
 
                 foreach ($quizes as $quiz):
                     $currentGroup = trim((string)($quiz['quiz_group'] ?? ''));
@@ -1001,11 +1044,15 @@ $this->registerJs($regradeScript);
                         $lastGroup = $currentGroup;
                         $groupTitle = $currentGroup ?: 'No Category';
                         $groupTitleEncoded = Html::encode($groupTitle);
-                        echo "<tr class='group-header collapsed' style='background-color:#f0f0f9;color:darkblue;font-weight:350;font-style:italic;width:20px;'>
+                        $masterTriangle = $isFirstGroupHeader
+                            ? "<span class='master-triangle collapsed' title='Expand all categories'>▼</span>"
+                            : '';
+                        $groupHeaderClass = $isFirstGroupHeader ? 'group-header collapsed has-master-toggle' : 'group-header collapsed';
+                        echo "<tr class='{$groupHeaderClass}' style='background-color:#f0f0f9;color:darkblue;font-weight:350;font-style:italic;width:20px;'>
                                 <td class='col-bullet' style='width:20px;'></td>
                                 <td class='col-checkbox' style='width:20px;'></td>
                                 <td class='col-quiz-name'>
-                                    <div class='group-title'><span class='triangle' title='Click to expand/collapse'>▼</span>&nbsp;{$groupTitleEncoded}</div>
+                                    <div class='group-title'>{$masterTriangle}<span class='triangle-slot'><span class='triangle' title='Click to expand/collapse'>▼</span></span><span class='group-label'>{$groupTitleEncoded}</span></div>
                                 </td>
                                 <td class='col-password' style='color:lightgrey'>Password</td>
                                 <td class='col-questions' style='color:lightgrey'>Questions</td>
@@ -1016,6 +1063,7 @@ $this->registerJs($regradeScript);
                                 <td class='col-status' title='Random' style='color:lightgrey'>Rd</td>
                                 <td class='col-actions' style='color:lightgrey;widt:120px;'>Actions</td>
                             </tr>";
+                        $isFirstGroupHeader = false;
                     endif;
                     ?>
                     <tr id="quiz-row-<?= $quiz['id'] ?>" class="<?= (isset($quiz['archived']) && $quiz['archived']) ? 'archived-quiz' : '' ?><?= $quiz['active'] ? ' active-quiz' : '' ?>">
