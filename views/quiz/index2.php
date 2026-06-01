@@ -30,6 +30,28 @@ $fraudCompareBaseUrl = rtrim(Yii::getAlias('@web'), '/') . '/fraud-compare/';
 
 $js = <<<JS
 
+function setGroupCollapsedState(header, collapse, animate) {
+    var content = header.nextUntil('.group-header');
+    var headerIndex = $('.group-header').index(header);
+
+    header.toggleClass('collapsed', collapse);
+    header.find('td').css('color', collapse ? 'lightgrey' : 'darkblue');
+
+    if (animate) {
+        if (collapse) {
+            content.stop(true, true).slideUp(300, 'swing');
+        } else {
+            content.stop(true, true).slideDown(300, 'swing');
+        }
+    } else if (collapse) {
+        content.hide();
+    } else {
+        content.show();
+    }
+
+    localStorage.setItem('groupHeader_' + headerIndex, collapse);
+}
+
 function updateActiveStatus(id, active) {
     $.ajax({
         url: '$apiUrl',
@@ -108,26 +130,15 @@ $(document).ready(function() {
 
 $(document).on('click', '.group-header', function() {
     var header = $(this);
-    var content = header.nextUntil('.group-header');
     var isCollapsed = header.hasClass('collapsed');
-    
-    // Toggle the collapsed state
-    header.toggleClass('collapsed');
-    
-    // Use slideToggle for smoother animation
-    if (isCollapsed) {
-        // Expanding
-        content.slideDown(300, 'swing');
-        header.find('td').css('color', 'darkblue');
-    } else {
-        // Collapsing
-        content.slideUp(300, 'swing');
-        header.find('td').css('color', 'lightgrey');
-    }
 
-    var headerIndex = $('.group-header').index(header);
-    var newState = header.hasClass('collapsed');
-    localStorage.setItem('groupHeader_' + headerIndex, newState);
+    setGroupCollapsedState(header, !isCollapsed, true);
+});
+
+$(document).on('click', '#collapse-all-groups', function() {
+    $('.group-header').each(function() {
+        setGroupCollapsedState($(this), true, true);
+    });
 });
 
 $(document).ready(function() {
@@ -143,11 +154,9 @@ $(document).ready(function() {
         // If there's a saved state, apply it
         if (isCollapsed !== null) {
             if (isCollapsed === 'true') {
-                $(this).addClass('collapsed').nextUntil('.group-header').hide();
-                $(this).find('td').css('color', 'lightgrey');
+                setGroupCollapsedState($(this), true, false);
             } else {
-                $(this).removeClass('collapsed').nextUntil('.group-header').show();
-                $(this).find('td').css('color', 'darkblue');
+                setGroupCollapsedState($(this), false, false);
             }
         }
     });
@@ -864,6 +873,27 @@ $this->registerJs($regradeScript);
         transform: translateY(0) scale(0.98);
         box-shadow: inset 0 2px 4px rgba(0,0,0,0.1);
     }
+
+    .group-action-btn {
+        margin-left: 12px;
+        padding: 8px 14px;
+        border: 1px solid #ced4da;
+        background: rgba(255, 255, 255, 0.78);
+        color: #6c757d;
+        border-radius: 6px;
+        font-size: 13px;
+        font-weight: 500;
+        line-height: 1.2;
+        box-shadow: 0 1px 2px rgba(0,0,0,0.04);
+        transition: all 0.2s ease;
+    }
+
+    .group-action-btn:hover {
+        background: #f8f9fa;
+        border-color: #adb5bd;
+        color: #495057;
+        box-shadow: 0 2px 5px rgba(0,0,0,0.08);
+    }
     
     /* Archived quiz styling */
     .archived-quiz {
@@ -938,6 +968,9 @@ $this->registerJs($regradeScript);
                         'title' => 'Show all quizzes'
                     ]) ?>
                 </div>
+                <button type="button" id="collapse-all-groups" class="btn group-action-btn" title="Fold all quiz categories">
+                    Fold All
+                </button>
             </div>
             <div class="filter-right">
                 <div class="quiz-filter-container">
