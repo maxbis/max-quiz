@@ -1049,7 +1049,16 @@ $this->registerJs($regradeScript);
                             <?= $quiz['ip_check'] ? "&#10003;" : "-" ?>
                         </td>
                         <td class="col-status grey-column">
-                            <?= Html::encode(Quiz::questionOrderModeLabel(isset($quiz['random']) ? (int) $quiz['random'] : 0)) ?>
+                            <?php
+                            $questionOrderMode = (int)($quiz['random'] ?? Quiz::ORDER_MODE_FIXED);
+                            if ($questionOrderMode === Quiz::ORDER_MODE_RANDOM_LABEL_GROUPS) {
+                                echo '☑';
+                            } elseif ($questionOrderMode === Quiz::ORDER_MODE_RANDOM) {
+                                echo '&#10003;';
+                            } else {
+                                echo '-';
+                            }
+                            ?>
                         </td>
                         <td class="col-actions">
                             <?= Html::a('❓ Questions', ['question/index', 'quiz_id' => $quiz['id']], ['class' => 'btn quiz-button-small', 'title' => 'Show Questions']) ?>
